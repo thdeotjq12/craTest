@@ -1,12 +1,18 @@
 import React, { useState } from "react";
 import "./index.css";
+import Main from "../Main/";
 import { useInput } from "../../function/useInput";
+import { strict } from "assert";
 const Login = () => {
   const id = useInput("");
   const password = useInput("");
 
   const onLoginClicked = () => {
-    console.log("LOGIN", id.value, password.value);
+    if (id.value == 9 && password.value == 9) {
+      console.log("OK");
+    } else {
+      console.log("NO");
+    }
   };
   return (
     <div className="loginpage_container">
@@ -30,7 +36,12 @@ const Login = () => {
         <div>
           <input {...password} type="password" />
         </div>
-        <button onClick={onLoginClicked}>로그인</button>
+        <button
+          onClick={onLoginClicked}
+          class="btn btn-secondary btn-lg btn-block"
+        >
+          로그인
+        </button>
       </div>
     </div>
   );
