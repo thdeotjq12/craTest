@@ -1,0 +1,14 @@
+.TableTitle {
+  background-color: slategray;
+  color: white;
+  width: 40%;
+}
+.ColTitle {
+  background-color: slategray;
+  color: white;
+}
+
+.ColGubun {
+  background-color: lightblue;
+  text-align: center;
+}
