@@ -1,17 +1,63 @@
 import React, { Component } from "react";
 import "./index.css";
-import DatePicker from "../../../../components/DatePicker/DatePicker.js";
+// datepick 부분
+import locale from "flatpickr/dist/l10n/ko";
+import "flatpickr/dist/flatpickr.min.css";
+import InputGroup from "../../../../components/DatePicker/InputGroup";
+import Button from "../../../../components/DatePicker/Buttons";
+import Multiple from "../../../../components/DatePicker/Mulitple";
+import DatetimePicker, {
+  setLocale,
+  parseDate
+} from "../../../../components/DatePicker/DatetimePicker";
+import "bootstrap/dist/css/bootstrap.css";
+import "font-awesome/css/font-awesome.css";
+
+// 출처 : https://www.youtube.com/watch?v=xGZD4L0ne_E     ,
+//        https://github.com/syakuis/react-datetimepicker ,
+//        https://flatpickr.js.org/plugins/
+setLocale(locale.ko);
 
 class SaupGwanRi extends Component {
   constructor(props) {
     super(props);
-    this.onDayClick = this.onDayClick.bind(this);
+    this.onDatetime = this.onDatetime.bind(this);
     this.state = {
-      selectedDate: new Date()
+      value: {
+        datetime: [],
+        value: ""
+      },
+      value2: {
+        datetime: [parseDate("2011-11-30 20:10", "Y-m-d H:i")],
+        value: ""
+      },
+      value3: {
+        datetime: [],
+        value: ""
+      },
+      range: {
+        datetime: [
+          parseDate("2011-11-30 10:20:00", "Y-m-d H:i:S"),
+          parseDate("2011-12-30 10:20:00", "Y-m-d H:i:S")
+        ],
+        value: ""
+      },
+      multiple: {
+        datetime: [parseDate("2011-11-30")],
+        value: ""
+      }
     };
   }
+  onDatetime(datetime, value, name) {
+    this.setState({ [name]: { datetime, value } });
+  }
+
+  handleChange = newDate => {
+    console.log("newDate", newDate);
+    return this.setState({ date: newDate });
+  };
+
   render() {
-    const { selectedDate } = this.state;
     return (
       <div>
         <div>
@@ -20,51 +66,113 @@ class SaupGwanRi extends Component {
             <table className="table table-bordered">
               <tbody>
                 <tr>
-                  <td className="ColGubun">기준연도(사업시작일기준)</td>
-                  <td class="input-group date" id="datetimepicker1">
-                    <span class="glyphicon glyphicon-calendar" />
+                  <td className="ColTitle">기준연도(사업시작일기준)</td>
+                  <td>
+                    <Multiple />
                   </td>
-                  <div className="MainContent">
-                    <DatePicker
-                      fullDate={selectedDate}
-                      onDayClick={this.onDayClick}
-                    />
-                  </div>
-                  <td>~</td>
-                  <td>#</td>
-                  <td className="ColGubun">대표자</td>
-                  <td>#</td>
-                  <td className="ColGubun">고유번호</td>
-                  <td>#</td>
+                  <td className="ColTitle">사업명</td>
+                  <td colSpan="5">
+                    <input />
+                    <button type="button" className="btn btn-primary">
+                      검색
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      style={{ float: "Right" }}
+                    >
+                      제거
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      style={{ float: "Right" }}
+                    >
+                      추가
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="ColTitle">사업명</td>
+                  <td className="ColTitle">사업명요약</td>
+                  <td className="ColTitle">시작일</td>
+                  <td className="ColTitle">종료일</td>
+                  <td className="ColTitle">사업담당자</td>
+                  <td className="ColTitle">전화번호</td>
+                  <td className="ColTitle">이메일</td>
+                  <td className="ColTitle">메모</td>
+                </tr>
+                <tr>
+                  <td>사업명</td>
+                  <td>사업명요약</td>
+                  <td>시작일</td>
+                  <td>종료일</td>
+                  <td>사업담당자</td>
+                  <td>전화번호</td>
+                  <td>이메일</td>
+                  <td>메모</td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <label className="TableTitle">기관 담당자 정보</label>
+          <label className="TableTitle">세부사업 등록</label>
           <div>
             <table className="table table-bordered">
               <tbody>
                 <tr>
-                  <td className="ColGubun">총괄업무담당</td>
-                  <td>#</td>
-                  <td className="ColGubun">이메일</td>
-                  <td>#</td>
-                  <td className="ColGubun">전화번호</td>
-                  <td>#</td>
-                </tr>
-                <tr>
-                  <td className="ColGubun">휴대폰 번호</td>
-                  <td>#</td>
-                  <td className="ColGubun">팩스 번호</td>
-                  <td>#</td>
-                  <td className="ColGubun">비고</td>
-                  <td>#</td>
-                </tr>
-                <tr>
-                  <td className="ColGubun">메모</td>
-                  <td colSpan="5">
-                    <textarea style={{ width: "100%", border: "0" }} />
+                  <td className="ColTitle">기준연도(사업시작일기준)</td>
+                  <td>
+                    <Multiple />
                   </td>
+                  <td className="ColTitle">사업명</td>
+                  <td colSpan="5">
+                    <input />
+                    <button type="button" className="btn btn-primary">
+                      검색
+                    </button>
+                    <button type="button" className="btn btn-secondary">
+                      담당자 상세보기
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      style={{ float: "Right" }}
+                    >
+                      제거
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      style={{ float: "Right" }}
+                    >
+                      추가
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="ColTitle">세부사업명</td>
+                  <td className="ColTitle">사업명</td>
+
+                  <th className="ColTitle">
+                    모집공고
+                    <td className="ColGubun">모집공고</td>
+                  </th>
+
+                  <td className="ColTitle">종료일</td>
+                  <td className="ColTitle">사업담당자</td>
+                  <td className="ColTitle">전화번호</td>
+                  <td className="ColTitle">이메일</td>
+                  <td className="ColTitle">메모</td>
+                </tr>
+                <tr>
+                  <td>사업명</td>
+                  <td>사업명요약</td>
+                  <td>시작일</td>
+                  <td>종료일</td>
+                  <td>사업담당자</td>
+                  <td>전화번호</td>
+                  <td>이메일</td>
+                  <td>메모</td>
                 </tr>
               </tbody>
             </table>
