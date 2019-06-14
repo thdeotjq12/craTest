@@ -155,7 +155,7 @@ class SaupGwanRi extends Component {
 
                   <th className="ColTitle">
                     모집공고
-                    <td className="ColGubun">모집공고</td>
+                    <td className="ColGubun">모집공고123</td>
                   </th>
 
                   <td className="ColTitle">종료일</td>
