@@ -10,6 +10,7 @@ const Login = ({ LoginCheck, idInput, pwInput }) => {
   //     console.log("NO");
   //   }
   // };
+
   return (
     <div className="loginpage_container">
       <div className="loginpage_top">

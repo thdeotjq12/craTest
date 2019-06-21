@@ -5,7 +5,7 @@ exports.connectDB = dbName => {
   var user = "infra";
   var password = "kjoisking2291";
   var connection = mysql.createConnection({
-    host: "14.63.172.72",
+    host: "1.246.219.187",
     post: 3306,
     user: user,
     password: password,

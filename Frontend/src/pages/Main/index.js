@@ -1,46 +1,42 @@
-import React, { Component } from "react";
+import React, { useState, Component } from "react";
+
 import CompanyInfo from "./CompanyInfo";
-
-class Main extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      selectedMenu: 1
-    };
-  }
-
-  onMenuClick = idx => {
-    this.setState({
-      selectedMenu: idx
-    });
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+const Main = ({ createBasicInfo, BaicInfo_Data }) => {
+  // console.log("MainProps", createBasicInfo);
+  const [selectedMenu, setSeletedMenu] = useState(1);
+  const onMenuClick = idx => {
+    setSeletedMenu(idx);
   };
-  render() {
-    return (
+
+  return (
+    <div>
       <div>
-        <div>
-          <button onClick={() => this.onMenuClick(1)}>일정</button>
-          <button onClick={() => this.onMenuClick(2)}>기관정보</button>
-          <button onClick={() => this.onMenuClick(3)}>사원관리</button>
-          <button onClick={() => this.onMenuClick(4)}>인사관리</button>
-          <button
-            onClick={() =>
-              this.props.history.replace({
-                pathname: "/"
-              })
-            }
-          >
-            로그아웃
-          </button>
-        </div>
-        <div>
-          {this.state.selectedMenu === 1}
-          {this.state.selectedMenu === 2 && <CompanyInfo />}
-          {this.state.selectedMenu === 3 && <div />}
-          {this.state.selectedMenu === 4 && <div />}
-        </div>
+        <p>메인 </p>
+        <button onClick={() => onMenuClick(1)}>일정</button>
+        <button onClick={() => onMenuClick(2)}>기관정보</button>
+        <button onClick={() => onMenuClick(3)}>사원관리</button>
+        <button onClick={() => onMenuClick(4)}>인사관리</button>
+        {/* <button
+          onClick={() =>
+            props.history.replace({
+              pathname: "/"
+            })
+          }
+        >
+          로그아웃
+        </button> */}
       </div>
-    );
-  }
-}
+      <div>
+        {selectedMenu === 1}
+        {selectedMenu === 2 && (
+          <CompanyInfo createBasicInfo={createBasicInfo} />
+        )}
+        {selectedMenu === 3 && <div />}
+        {selectedMenu === 4 && <div />}
+      </div>
+    </div>
+  );
+};
 
 export default Main;

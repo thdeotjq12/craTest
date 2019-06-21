@@ -9,8 +9,8 @@ const passport = require("passport");
 const passportConfig = require("./passport");
 // ROUTER
 
-const User = require("./router/login");
-const EDoc = require("./router/edoc");
+const Login = require("./router/login");
+const BasicInfo = require("./router/Main/CompanyInfo/BasicInfo");
 
 const app = express();
 dotenv.config();
@@ -70,8 +70,9 @@ app.use((req, res, next) => {
   });
 });
 
-app.use("/user", User);
-app.use("/edoc", EDoc);
+app.use("/Login", Login);
+app.use("/CompanyInfo/BasicInfo", BasicInfo);
+
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });
