@@ -1,5 +1,6 @@
 // 기본정보 리스트 불러오기
 export const ADD_BASIC_REQUEST = "BasicInfo/ADD_BASIC_REQUEST";
+export const ADD_BASIC_UPDATE = "BasicInfo/ADD_BASIC_UPDATE";
 export const ADD_BASIC_SUCCESS = "BasicInfo/ADD_BASIC_SUCCESS";
 export const ADD_BASIC_FAILURE = "BasicInfo/ADD_BASIC_FAILURE";
 const initalState = {
@@ -27,6 +28,10 @@ const BasicInfo = (state = initalState, action) => {
       return {
         ...state,
         Loading: false
+      };
+    case ADD_BASIC_UPDATE:
+      return {
+        ...state
       };
 
     default:

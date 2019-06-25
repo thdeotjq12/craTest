@@ -58,7 +58,7 @@ User_Info = (sysuser, res, con) => {
         SUSACODE: rows[0].SUSACODE
       };
       res.send(result);
-      console.log("User_Info Result", result);
+      // console.log("User_Info Result", result);
     } else {
       console.log("query error : " + err);
     }

@@ -83,6 +83,72 @@ router.post("/BasicInfo", async (req, res) => {
       console.log("query error : " + err);
       res.send("NoData");
     }
+    con.end();
+  });
+});
+
+// 저장하기
+router.post("/BasicInfo_Save", async (req, res) => {
+  var con = globalValue.connectDB("g00001");
+  con.connect();
+  // MainAgency 테이블 기본정보를 조회
+  var sql = `UPDATE MAINAGENCY SET                                            
+  MADAMDANG     = PDB_ACCT.pdbEnc('normal', ?     , '') ,
+  MATEL         = PDB_ACCT.pdbEnc('normal', ?     , '') ,
+  MAHP          = PDB_ACCT.pdbEnc('normal', ?     , '') ,
+  MAFAX         = PDB_ACCT.pdbEnc('normal', ?     , '') ,
+  MANAME        =   ?                                   ,
+  MABOSSNAME    =   ?                                   ,
+  MASAUPNUM     =   ?                                   ,
+  MAJUSO        =   ?                                   ,
+  MAHOMEPAGE    =   ?                                   ,
+  MAEMAIL       =   ?                                   ,
+  MAKOOKMINJISA =   ?                                   ,
+  MAKOOKMINTEL  =   ?                                   ,
+  MAKOOKMINFAX  =   ?                                   ,
+  MAGUNGANGJISA =   ?                                   ,
+  MAGUNGANGTEL  =   ?                                   ,
+  MAGUNGANGFAX  =   ?                                   ,
+  MAGOYONGJISA  =   ?                                   ,
+  MAGOYONGTEL   =   ?                                   ,
+  MAGOYONGFAX   =   ?                                   ,
+  MABIGO        =   ?                                   ,
+  MAMEMO        =   ?                                         
+ where MACODE   =   ?                                    `;
+
+  var parm = [
+    req.body.MADAMDANG,
+    req.body.MATEL,
+    req.body.MAHP,
+    req.body.MAFAX,
+    req.body.MANAME,
+    req.body.MABOSSNAME,
+    req.body.MASAUPNUM,
+    req.body.MAJUSO,
+    req.body.MAHOMEPAGE,
+    req.body.MAEMAIL,
+    req.body.MAKOOKMINJISA,
+    req.body.MAKOOKMINTEL,
+    req.body.MAKOOKMINFAX,
+    req.body.MAGUNGANGJISA,
+    req.body.MAGUNGANGTEL,
+    req.body.MAGUNGANGFAX,
+    req.body.MAGOYONGJISA,
+    req.body.MAGOYONGTEL,
+    req.body.MAGOYONGFAX,
+    req.body.MABIGO,
+    req.body.MAMEMO,
+    req.body.MACODE
+  ];
+  console.log("MABOSSNAME", req.body);
+  await con.query(sql, parm, (err, rows, fields) => {
+    if (err !== null) {
+      res.status(200).send("서버에러 입니다. 관리자에게 문의하세요");
+      con.rollback();
+    } else {
+      res.send("업데이트 성공");
+    }
+    con.end();
   });
 });
 
