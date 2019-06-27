@@ -25,7 +25,8 @@ const App = () => {
   return (
     <div
       className="App"
-      style={{ width: width, height: height, display: "flex" }}
+      // style={{ width: width, height: height, display: "flex" }}
+      style={{ width: width, height: height }}
     >
       <Router>
         <Route exact path="/" component={LoginContainer} />

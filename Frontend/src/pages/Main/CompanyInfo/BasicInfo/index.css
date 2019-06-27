@@ -2,6 +2,19 @@
   background-color: slategray;
   color: white;
   width: 40%;
+  float: left;
+  height: 40px;
+  text-align: center;
+  padding: 5px 50px;
+}
+.InputContainer {
+  width: 100%;
+  height: 50px;
+  border: 0;
+  font-size: 20px;
+}
+#TdInput {
+  padding: 0;
 }
 .ColTitle {
   background-color: slategray;
@@ -11,4 +24,5 @@
 .ColGubun {
   background-color: lightblue;
   text-align: center;
+  height: 50px;
 }

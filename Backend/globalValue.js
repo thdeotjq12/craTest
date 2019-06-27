@@ -1,6 +1,6 @@
 const mysql = require("mysql");
 exports.USER_LIST = null;
-exports.SCHostIp = "14.63.172.72";
+exports.SCHostIp = "1.246.219.187";
 exports.connectDB = dbName => {
   var user = "infra";
   var password = "kjoisking2291";

@@ -13,10 +13,18 @@ const Main = ({ createBasicInfo, BaicInfo_Data }) => {
     <div>
       <div>
         <p>메인 </p>
-        <button onClick={() => onMenuClick(1)}>일정</button>
-        <button onClick={() => onMenuClick(2)}>기관정보</button>
-        <button onClick={() => onMenuClick(3)}>사원관리</button>
-        <button onClick={() => onMenuClick(4)}>인사관리</button>
+        <button className="btn btn-primary" onClick={() => onMenuClick(1)}>
+          일정
+        </button>
+        <button className="btn btn-primary" onClick={() => onMenuClick(2)}>
+          기관정보
+        </button>
+        <button className="btn btn-primary" onClick={() => onMenuClick(3)}>
+          사원관리
+        </button>
+        <button className="btn btn-primary" onClick={() => onMenuClick(4)}>
+          인사관리
+        </button>
         {/* <button
           onClick={() =>
             props.history.replace({

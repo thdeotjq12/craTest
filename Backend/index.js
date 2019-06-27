@@ -40,7 +40,7 @@ app.use(passport.session()); // express session 아래 넣어줘야 한다. 미�
 app.use((req, res, next) => {
   const mysql = require("mysql");
   var connection = mysql.createConnection({
-    host: "14.63.172.72",
+    host: "1.246.219.187",
     post: 3306,
     user: "infra",
     // password: process.env.DB_PASSWORD,

@@ -20,17 +20,32 @@ const CompanyInfo = props => {
   }, [BaicInfo_Data]);
   return (
     <div>
-      <div>
-        <button onClick={() => onMenuClick(1)}>기본정보</button>
-        <button onClick={() => onMenuClick(2)}>사업관리</button>
-        <button onClick={() => onMenuClick(3)}>지원자관리</button>
-        <button onClick={() => onMenuClick(4)}>공통근로정보</button>
+      <div
+        style={{
+          float: "left"
+        }}
+      >
+        <button className="btn btn-primary" onClick={() => onMenuClick(1)}>
+          기본정보
+        </button>
+        <button className="btn btn-primary" onClick={() => onMenuClick(2)}>
+          사업관리
+        </button>
+        <button className="btn btn-primary" onClick={() => onMenuClick(3)}>
+          지원자관리
+        </button>
+        <button className="btn btn-primary" onClick={() => onMenuClick(4)}>
+          공통근로정보
+        </button>
       </div>
+      <br />
+      <br />
+      <br />
       <div>
         {selectedMenu === 1 && <BasicInfo />}
         {selectedMenu === 2 && <SaupGwanRi />}
-        {selectedMenu === 3 && <div />}
-        {selectedMenu === 4 && <div />}
+        {selectedMenu === 3 && <div>지원자 관리</div>}
+        {selectedMenu === 4 && <div>공통근로정보</div>}
       </div>
     </div>
   );

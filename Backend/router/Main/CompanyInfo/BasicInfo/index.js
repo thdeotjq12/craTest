@@ -64,21 +64,8 @@ router.post("/BasicInfo", async (req, res) => {
       result = {
         ...result,
         BaicInfoSaup_Data: rows
-
-        // {SACode: rows[i].SACode},
-        // {SAName: rows[i].SAName},
-        // {SABossName: rows[i].SABossName},
-        // {SASaupNum: rows[i].SASaupNum},
-        // {SADamdang: rows[i].SADamdang},
-        // {SATel: rows[i].SATel},
-        // {SAEMail: rows[i].SAEMail},
-        // {SAJuso: rows[i].SAJuso},
-        // {SAGubun: rows[i].SAGubun},
-        // {SAMemo: rows[i].SAMemo}
       };
-
       res.send(result);
-      console.log("BasicInfo Result", result);
     } else {
       console.log("query error : " + err);
       res.send("NoData");
@@ -89,7 +76,9 @@ router.post("/BasicInfo", async (req, res) => {
 
 // 저장하기
 router.post("/BasicInfo_Save", async (req, res) => {
+  console.log("---------- backend ");
   var con = globalValue.connectDB("g00001");
+  var isSuccess = false;
   con.connect();
   // MainAgency 테이블 기본정보를 조회
   var sql = `UPDATE MAINAGENCY SET                                            
@@ -140,16 +129,61 @@ router.post("/BasicInfo_Save", async (req, res) => {
     req.body.MAMEMO,
     req.body.MACODE
   ];
-  console.log("MABOSSNAME", req.body);
+
   await con.query(sql, parm, (err, rows, fields) => {
     if (err !== null) {
       res.status(200).send("서버에러 입니다. 관리자에게 문의하세요");
       con.rollback();
-    } else {
-      res.send("업데이트 성공");
+      console.log("조회 실패!!!");
     }
-    con.end();
   });
+
+  console.log("back", req.body.SALIST.length);
+  console.log(req.body.SALIST);
+  for (let i = 0; i < req.body.SALIST.length; i++) {
+    sql = `UPDATE SUBAGENCY SET                                         
+    SADAMDANG   = PDB_ACCT.pdbEnc('normal', ? ,'') ,
+    SATEL       = PDB_ACCT.pdbEnc('normal', ? ,'') ,
+    SAGUBUN     = ?                                ,
+    SANAME      = ?                                ,
+    SABOSSNAME  = ?                                ,
+    SASAUPNUM   = ?                                ,
+    SAEMAIL     = ?                                ,
+    SAJUSO      = ?                                ,
+    SAMEMO      = ?                                ,
+    SADELYN     = ?                                     
+    WHERE SACODE= ?                                `;
+    parm = [
+      req.body.SALIST[i].SADAMDANG,
+      req.body.SALIST[i].SATEL,
+      req.body.SALIST[i].SAGUBUN,
+      req.body.SALIST[i].SANAME,
+      req.body.SALIST[i].SABOSSNAME,
+      req.body.SALIST[i].SASAUPNUM,
+      req.body.SALIST[i].SAEMAIL,
+      req.body.SALIST[i].SAJUSO,
+      req.body.SALIST[i].SAMEMO,
+      "N", // 삭제시엔 Y로 넣기
+      req.body.SALIST[i].SACODE
+    ];
+
+    con.query(sql, parm, (err, rows, fields) => {
+      if (err !== null) {
+        res.status(200).send("SEVER ERROR");
+        isSuccess = false;
+
+        con.rollback();
+        console.log("SUBAGENCY 업데이트 실패!!!", err);
+      } else {
+        isSuccess = true;
+        console.log("SUBAGENCY 업데이트 성공!!!");
+      }
+    });
+  }
+
+  isSuccess ? res.send("OK") : res.send("OK");
+  console.log("isSuccess", isSuccess);
+  con.end();
 });
 
 module.exports = router;

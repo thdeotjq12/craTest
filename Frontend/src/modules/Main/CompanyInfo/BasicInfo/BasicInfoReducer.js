@@ -11,13 +11,13 @@ const initalState = {
 const BasicInfo = (state = initalState, action) => {
   switch (action.type) {
     case ADD_BASIC_REQUEST:
-      console.log("BasicIn_data 요청");
+      console.log("BasicIn_data 요청 Loading True");
       return {
         ...state,
         Loading: true
       };
     case ADD_BASIC_SUCCESS:
-      console.log("BasicIn_data 불러오기 완료", action.payload);
+      console.log("BasicIn_data 불러오기 완료, Loading False", action.payload);
       return {
         ...state,
         Loading: false,
@@ -31,7 +31,8 @@ const BasicInfo = (state = initalState, action) => {
       };
     case ADD_BASIC_UPDATE:
       return {
-        ...state
+        ...state,
+        Loading: false
       };
 
     default:
