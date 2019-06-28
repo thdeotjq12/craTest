@@ -1,7 +1,18 @@
 import "./index.css";
 import React, { useEffect, useState, useCallback, PropTypes } from "react";
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
+import FormRow from "../../../../components/Modal/FormRow";
+import Grid from "../../../../components/DataGrid/Grid";
+import {
+  Button,
+  Modal,
+  Row,
+  Col,
+  Container,
+  Form,
+  ButtonToolbar
+} from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
+
 import {
   useSelector,
   useDispatch,
@@ -19,7 +30,7 @@ const BasicInfo = ({ props }) => {
 
   const [ReadOnly, setReadOnly] = useState(true); // 수정버튼 클릭 시 false
   const [FirstData, setFisrtData] = useState(true); // 수정버튼 클릭 시 false (수정할때 value 값 입력조건 주기위함)
-  const [Modal, setModal] = useState(false); // 모달 상태
+  const [Modals, setModals] = useState(false); // 모달 상태
   // const [Comp_Count, setCount] = useState(0); // 동적생성 폼 name + count 로 설정하기 위함
   const dispatch = useDispatch();
 
@@ -59,35 +70,60 @@ const BasicInfo = ({ props }) => {
   const [SAMEMO, setSAMemo] = useState("");
   const [SAList, setSAList] = useState("");
   var array = BaicInfo_Data && BaicInfo_Data.BaicInfoSaup_Data;
+  const handleClose = () => {
+    setModals(false);
+  };
+  const MydModalWithGrid = () => {
+    return (
+      <Modal
+        show={Modals}
+        onHide={handleClose}
+        aria-labelledby="contained-modal-title-vcenter"
+        dialogClassName="ModalContainer"
+        centered
+        // modal-dialog modal-lg
+      >
+        <Modal.Header closeButton>
+          <Modal.Title id="contained-modal-title-vcenter">
+            담당자 보기
+            <Button variant="primary">추가</Button>
+            <Button variant="primary">제거</Button>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {/* <Container>
+            <Row className="show-grid">
+              <Col xs={12} md={8}>
+                <code>컬럼1</code>
+              </Col>
+              <Col xs={6} md={4}>
+                <code>컬럼2</code>
+              </Col>
+            </Row>
 
-  const ModalOpen = () => {
-    <div>
-      <Button color="info" onClick={setModal(Modal ? false : true)}>
-        모달 열기
-      </Button>
-      <Modal toggle={setModal(Modal ? false : true)}>
-        <ModalHeader toggle={setModal(Modal ? false : true)}>
-          Modal title
-        </ModalHeader>
-        <ModalBody>
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat. Duis aute irure dolor in
-          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-          culpa qui officia deserunt mollit anim id est laborum.
-        </ModalBody>
-        <ModalFooter>
-          <Button color="primary" onClick={setModal(Modal ? false : true)}>
-            확인
-          </Button>{" "}
-          <Button color="secondary" onClick={setModal(Modal ? false : true)}>
-            취소
+            <Row className="show-grid">
+              <Col xs={6} md={4}>
+                <code>.col-xs-6 .col-md-4</code>
+              </Col>
+              <Col xs={6} md={4}>
+                <code>.col-xs-6 .col-md-4</code>
+              </Col>
+              <Col xs={6} md={4}>
+                <code>.col-xs-6 .col-md-4</code>
+              </Col>
+            </Row>
+          </Container> */}
+          <Form>
+            <FormRow label="제목" />
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={() => setModals(Modals ? false : true)}>
+            Close
           </Button>
-        </ModalFooter>
+        </Modal.Footer>
       </Modal>
-    </div>;
+    );
   };
 
   // 처음한번실행,           그다음 [] 내용이 변하면 실행
@@ -133,7 +169,17 @@ const BasicInfo = ({ props }) => {
       // 다른 페이지로 넘어갔다 왔는데 , loading = false 상태라 SAList를 따로 할당함.
     }
   };
+  const columns = [
+    { key: "id", name: "ID", editable: true },
+    { key: "title", name: "Title", editable: false },
+    { key: "complete", name: "Complete", editable: true }
+  ];
 
+  const rows = [
+    { id: 0, title: "Task 1", complete: 20 },
+    { id: 1, title: "Task 2", complete: 40 },
+    { id: 2, title: "Task 3", complete: 60 }
+  ];
   useEffect(() => {
     console.log("useEffect 실행됨");
     // 여기서 dispatch > 리퀘스트 로 물어보고 dispatch > suc or fail(err) 분기
@@ -574,7 +620,8 @@ const BasicInfo = ({ props }) => {
   };
   //css 속성
   return (
-    <div>
+    <div className="MainDivContainer">
+      {Grid(columns, rows)}
       {Loading ? (
         <div>로딩중입니다 Loading : True</div>
       ) : (
@@ -603,6 +650,18 @@ const BasicInfo = ({ props }) => {
             >
               수정
             </button>
+            {/* Button, Modal, ModalHeader, ModalBody, ModalFooter */}
+
+            {/* 버튼 반응이 없음 - reactstrap*/}
+            <div>
+              <ButtonToolbar>
+                <Button variant="primary" onClick={() => setModals(true)}>
+                  Launch modal with grid
+                </Button>
+
+                <MydModalWithGrid />
+              </ButtonToolbar>
+            </div>
             <div>
               <table className="table table-bordered">
                 <tbody>
@@ -1005,11 +1064,7 @@ const BasicInfo = ({ props }) => {
               </table>
             </div>
             <label className="TableTitle">지자체/사업추진부서 등록</label>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={ModalOpen}
-            >
+            <button type="button" className="btn btn-primary">
               담당자 상세보기
             </button>
             <button

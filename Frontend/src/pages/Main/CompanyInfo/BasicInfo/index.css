@@ -12,6 +12,8 @@
   height: 50px;
   border: 0;
   font-size: 20px;
+  text-overflow: ellipsis;
+  /* 텍스트 크기 넘어가면 ... 표시 */
 }
 #TdInput {
   padding: 0;
@@ -25,4 +27,18 @@
   background-color: lightblue;
   text-align: center;
   height: 50px;
+}
+
+.MainDivContainer {
+  overflow: scroll;
+  overflow-x: scroll;
+  overflow-y: scroll;
+}
+
+.ModalContainer {
+  max-width: 80% !important;
+
+  /* width 은 적용안됨 */
+  display: block;
+  padding-left: 0px;
 }
