@@ -1,46 +1,25 @@
 import React from "react";
 import { Form, Row, Col, Table, Button } from "react-bootstrap";
-const FormRow = props => {
-  const { Value, Count, label, value, readOnly, controlId } = props;
 
-  //   const THead = (Count, ...Value) => {
-  //     for (let i = 0; i < Count; i++) {
-  //       <th>{Value[i]}</th>;
-  //     }
-  //   };
+const FormRow = props => {
+  console.log("props", props);
+  const { List } = props;
   return (
     // 속성: http://bootstrapk.com/css/ , https://unikys.tistory.com/371 참고
-    <Table>
-      <thead>
+    // console.log("List", List, List[0]),
+    List &&
+    List.map((value, index) => {
+      return (
         <tr>
-          <th>담당자</th>
-
-          <th>사업부서</th>
-          <th>직급</th>
-          <th>발령일자</th>
-          <th>전출일자</th>
-          <th>사용자아이디</th>
+          <td>{value.SUNAME}</td>
+          <td>{value.SANAME}</td>
+          <td>{value.SUJIKCHECK}</td>
+          <td>{value.SUINDAY}</td>
+          <td>{value.SUOutDay}</td>
+          <td>{value.SUID2}</td>
         </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>1</td>
-          <td>Mark</td>
-          <td>Otto</td>
-          <td>@mdo</td>
-          <td>@mdo</td>
-          <td>@mdo</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>Mark</td>
-          <td>Otto</td>
-          <td>@mdo</td>
-          <td>@mdo</td>
-          <td>@mdo</td>
-        </tr>
-      </tbody>
-    </Table>
+      );
+    })
   );
 };
 

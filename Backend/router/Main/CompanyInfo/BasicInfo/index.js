@@ -25,28 +25,6 @@ router.post("/BasicInfo", async (req, res) => {
       result = {
         ...result,
         BaicInfo_Data: rows
-        // MACODE: rows[0].MACODE,
-        // MANAME: rows[0].MANAME,
-        // MABOSSNAME: rows[0].MABOSSNAME,
-        // MASAUPNUM: rows[0].MASAUPNUM,
-        // MAJUSO: rows[0].MAJUSO,
-        // MAHOMEPAGE: rows[0].MAHOMEPAGE,
-        // MADAMDANG: rows[0].MADAMDANG,
-        // MAEMAIL: rows[0].MAEMAIL,
-        // MATEL: rows[0].MATEL,
-        // MAHP: rows[0].MAHP,
-        // MAFAX: rows[0].MAFAX,
-        // MAKOOKMINJISA: rows[0].MAKOOKMINJISA,
-        // MAKOOKMINTEL: rows[0].MAKOOKMINTEL,
-        // MAKOOKMINFAX: rows[0].MAKOOKMINFAX,
-        // MAGUNGANGJISA: rows[0].MAGUNGANGJISA,
-        // MAGUNGANGTEL: rows[0].MAGUNGANGTEL,
-        // MAGUNGANGFAX: rows[0].MAGUNGANGFAX,
-        // MAGOYONGJISA: rows[0].MAGOYONGJISA,
-        // MAGOYONGTEL: rows[0].MAGOYONGTEL,
-        // MAGOYONGFAX: rows[0].MAGOYONGFAX,
-        // MABIGO: rows[0].MABIGO,
-        // MAMEMO: rows[0].MAMEMO
       };
     }
   });
@@ -65,6 +43,7 @@ router.post("/BasicInfo", async (req, res) => {
         ...result,
         BaicInfoSaup_Data: rows
       };
+
       res.send(result);
     } else {
       console.log("query error : " + err);
@@ -183,6 +162,34 @@ router.post("/BasicInfo_Save", async (req, res) => {
 
   isSuccess ? res.send("OK") : res.send("OK");
   console.log("isSuccess", isSuccess);
+  con.end();
+});
+
+router.post("/BasicInfo_getDamdang", async (req, res) => {
+  var con = globalValue.connectDB("g00001");
+  var result = {};
+  con.connect();
+  // MainAgency 테이블 기본정보를 조회
+  var sql = `  SELECT PDB_ACCT.pdbDec("normal", SUID, "", 0) as SUID2, A.*, B.SANAME as SANAME FROM SYSUSER A  
+   LEFT JOIN SUBAGENCY B on A.SUSACODE = B.SACODE          
+   WHERE A.SUSACODE = "?"                       `;
+
+  var parm = [req.body];
+  console.log(" Print res.body", req.body);
+  await con.query(sql, parm, (err, rows, fields) => {
+    if (!err) {
+      result = {
+        ...result,
+        BaicInfo_Damdang: rows
+      };
+      res.send(result);
+      console.log("result", result);
+    } else {
+      console.log("query error : " + err);
+      res.send("NoData");
+    }
+  });
+
   con.end();
 });
 

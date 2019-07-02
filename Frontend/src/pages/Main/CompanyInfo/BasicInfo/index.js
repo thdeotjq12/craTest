@@ -2,6 +2,7 @@ import "./index.css";
 import React, { useEffect, useState, useCallback, PropTypes } from "react";
 import FormRow from "../../../../components/Modal/FormRow";
 import Grid from "../../../../components/DataGrid/Grid";
+import ModalGrid from "./ModalGrid";
 import {
   Button,
   Modal,
@@ -9,7 +10,8 @@ import {
   Col,
   Container,
   Form,
-  ButtonToolbar
+  ButtonToolbar,
+  Table
 } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -69,11 +71,59 @@ const BasicInfo = ({ props }) => {
   const [SAGUBUN, setSAGubun] = useState("");
   const [SAMEMO, setSAMemo] = useState("");
   const [SAList, setSAList] = useState("");
+
+  const [Damdang, setDamdang] = useState({});
   var array = BaicInfo_Data && BaicInfo_Data.BaicInfoSaup_Data;
+
+  // 모달 열기/닫기
   const handleClose = () => {
     setModals(false);
   };
+  // 담당자 추가 버튼클릭 - 그리드 보이기
+  const DamdangAdd = () => {
+    document.getElementById("Grid").style.display = "block";
+  };
+  const DamdangCol = [
+    { name: "담당자" },
+    { name: "사업부서" },
+    { name: "직급" },
+    { name: "발령일자" },
+    { name: "전출일자" },
+    { name: "사용자아이디" }
+  ];
+
+  const getDamdang = () => {
+    console.log("getDamdang 실행됨");
+    // console.log("SAList[0].SACODE", SAList && SAList[0].SACODE);
+    // axios
+    //   .post(
+    //     "http://localhost:5000/CompanyInfo/BasicInfo/BasicInfo_getDamdang",
+    //     SAList && SAList[0].SACODE
+    //   )
+    //   .then(res => {
+    //     if (res.data === "NoData") {
+    //       console.log("Damdang 데이터가 없습니다");
+    //     } else {
+    //       console.log("Damdang 가져오기 완료", res.data);
+    //       // TestDamdang = res.data.BaicInfo_Damdang;
+    //       console.log(
+    //         "setDamdang(res.data.BaicInfo_Damdang)",
+    //         res.data.BaicInfo_Damdang
+    //       );
+    //       setDamdang(res.data.BaicInfo_Damdang);
+
+    //       console.log("Damdang  완료", Damdang);
+    //     }
+    //   })
+    //   .catch(err => {
+    //     console.log("담당조회 에러", err);
+    //   });
+  };
+
   const MydModalWithGrid = () => {
+    // console.log("TestDamdang : ", TestDamdang);
+
+    console.log("Damdang : ", Damdang);
     return (
       <Modal
         show={Modals}
@@ -86,36 +136,29 @@ const BasicInfo = ({ props }) => {
         <Modal.Header closeButton>
           <Modal.Title id="contained-modal-title-vcenter">
             담당자 보기
-            <Button variant="primary">추가</Button>
+            <Button variant="primary" onClick={DamdangAdd}>
+              추가
+            </Button>
             <Button variant="primary">제거</Button>
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {/* <Container>
-            <Row className="show-grid">
-              <Col xs={12} md={8}>
-                <code>컬럼1</code>
-              </Col>
-              <Col xs={6} md={4}>
-                <code>컬럼2</code>
-              </Col>
-            </Row>
-
-            <Row className="show-grid">
-              <Col xs={6} md={4}>
-                <code>.col-xs-6 .col-md-4</code>
-              </Col>
-              <Col xs={6} md={4}>
-                <code>.col-xs-6 .col-md-4</code>
-              </Col>
-              <Col xs={6} md={4}>
-                <code>.col-xs-6 .col-md-4</code>
-              </Col>
-            </Row>
-          </Container> */}
-          <Form>
-            <FormRow label="제목" />
-          </Form>
+          <Table>
+            <thead>
+              <tr>
+                <th>담당자</th>
+                <th>사업부서</th>
+                <th>직급</th>
+                <th>발령일자</th>
+                <th>전출일자</th>
+                <th>사용자아이디</th>
+              </tr>
+            </thead>
+            <tbody>{<FormRow List={Damdang} />}</tbody>
+          </Table>
+          <div id="Grid" style={{ display: "none" }}>
+            <Grid columns={columns} SAList={SAList} />
+          </div>
         </Modal.Body>
         <Modal.Footer>
           <Button onClick={() => setModals(Modals ? false : true)}>
@@ -145,20 +188,48 @@ const BasicInfo = ({ props }) => {
             console.log("BasicInfo 데이터가 없습니다");
           } else {
             console.log("BasicInfo (dispatch) 불러옴", res.data);
-            setSAList(res.data.BaicInfoSaup_Data);
+            setSAList(res.data.BaicInfoSaup_Data); //-- 담당이랑 충돌?? 담당값이 안들어감..,임시 주석
             setMACode(res.data.BaicInfo_Data[0].MACODE);
 
-            dispatch({
-              type: ADD_BASIC_SUCCESS,
-              payload: res.data
-            });
+            if (SAList !== null) {
+              dispatch({
+                type: ADD_BASIC_SUCCESS,
+                payload: res.data
+              }); // 로딩 => False
+            }
+
             // props.history.replace({
             //   pathname: "/Main/CompanyInfo/BasicInfo"
             // });
           }
         })
         .catch(err => {
-          console.log(err);
+          console.log("getData 에러", err);
+        });
+      console.log("SAList[0].SACODE", SAList && SAList[0].SACODE);
+
+      axios
+        .post(
+          "http://localhost:5000/CompanyInfo/BasicInfo/BasicInfo_getDamdang",
+          SAList && SAList[0].SACODE
+        )
+        .then(res => {
+          if (res.data === "NoData") {
+            console.log("Damdang 데이터가 없습니다");
+          } else {
+            console.log("Damdang 가져오기 완료", res.data);
+            // TestDamdang = res.data.BaicInfo_Damdang;
+            console.log(
+              "setDamdang(res.data.BaicInfo_Damdang)",
+              res.data.BaicInfo_Damdang
+            );
+            setDamdang(res.data.BaicInfo_Damdang);
+
+            console.log("Damdang  완료", Damdang);
+          }
+        })
+        .catch(err => {
+          console.log("담당조회 에러", err);
         });
     } else {
       // 로딩이 false 상태일 시
@@ -169,21 +240,30 @@ const BasicInfo = ({ props }) => {
       // 다른 페이지로 넘어갔다 왔는데 , loading = false 상태라 SAList를 따로 할당함.
     }
   };
+
   const columns = [
-    { key: "id", name: "ID", editable: true },
-    { key: "title", name: "Title", editable: false },
-    { key: "complete", name: "Complete", editable: true }
+    { key: "SANAME", name: "아이디", editable: true },
+    { key: "title", name: "사용자명", editable: false },
+    { key: "1", name: "발령일자", editable: true },
+    { key: "2", name: "전출일자", editable: true },
+    { key: "3", name: "부서", editable: true },
+    { key: "4", name: "직급", editable: true },
+    { key: "5", name: "전화번호", editable: true },
+    { key: "6", name: "이메일", editable: true }
   ];
 
   const rows = [
     { id: 0, title: "Task 1", complete: 20 },
     { id: 1, title: "Task 2", complete: 40 },
-    { id: 2, title: "Task 3", complete: 60 }
+    { id: 2, title: "Task 3", complete: 60 },
+    { id: 3, title: "Task 3", complete: 60 },
+    { id: 4, title: "Task 3", complete: 60 }
   ];
+
   useEffect(() => {
     console.log("useEffect 실행됨");
     // 여기서 dispatch > 리퀘스트 로 물어보고 dispatch > suc or fail(err) 분기
-
+    getDamdang();
     getData();
   }, [Loading]);
 
@@ -457,7 +537,7 @@ const BasicInfo = ({ props }) => {
               <td id="TdInput">
                 <input
                   className="InputContainer"
-                  key={index}
+                  key={0 + index}
                   onChange={e => onChangeValue(e, index)}
                   value={
                     FirstData
@@ -473,7 +553,7 @@ const BasicInfo = ({ props }) => {
               <td id="TdInput">
                 <input
                   className="InputContainer"
-                  key={index}
+                  key={1 + index}
                   onChange={e => onChangeValue(e, index)}
                   value={
                     FirstData
@@ -489,7 +569,7 @@ const BasicInfo = ({ props }) => {
               <td id="TdInput">
                 <input
                   className="InputContainer"
-                  key={index}
+                  key={2 + index}
                   onChange={e => onChangeValue(e, index)}
                   value={
                     FirstData
@@ -505,7 +585,7 @@ const BasicInfo = ({ props }) => {
               <td id="TdInput">
                 <input
                   className="InputContainer"
-                  key={index}
+                  key={3 + index}
                   onChange={e => onChangeValue(e, index)}
                   value={
                     FirstData
@@ -521,7 +601,7 @@ const BasicInfo = ({ props }) => {
               <td id="TdInput">
                 <input
                   className="InputContainer"
-                  key={index}
+                  key={4 + index}
                   onChange={e => onChangeValue(e, index)}
                   value={
                     FirstData
@@ -537,7 +617,7 @@ const BasicInfo = ({ props }) => {
               <td id="TdInput">
                 <input
                   className="InputContainer"
-                  key={index}
+                  key={5 + index}
                   onChange={e => onChangeValue(e, index)}
                   value={
                     FirstData
@@ -553,7 +633,7 @@ const BasicInfo = ({ props }) => {
               <td id="TdInput">
                 <input
                   className="InputContainer"
-                  key={index}
+                  key={6 + index}
                   onChange={e => onChangeValue(e, index)}
                   value={
                     FirstData
@@ -570,58 +650,10 @@ const BasicInfo = ({ props }) => {
           );
         })
       : AddRow();
-    // <tr>
-    //   <td >
-    //     <inputclassName ="InputContainer"
-    //
-    //       name={"SANAME"}
-    //       readOnly={ReadOnly}
-    //     />
-    //   </td>
-    //   <td >
-    //     <inputclassName ="InputContainer"
-    //
-    //       name={"SABOSSNAME"}
-    //       readOnly={ReadOnly}
-    //     />
-    //   </td>
-    //   <td >
-    //     <inputclassName ="InputContainer"
-    //
-    //       name={"SASAUPNUM"}
-    //       readOnly={ReadOnly}
-    //     />
-    //   </td>
-    //   <td >
-    //     <inputclassName ="InputContainer"  name={"SATEL"} readOnly={ReadOnly} />
-    //   </td>
-    //   <td >
-    //     <inputclassName ="InputContainer"
-    //
-    //       name={"SAJUSO"}
-    //       readOnly={ReadOnly}
-    //     />
-    //   </td>
-    //   <td >
-    //     <inputclassName ="InputContainer"
-    //
-    //       name={"SAGUBUN"}
-    //       readOnly={ReadOnly}
-    //     />
-    //   </td>
-    //   <td >
-    //     <inputclassName ="InputContainer"
-    //
-    //       name={"SAMEMO"}
-    //       readOnly={ReadOnly}
-    //     />
-    //   </td>
-    // </tr>
   };
   //css 속성
   return (
     <div className="MainDivContainer">
-      {Grid(columns, rows)}
       {Loading ? (
         <div>로딩중입니다 Loading : True</div>
       ) : (
@@ -655,7 +687,7 @@ const BasicInfo = ({ props }) => {
             {/* 버튼 반응이 없음 - reactstrap*/}
             <div>
               <ButtonToolbar>
-                <Button variant="primary" onClick={() => setModals(true)}>
+                <Button variant="primary" onClick={() => [setModals(true)]}>
                   Launch modal with grid
                 </Button>
 
