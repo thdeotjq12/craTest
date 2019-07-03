@@ -170,11 +170,11 @@ router.post("/BasicInfo_getDamdang", async (req, res) => {
   var result = {};
   con.connect();
   // MainAgency 테이블 기본정보를 조회
-  var sql = `  SELECT PDB_ACCT.pdbDec("normal", SUID, "", 0) as SUID2, A.*, B.SANAME as SANAME FROM SYSUSER A  
+  var sql = `SELECT PDB_ACCT.pdbDec("normal", SUID, "", 0) as SUID2, A.*, B.SANAME as SANAME FROM SYSUSER A  
    LEFT JOIN SUBAGENCY B on A.SUSACODE = B.SACODE          
-   WHERE A.SUSACODE = "?"                       `;
+   WHERE A.SUSACODE = ?                       `;
 
-  var parm = [req.body];
+  var parm = req.body;
   console.log(" Print res.body", req.body);
   await con.query(sql, parm, (err, rows, fields) => {
     if (!err) {
@@ -184,6 +184,53 @@ router.post("/BasicInfo_getDamdang", async (req, res) => {
       };
       res.send(result);
       console.log("result", result);
+    } else {
+      console.log("query error : " + err);
+      res.send("NoData");
+    }
+  });
+
+  con.end();
+});
+
+router.post("/BasicInfo_getDamdang_findUser", async (req, res) => {
+  var con = globalValue.connectDB("g00001");
+  var result = {};
+  con.connect();
+  // MainAgency 테이블 기본정보를 조회
+  var sql = `SELECT  PDB_ACCT.pdbDec('normal', SUID , '', 0) AS SUID       
+  , PDB_ACCT.pdbDec('normal', SUPW , '', 0) AS SUPW       
+  , PDB_ACCT.pdbDec('normal', SUTEL, '', 0) AS SUTEL      
+  , A.SUNAME    , A.SULEVEL, A.SUINDAY , A.SUOUTDAY, A.SUBUSEO
+  , A.SUJIKCHECK, A.SUEMAIL, A.SUSACODE, A.SUNAME  , B.SANAME 
+                                                FROM SYSUSER A
+    LEFT JOIN SUBAGENCY B ON A.SUSACODE = B.SACODE                  
+    WHERE A.SULEVEL >= 1000                                          
+    AND A.SUUSEYN = 'Y' `;
+  console.log("findUser parm", req.body);
+  var parm = req.body;
+
+  if (parm.findUerKeyword !== "") {
+    sql +
+      ` AND (  A.SUName     = ?     
+        OR     A.SUID       = ?     
+        OR     A.SUTELKEY   like ? ) `;
+    parm = [
+      parm.findUerKeyword,
+      parm.findUerKeyword,
+      " '%' " + parm.findUerKeyword
+    ];
+    console.log(" 파람 넘어옴 !!! ");
+  }
+  console.log(" _findUser res.body", req.body);
+  await con.query(sql, parm, (err, rows, fields) => {
+    if (!err) {
+      result = {
+        ...result,
+        BaicInfo_findDamdang: rows
+      };
+      res.send(result);
+      console.log(" findUser result", result);
     } else {
       console.log("query error : " + err);
       res.send("NoData");
