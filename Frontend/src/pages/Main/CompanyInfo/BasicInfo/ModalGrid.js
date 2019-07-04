@@ -164,6 +164,7 @@ const ModalGrid = props => {
         } else {
           console.log("담당자 정보 저장 완료", res.data);
           alert("담당자 정보 저장 완료");
+
           // findUserList = res.data.BaicInfo_findDamdang;
         }
       })

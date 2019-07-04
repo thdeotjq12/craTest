@@ -11,10 +11,12 @@ const FormRow = props => {
   };
   const BGC = index => {
     var Obj = document.getElementById(index); // 현 인덱스
-    var dObj = document.getElementById(index); // 전 인덱스
 
+    for (let i = 0; i < List.length; i++) {
+      var dObj = document.getElementById(i); // 모든 인덱스
+      dObj.style.backgroundColor = "White";
+    }
     Obj.style.backgroundColor = "#66FF66";
-    dObj.style.backgroundColor = "66FF66";
   };
 
   return (
@@ -28,14 +30,22 @@ const FormRow = props => {
           <td onClick={() => [getCellIndex(index), BGC(index)]}>
             {value.SUNAME}
           </td>
-          <td onClick={() => getCellIndex(index)}>{value.SANAME}</td>
-          <td onClick={() => getCellIndex(index)}>{value.SUJIKCHECK}</td>
-          <td onClick={() => getCellIndex(index)}>{value.SUINDAY}</td>
-          <td onClick={() => getCellIndex(index)}>
+          <td onClick={() => [getCellIndex(index), BGC(index)]}>
+            {value.SANAME}
+          </td>
+          <td onClick={() => [getCellIndex(index), BGC(index)]}>
+            {value.SUJIKCHECK}
+          </td>
+          <td onClick={() => [getCellIndex(index), BGC(index)]}>
+            {value.SUINDAY}
+          </td>
+          <td onClick={() => [getCellIndex(index), BGC(index)]}>
             {value.SUOUTDAY !== "1888-01-01" ? value.SUOUTDAY : ""}
           </td>
-          <td onClick={() => getCellIndex(index)}>{value.SUID}</td>
-          <td onClick={() => getCellIndex(index)}>{value.N}</td>
+          <td onClick={() => [getCellIndex(index), BGC(index)]}>
+            {value.SUID}
+          </td>
+          <td onClick={() => [getCellIndex(index), BGC(index)]}>{value.N}</td>
         </tr>
       );
     })
