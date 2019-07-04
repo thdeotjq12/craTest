@@ -170,7 +170,8 @@ router.post("/BasicInfo_getDamdang", async (req, res) => {
   var result = {};
   con.connect();
   // MainAgency 테이블 기본정보를 조회
-  var sql = `SELECT PDB_ACCT.pdbDec("normal", SUID, "", 0) as SUID2, A.*, B.SANAME as SANAME FROM SYSUSER A  
+  // ### 담당자 정보 저장할때 SUID 값이 암호화 되서 올라와서 A.*을 맨 앞으로 옮김.
+  var sql = `SELECT A.*,PDB_ACCT.pdbDec("normal", SUID, "", 0) as SUID,  B.SANAME as SANAME FROM SYSUSER A  
    LEFT JOIN SUBAGENCY B on A.SUSACODE = B.SACODE          
    WHERE A.SUSACODE = ?                       `;
 
@@ -180,6 +181,7 @@ router.post("/BasicInfo_getDamdang", async (req, res) => {
     if (!err) {
       result = {
         ...result,
+
         BaicInfo_Damdang: rows
       };
       res.send(result);
@@ -208,21 +210,29 @@ router.post("/BasicInfo_getDamdang_findUser", async (req, res) => {
     WHERE A.SULEVEL >= 1000                                          
     AND A.SUUSEYN = 'Y' `;
   console.log("findUser parm", req.body);
-  var parm = req.body;
+  var setParm = req.body;
+  var parm = [];
 
-  if (parm.findUerKeyword !== "") {
-    sql +
-      ` AND (  A.SUName     = ?     
-        OR     A.SUID       = ?     
-        OR     A.SUTELKEY   like ? ) `;
-    parm = [
-      parm.findUerKeyword,
-      parm.findUerKeyword,
-      " '%' " + parm.findUerKeyword
-    ];
-    console.log(" 파람 넘어옴 !!! ");
+  if (setParm.findUer !== "") {
+    sql =
+      sql +
+      ` AND (  A.SUNAME     = ?
+         OR    A.SUID       = ?
+         OR    A.SUTELKEY   LIKE ? ) `;
+
+    parm = [setParm.findUer, setParm.findUer, setParm.findUer];
+
+    // console.log(
+    //   " 파람 넘어옴 !!! ",
+    //   "(1)" + req.body,
+    //   "(2)" + parm["findUer"],
+    //   "(3)" + parm.findUer,
+    //   "(4)" + parm[0].findUer,
+    //   "(5)" + JSON.stringify(parm),
+    //   "(6)" + JSON.parse(parm[0].findUer)
+    // );
   }
-  console.log(" _findUser res.body", req.body);
+  console.log(" _findUser res.body", setParm.findUer);
   await con.query(sql, parm, (err, rows, fields) => {
     if (!err) {
       result = {
@@ -236,6 +246,52 @@ router.post("/BasicInfo_getDamdang_findUser", async (req, res) => {
       res.send("NoData");
     }
   });
+
+  con.end();
+});
+
+// 담당자 정보 저장
+router.post("/BasicInfo_getDamdang_Save", async (req, res) => {
+  var con = globalValue.connectDB("g00001");
+  var isSuccess = false;
+  con.connect();
+  // MainAgency 테이블 기본정보를 조회
+  var sql = `UPDATE SYSUSER SET                                   
+  SUSACODE = ?                             
+  WHERE SUID = PDB_ACCT.pdbEnc('normal', ?, '') `;
+  var parm = [];
+
+  for (let i = 0; i < req.body.Damdang.length; i++) {
+    console.log("N", req.body.Damdang[i].N);
+    console.log("req.body.", req.body);
+    if (req.body.Damdang[i].N === "N") {
+      parm = [req.body.SACODE, req.body.Damdang[i].SUID];
+      sql = `UPDATE SYSUSER SET                                   
+      SUSACODE = ?                             
+      WHERE SUID = PDB_ACCT.pdbEnc('normal', ?, '') `;
+      console.log("업데이트실행됨: ");
+    } else if (req.body.Damdang[i].N === "D") {
+      parm = [req.body.Damdang[i].SUID];
+      sql = `UPDATE SYSUSER SET                                   
+      SUSACODE = ''                             
+      WHERE SUID = PDB_ACCT.pdbEnc('normal', ?, '') `;
+      console.log("삭제실행됨: ");
+    } else {
+      parm = [req.body.SACODE, req.body.Damdang[i].SUID];
+      console.log("아무것도 안됨: ");
+    }
+    // console.log("req.body.", req.body);
+    await con.query(sql, parm, (err, rows, fields) => {
+      if (err !== null) {
+        isSuccess = false;
+        console.log("담당자 정보 저장 에러: ", err);
+      } else {
+        isSuccess = true;
+      }
+    });
+  }
+  console.log(" req.body.length ", req.body.Damdang.length);
+  isSuccess ? res.send("OK") : res.send("NoData");
 
   con.end();
 });

@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import ReactDataGrid from "react-data-grid";
-
+import FormRow from "../../components/Modal/FormRow";
+import ModalGrid from "../../pages/Main/CompanyInfo/BasicInfo/ModalGrid";
+import { ADD_BASIC_DamGrid_SUCCESS } from "../../modules/Main/CompanyInfo/BasicInfo/BasicInfoReducer";
 const Grid = props => {
   const { columns, rows } = props;
   console.log("col", columns);
   console.log("row", rows);
-  const Store = [];
-  Store.push(columns);
   const [reRows, setrows] = useState(rows);
-  console.log("Store Row Length", Store.length);
 
   const getCellActions = GetRowIdx => {
     // const cellActions = {
     //   firstName: firstNameActions
     // };
-    console.log("column:", GetRowIdx);
-    return alert(GetRowIdx.rowIdx + 1);
+    reRows[GetRowIdx.rowIdx].N = "N";
+
+    // console.log("행의 내용:", reRows[GetRowIdx.rowIdx]);
+    props.getCellValue(rows[GetRowIdx.rowIdx]);
+    // return <ModalGrid cellValue={cellValue} />;
   };
 
   useEffect(() => {
@@ -32,6 +34,7 @@ const Grid = props => {
       rowGetter={i => reRows[i]}
       rowsCount={reRows.length}
       onCellSelected={getCellActions}
+      // rowRenderer
       enableCellSelect={true}
     />
   );

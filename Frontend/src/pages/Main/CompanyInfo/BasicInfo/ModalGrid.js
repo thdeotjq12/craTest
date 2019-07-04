@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Modal,
@@ -7,12 +7,24 @@ import {
   Container,
   Form,
   ButtonToolbar,
-  Table
+  Table,
+  InputGroup,
+  FormControl
 } from "react-bootstrap";
+import {
+  ADD_BASIC_Damdang_REQUEST,
+  ADD_BASIC_Damdang_SUCCESS
+} from "../../../../modules/Main/CompanyInfo/BasicInfo/BasicInfoReducer";
+import {
+  useSelector,
+  useDispatch,
+  connect
+  // bindActionCreators
+} from "react-redux";
+import axios from "axios";
 import FormRow from "../../../../components/Modal/FormRow";
 import Grid from "../../../../components/DataGrid/Grid";
 
-const [Damdang, setDamdang] = useState("");
 const Grid_findUserCol = [
   { key: "SUID", name: "아이디", editable: true },
   // { key: "SUPW", name: "비밀번호", editable: false, hidden: true },
@@ -27,10 +39,7 @@ const Grid_findUserCol = [
   // { key: "SUSACODE", name: "소속참여기관코드", editable: true },
   // { key: "SANAME", name: "소속참여기관명", editable: true }
 ];
-// 모달 열기/닫기
-const handleClose = () => {
-  setModals(false);
-};
+
 // 담당자 추가 버튼클릭 - 그리드 보이기
 const DamdangAdd = () => {
   document.getElementById("Grid").style.display = "block";
@@ -41,71 +50,128 @@ var findUerKeyword = "";
 const FindUserText = e => {
   findUerKeyword = e.target.value;
 };
-// const [findUserList, setfindUserList] = useState("");
-var findUserList = [];
+
+// var findUserList = [];
 // 담당자 검색 버튼 함수
-const getDamdang_find = () => {
-  axios
-    .post(
-      "http://localhost:5000/CompanyInfo/BasicInfo/BasicInfo_getDamdang_findUser",
-      findUerKeyword === "" ? { findUerKeyword: "" } : { findUerKeyword }
-    )
-    .then(res => {
-      if (res.data === "NoData") {
-        console.log("Damdang 데이터가 없습니다");
-      } else {
-        console.log("FindUser 가져오기 완료", res.data);
-        findUserList = res.data.BaicInfo_findDamdang;
-        // setfindUserList(res.data.BaicInfo_findDamdang);
-        console.log("findUserList", findUserList);
-      }
-    })
-    .catch(err => {
-      console.log("담장자 검색 에러", err);
-    });
-};
-
-const getDamdang = () => {
-  console.log("getDamdang 실행됨");
-  console.log("SAList[0].SACODE", SAList[SaupRowNum].SACODE);
-  axios
-    .post(
-      "http://localhost:5000/CompanyInfo/BasicInfo/BasicInfo_getDamdang",
-      SAList && [SAList[SaupRowNum].SACODE]
-    )
-    .then(res => {
-      if (res.data === "NoData") {
-        console.log("Damdang 데이터가 없습니다");
-      } else {
-        console.log("Damdang 가져오기 완료", res.data);
-        // TestDamdang = res.data.BaicInfo_Damdang;
-        console.log(
-          "setDamdang(res.data.BaicInfo_Damdang)",
-          res.data.BaicInfo_Damdang
-        );
-        setDamdang(res.data.BaicInfo_Damdang);
-        if (res.data) {
-          dispatch({
-            type: ADD_BASIC_Damdang_SUCCESS,
-            payload: res.data
-          }); // 로딩 => False
-          console.log(
-            "#############",
-            BasicInfo.BaicInfo_Damdang.BaicInfo_Damdang
-          );
-          setDamdang(res.data.BaicInfo_Damdang);
-        }
-
-        console.log("Damdang  완료", Damdang);
-      }
-    })
-    .catch(err => {
-      console.log("담당조회 에러", err);
-    });
-};
 
 const ModalGrid = props => {
-  const { Damdang, Modals, handleClose, DamdangAdd } = props;
+  const { SaupRowNum, Modals, handleClose, SAList } = props;
+  const { BaicInfo_Damdang, DamdangLoading } = useSelector(
+    state => state.BasicInfo
+  );
+  const [Damdang, setDamdang] = useState("");
+  const [findUserList, setfindUserList] = useState("");
+  const [cellValue, setcellValue] = useState("");
+  const [formIdx, setformIdx] = useState("");
+  const dispatch = useDispatch();
+  useEffect(() => {
+    console.log("Modal useEffect 실행됨");
+    // 여기서 dispatch > 리퀘스트 로 물어보고 dispatch > suc or fail(err) 분기
+
+    getDamdang();
+  }, [DamdangLoading, findUserList, Damdang]);
+
+  // 그리드 셀 클릭 내용 가져오기
+  const getCellValue = value => {
+    // setState
+    setcellValue(value);
+  };
+  // 담당자 클릭 인덱스 가져오기
+  const getFormIdx = Leng => {
+    // Damdang[Leng].N = "D";
+    // setDamdang(Damdang.splice(0, Leng));
+    setformIdx(Leng);
+    console.log("formIdx", formIdx);
+  };
+  // 담당자 삭제
+  const DeleteDamdang = () => {
+    Damdang[formIdx].N = "D";
+  };
+
+  // 담당자 검색
+  const getDamdang_find = () => {
+    console.log("getDamdang_find 실행됨");
+
+    axios
+      .post(
+        "http://localhost:5000/CompanyInfo/BasicInfo/BasicInfo_getDamdang_findUser",
+        findUerKeyword === "" ? { findUer: "" } : { findUer: findUerKeyword }
+      )
+      .then(res => {
+        if (res.data === "NoData") {
+          console.log("Damdang 쿼리 에러");
+        } else {
+          console.log("FindUser 가져오기 완료", res.data);
+          // findUserList = res.data.BaicInfo_findDamdang;
+          setfindUserList(res.data.BaicInfo_findDamdang);
+          console.log("findUserList", findUserList);
+        }
+      })
+      .catch(err => {
+        console.log("담장자 검색 에러", err);
+      });
+  };
+  // 담당자 불러오기 (처음실행)
+  const getDamdang = () => {
+    console.log("getDamdang 실행됨");
+    console.log("SAList[0].SACODE", SAList && SAList[SaupRowNum].SACODE);
+    if (DamdangLoading) {
+      axios
+        .post(
+          "http://localhost:5000/CompanyInfo/BasicInfo/BasicInfo_getDamdang",
+          SAList && [SAList[SaupRowNum].SACODE]
+        )
+        .then(res => {
+          if (res.data === "NoData") {
+            console.log("Damdang 데이터가 없습니다");
+          } else {
+            console.log("Damdang 가져오기 완료", res.data);
+
+            console.log(
+              "setDamdang(res.data.BaicInfo_Damdang)",
+              res.data.BaicInfo_Damdang
+            );
+            // setDamdang(res.data.BaicInfo_Damdang);
+            if (res.data) {
+              dispatch({
+                type: ADD_BASIC_Damdang_SUCCESS,
+                payload: res.data
+              }); // 로딩 => False
+
+              setDamdang(res.data.BaicInfo_Damdang);
+            }
+
+            console.log("Damdang  완료", Damdang);
+          }
+        })
+        .catch(err => {
+          console.log("담당조회 에러", err);
+        });
+    }
+  };
+  // 담당자 저장
+  const getDamdang_save = () => {
+    console.log("getDamdang_Save 실행됨");
+
+    axios
+      .post(
+        "http://localhost:5000/CompanyInfo/BasicInfo/BasicInfo_getDamdang_Save",
+        { Damdang: Damdang, SACODE: [SAList[SaupRowNum].SACODE] }
+      )
+      .then(res => {
+        if (res.data === "NoData") {
+          console.log("Damdang 저장 쿼리 에러");
+        } else {
+          console.log("담당자 정보 저장 완료", res.data);
+          alert("담당자 정보 저장 완료");
+          // findUserList = res.data.BaicInfo_findDamdang;
+        }
+      })
+      .catch(err => {
+        console.log("담장자 저장 에러", err);
+      });
+  };
+
   return (
     <Modal
       show={Modals}
@@ -121,7 +187,15 @@ const ModalGrid = props => {
           <Button variant="primary" onClick={DamdangAdd}>
             추가
           </Button>
-          <Button variant="primary">제거</Button>
+          <Button
+            variant="primary" // FormRow에서 셀클릭 시 인덱스 전달받아두기 => Damdang.length - 1 대체
+            onClick={() => [DeleteDamdang()]} // 삭제, 삭제 위치
+          >
+            제거
+          </Button>
+          <Button variant="primary" onClick={getDamdang_save}>
+            저장
+          </Button>
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
@@ -134,18 +208,42 @@ const ModalGrid = props => {
               <th>발령일자</th>
               <th>전출일자</th>
               <th>사용자아이디</th>
+              <th style={{ display: "none" }}>구분</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>{FormRow(TestDamdang[0])}</tr>
-          </tbody>
+          <tbody>{<FormRow List={Damdang} getFormIdx={getFormIdx} />}</tbody>
         </Table>
         <div id="Grid" style={{ display: "none" }}>
-          {Grid(columns, SAList)}
+          <InputGroup className="mb-3">
+            <FormControl
+              onChange={FindUserText}
+              placeholder="아이디/이름/전화번호 4자리"
+              aria-label="아이디/이름/전화번호 4자리"
+              aria-describedby="basic-addon2"
+            />
+            <InputGroup.Append>
+              <Button variant="primary" onClick={getDamdang_find}>
+                검색
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  cellValue && setDamdang(Damdang.concat(cellValue))
+                }
+              >
+                추가
+              </Button>
+            </InputGroup.Append>
+          </InputGroup>
+          <Grid
+            columns={Grid_findUserCol}
+            rows={findUserList}
+            getCellValue={getCellValue}
+          />
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button onClick={() => setModals(Modals ? false : true)}>Close</Button>
+        <Button onClick={() => (Modals ? false : true)}>Close</Button>
       </Modal.Footer>
     </Modal>
   );

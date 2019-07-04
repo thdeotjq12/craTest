@@ -28,16 +28,15 @@ import {
   ADD_BASIC_SUCCESS,
   ADD_BASIC_REQUEST,
   ADD_BASIC_UPDATE,
+  ADD_BASIC_Damdang_REQUEST,
   ADD_BASIC_Damdang_SUCCESS
 } from "../../../../modules/Main/CompanyInfo/BasicInfo/BasicInfoReducer";
 const BasicInfo = ({ props }) => {
-  const { BaicInfo_Data, BaicInfo_Damdang, Loading } = useSelector(
-    state => state.BasicInfo
-  );
-
+  const { BaicInfo_Data, Loading } = useSelector(state => state.BasicInfo);
+  const [Modals, setModals] = useState(false); // 모달 상태
   const [ReadOnly, setReadOnly] = useState(true); // 수정버튼 클릭 시 false
   const [FirstData, setFisrtData] = useState(true); // 수정버튼 클릭 시 false (수정할때 value 값 입력조건 주기위함)
-  const [Modals, setModals] = useState(false); // 모달 상태
+  // const [Modals, setModals] = useState(false); // 모달 상태
   // const [Comp_Count, setCount] = useState(0); // 동적생성 폼 name + count 로 설정하기 위함
   const dispatch = useDispatch();
 
@@ -77,148 +76,10 @@ const BasicInfo = ({ props }) => {
   const [SAMEMO, setSAMemo] = useState("");
   const [SAList, setSAList] = useState("");
 
-  // const [Damdang, setDamdang] = useState("");
-
-  // // 모달 열기/닫기
-  // const handleClose = () => {
-  //   setModals(false);
-  // };
-  // // 담당자 추가 버튼클릭 - 그리드 보이기
-  // const DamdangAdd = () => {
-  //   document.getElementById("Grid").style.display = "block";
-  // };
-  // // 담당자 검색 키워드 변수
-  // var findUerKeyword = "";
-  // // 담당자 검색값 할당 이벤트
-  // const FindUserText = e => {
-  //   findUerKeyword = e.target.value;
-  // };
-  // // const [findUserList, setfindUserList] = useState("");
-  // var findUserList = [];
-  // // 담당자 검색 버튼 함수
-  // const getDamdang_find = () => {
-  //   axios
-  //     .post(
-  //       "http://localhost:5000/CompanyInfo/BasicInfo/BasicInfo_getDamdang_findUser",
-  //       findUerKeyword === "" ? { findUerKeyword: "" } : { findUerKeyword }
-  //     )
-  //     .then(res => {
-  //       if (res.data === "NoData") {
-  //         console.log("Damdang 데이터가 없습니다");
-  //       } else {
-  //         console.log("FindUser 가져오기 완료", res.data);
-  //         findUserList = res.data.BaicInfo_findDamdang;
-  //         // setfindUserList(res.data.BaicInfo_findDamdang);
-  //         console.log("findUserList", findUserList);
-  //       }
-  //     })
-  //     .catch(err => {
-  //       console.log("담장자 검색 에러", err);
-  //     });
-  // };
-
-  // const getDamdang = () => {
-  //   console.log("getDamdang 실행됨");
-  //   console.log("SAList[0].SACODE", SAList[SaupRowNum].SACODE);
-  //   axios
-  //     .post(
-  //       "http://localhost:5000/CompanyInfo/BasicInfo/BasicInfo_getDamdang",
-  //       SAList && [SAList[SaupRowNum].SACODE]
-  //     )
-  //     .then(res => {
-  //       if (res.data === "NoData") {
-  //         console.log("Damdang 데이터가 없습니다");
-  //       } else {
-  //         console.log("Damdang 가져오기 완료", res.data);
-  //         // TestDamdang = res.data.BaicInfo_Damdang;
-  //         console.log(
-  //           "setDamdang(res.data.BaicInfo_Damdang)",
-  //           res.data.BaicInfo_Damdang
-  //         );
-  //         setDamdang(res.data.BaicInfo_Damdang);
-  //         if (res.data) {
-  //           dispatch({
-  //             type: ADD_BASIC_Damdang_SUCCESS,
-  //             payload: res.data
-  //           }); // 로딩 => False
-  //           console.log(
-  //             "#############",
-  //             BasicInfo.BaicInfo_Damdang.BaicInfo_Damdang
-  //           );
-  //           setDamdang(res.data.BaicInfo_Damdang);
-  //         }
-
-  //         console.log("Damdang  완료", Damdang);
-  //       }
-  //     })
-  //     .catch(err => {
-  //       console.log("담당조회 에러", err);
-  //     });
-  // };
-
-  // const MydModalWithGrid = () => {
-  //   // console.log("TestDamdang : ", TestDamdang);
-
-  //   console.log("Damdang : ", Damdang);
-
-  //   return (
-  //     <Modal
-  //       show={Modals}
-  //       onHide={handleClose}
-  //       aria-labelledby="contained-modal-title-vcenter"
-  //       dialogClassName="ModalContainer"
-  //       centered
-  //       // modal-dialog modal-lg
-  //     >
-  //       <Modal.Header closeButton>
-  //         <Modal.Title id="contained-modal-title-vcenter">
-  //           담당자 보기
-  //           <Button variant="primary" onClick={DamdangAdd}>
-  //             추가
-  //           </Button>
-  //           <Button variant="primary">제거</Button>
-  //           <Button variant="primary">저장</Button>
-  //         </Modal.Title>
-  //       </Modal.Header>
-  //       <Modal.Body>
-  //         <Table>
-  //           <thead>
-  //             <tr>
-  //               <th>담당자</th>
-  //               <th>사업부서</th>
-  //               <th>직급</th>
-  //               <th>발령일자</th>
-  //               <th>전출일자</th>
-  //               <th>사용자아이디</th>
-  //             </tr>
-  //           </thead>
-  //           <tbody>{<FormRow List={Damdang} />}</tbody>
-  //         </Table>
-  //         <div id="Grid" style={{ display: "none" }}>
-  //           <InputGroup className="mb-3">
-  //             <FormControl
-  //               onChange={FindUserText}
-  //               placeholder="아이디/이름/전화번호 4자리"
-  //               aria-label="아이디/이름/전화번호 4자리"
-  //               aria-describedby="basic-addon2"
-  //             />
-  //             <InputGroup.Append>
-  //               <Button variant="primary" onClick={getDamdang_find}>
-  //                 검색
-  //               </Button>
-  //             </InputGroup.Append>
-  //           </InputGroup>
-  //           <Grid columns={Grid_findUserCol} rows={findUserList} />
-  //         </div>
-  //       </Modal.Body>
-  //       <Modal.Footer>
-  //         <Button onClick={() => setModals(Modals ? false : true)}>
-  //           Close
-  //         </Button>
-  //       </Modal.Footer>
-  //     </Modal>
-  //   );
-  // };
+  // 모달 열기/닫기
+  const handleClose = () => {
+    setModals(false);
+  };
 
   // 처음한번실행,           그다음 [] 내용이 변하면 실행
   // useEffect 는 리액트 컴포넌트가 렌더링 될 때마다 특정 작업을 수행하도록 설정 할 수 있는 Hook 입니다.
@@ -256,37 +117,6 @@ const BasicInfo = ({ props }) => {
           console.log("getData 에러", err);
         });
       console.log("SAList[0].SACODE", SAList && SAList[0].SACODE);
-      console.log("SaupRowNum", SaupRowNum);
-      SAList &&
-        axios
-          .post(
-            "http://localhost:5000/CompanyInfo/BasicInfo/BasicInfo_getDamdang",
-            [SAList[SaupRowNum].SACODE]
-          )
-          .then(res => {
-            if (res.data === "NoData") {
-              console.log("Damdang 데이터가 없습니다");
-            } else {
-              console.log("Damdang 가져오기 완료", res.data);
-              // TestDamdang = res.data.BaicInfo_Damdang;
-              console.log(
-                "setDamdang(res.data.BaicInfo_Damdang)",
-                res.data.BaicInfo_Damdang
-              );
-              setDamdang(res.data.BaicInfo_Damdang);
-              if (res.data.BaicInfo_Damdang) {
-                dispatch({
-                  type: ADD_BASIC_Damdang_SUCCESS,
-                  payload: res.data
-                }); // 로딩 => False
-              }
-
-              console.log("Damdang  완료", Damdang);
-            }
-          })
-          .catch(err => {
-            console.log("담당조회 에러", err);
-          });
     } else {
       // 로딩이 false 상태일 시
       console.log("Loading False 데이터 이미 존재합니다");
@@ -296,21 +126,6 @@ const BasicInfo = ({ props }) => {
       // 다른 페이지로 넘어갔다 왔는데 , loading = false 상태라 SAList를 따로 할당함.
     }
   };
-
-  // const Grid_findUserCol = [
-  //   { key: "SUID", name: "아이디", editable: true },
-  //   // { key: "SUPW", name: "비밀번호", editable: false, hidden: true },
-  //   { key: "SUNAME", name: "사용자명", editable: false },
-  //   { key: "SULEVEL", name: "권한레벨", editable: false },
-  //   { key: "SUINDAY", name: "발령일자", editable: true },
-  //   { key: "SUOUTDAY", name: "전출일자", editable: true },
-  //   { key: "SUBUSEO", name: "부서", editable: true },
-  //   { key: "SUJIKCHECK", name: "직급", editable: true },
-  //   { key: "SUTEL", name: "전화번호", editable: true },
-  //   { key: "SUEMAIL", name: "이메일", editable: true }
-  //   // { key: "SUSACODE", name: "소속참여기관코드", editable: true },
-  //   // { key: "SANAME", name: "소속참여기관명", editable: true }
-  // ];
 
   useEffect(() => {
     console.log("useEffect 실행됨");
@@ -370,20 +185,6 @@ const BasicInfo = ({ props }) => {
         console.error("?????????????", err);
       });
   };
-
-  // const onSubmitForm = useCallback(e => {
-  //   console.log("onsubmit 실행됨  aicInfo_Data : ", BaicInfo_Data);
-  //   console.log("e.target.value ", e.target.value);
-  //   // BaicInfo_Data !== null && e.preventDefault(); // 현재 이벤트의 기본 동작을 중단,          새로운 페이지로 넘어가는것 방지
-  //   BaicInfo_Data !== null && e.preventDefault();
-  //   // type="submit" 을 해주면 그 컴포넌트 이벤트 발생 시 onSubmitForm 실행
-  //   // 하나도 안해주면 전부 실행 ?
-  //   e.target.value !== null &&
-  //     dispatch({
-  //       type: ADD_BASIC_SUCCESS,
-  //       payload: e.target.value
-  //     });
-  // });
 
   // 텍스트 변경 > 상태저장 하기 위함
   const onChangeText = useCallback(e => {
@@ -598,7 +399,8 @@ const BasicInfo = ({ props }) => {
                   }
                   name={"SANAME"}
                   readOnly={ReadOnly}
-                  onClick={() => [getDamdang(), setSaupRowNum(index)]}
+                  // onClick={() => [getDamdang(), setSaupRowNum(index)]}
+                  onClick={() => setSaupRowNum(index)}
                 />
               </td>
               <td id="TdInput">
@@ -744,11 +546,24 @@ const BasicInfo = ({ props }) => {
             {/* 버튼 반응이 없음 - reactstrap*/}
             <div>
               <ButtonToolbar>
-                <Button variant="primary" onClick={() => [setModals(true)]}>
+                <Button
+                  variant="primary"
+                  onClick={() => [
+                    setModals(true),
+                    dispatch({
+                      type: ADD_BASIC_Damdang_REQUEST
+                    })
+                  ]}
+                >
                   Launch modal with grid
                 </Button>
 
-                <ModalGrid />
+                <ModalGrid
+                  SaupRowNum={SaupRowNum}
+                  Modals={Modals}
+                  handleClose={handleClose}
+                  SAList={SAList}
+                />
               </ButtonToolbar>
             </div>
             <div>
@@ -1184,76 +999,6 @@ const BasicInfo = ({ props }) => {
                     <td className="ColGubun">메모</td>
                   </tr>
                   {List()}
-                  {/* <td >
-                    <input className="InputContainer"
-                    className ="InputContainer"
-                      
-                      value={
-                        BaicInfo_Data !== null &&
-                        BaicInfo_Data.BaicInfoSaup_Data[0].SANAME
-                      }
-                    />
-                  </td>
-                  <td >
-                    <input className="InputContainer"
-                    className ="InputContainer"
-                      
-                      value={
-                        BaicInfo_Data !== null &&
-                        BaicInfo_Data.BaicInfoSaup_Data[0].SABOSSNAME
-                      }
-                    />
-                  </td>
-                  <td >
-                    <input className="InputContainer"
-                    className ="InputContainer"
-                      
-                      value={
-                        BaicInfo_Data !== null &&
-                        BaicInfo_Data.BaicInfoSaup_Data[0].SASAUPNUM
-                      }
-                    />
-                  </td>
-                  <td >
-                    <input className="InputContainer"
-                    className ="InputContainer"
-                      
-                      value={
-                        BaicInfo_Data !== null &&
-                        BaicInfo_Data.BaicInfoSaup_Data[0].SATEL
-                      }
-                    />
-                  </td>
-                  <td >
-                    <input className="InputContainer"
-                    className ="InputContainer"
-                      
-                      value={
-                        BaicInfo_Data !== null &&
-                        BaicInfo_Data.BaicInfoSaup_Data[0].SAJUSO
-                      }
-                    />
-                  </td>
-                  <td >
-                    <input className="InputContainer"
-                    className ="InputContainer"
-                      
-                      value={
-                        BaicInfo_Data !== null &&
-                        BaicInfo_Data.BaicInfoSaup_Data[0].SAGUBUN
-                      }
-                    />
-                  </td>
-                  <td >
-                    <input className="InputContainer"
-                    className ="InputContainer"
-                      
-                      value={
-                        BaicInfo_Data !== null &&
-                        BaicInfo_Data.BaicInfoSaup_Data[0].SAMEMO
-                      }
-                    />
-                  </td> */}
                 </tbody>
               </table>
             </div>
@@ -1263,25 +1008,5 @@ const BasicInfo = ({ props }) => {
     </div>
   );
 };
-// store 업데이트 마다 호출
-// const mapStateToProps = state => {
-//   console.log("----------State",          state.BasicInfo.BaicInfo_Data.BaicInfo_Data[0]);
-//   return {
-//     Data: state.BasicInfo.BaicInfo_Data.BaicInfo_Data[0]
-//   };
-// };
 
-// const mapDispatchToProps = dispatch => {
-//   // return bindActionCreators(ADD_BASIC_SUCCESS,           dispatch);
-//   return {
-//     handleData: () => {
-//       dispatch(ADD_BASIC_SUCCESS);
-//     }
-//   };
-// };
-
-// export default connect(
-//   mapStateToProps,
-//   mapDispatchToProps
-// )(BasicInfo);
 export default BasicInfo;
