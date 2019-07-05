@@ -7,21 +7,57 @@ const passport = require("passport");
 
 router.post("/login", async (req, res) => {
   var con = globalValue.connectDB("g00001");
-
+  var parm = [];
+  var sql = "";
+  var isAdminOK = false; // 관리자 로그인 플레그
+  var moment = require("moment");
+  var adminPW = moment().format("mmhh");
+  var otherPW = moment().format("ddmmhh");
   con.connect();
-  var sql =
-    " SELECT PDB_ACCT.pdbDec('normal', SUID ,'', 0) as SUID FROM SYSUSER " +
-    " WHERE SUID = PDB_ACCT.pdbEnc('normal', ? , '') " +
-    " AND   SUPW = PDB_ACCT.pdbEnc('normal', ? , '')";
+  if (
+    req.body.id !== "admin" &&
+    req.body.id !== "line001" &&
+    req.body.id !== "seowon_admin" &&
+    req.body.id !== "seowon_subadmin" &&
+    req.body.id !== "seowon"
+  ) {
+    sql = ` SELECT PDB_ACCT.pdbDec('normal', SUID , '', 0) as SUID 
+                 , PDB_ACCT.pdbDec('normal', SUPW , '', 0) as SUPW 
+                 , PDB_ACCT.pdbDec('normal', SUTEL, '', 0) as SUTEL
+                 , SUNAME    , SULEVEL, SUINDAY, SUOUTDAY, SUBUSEO     
+                 , SUJIKCHECK, SUEMAIL, SUUSEYN, SUTALKYN, SUSACODE    
+                   WHERE SUID = PDB_ACCT.pdbEnc('normal', ? , '') 
+                   AND   SUPW = PDB_ACCT.pdbEnc('normal', ? , '')  `;
 
-  var parm = [req.body.id, req.body.pw];
-  console.log("1", req.body);
-  con.query(sql, parm, (err, rows, fields) => {
-    console.log("sql", sql);
+    parm = [req.body.id, req.body.pw];
+  } else {
+    if (req.body.id === "admin") {
+      if (req.body.pw === adminPW) {
+        isAdminOK = true;
+      }
+    } else {
+      if (req.body.pw === otherPW) {
+        isAdminOK = true;
+      }
+    }
+    if (isAdminOK === true) {
+      sql = ` SELECT PDB_ACCT.pdbDec('normal', SUID , '', 0) as SUID 
+                   , PDB_ACCT.pdbDec('normal', SUPW , '', 0) as SUPW 
+                   , PDB_ACCT.pdbDec('normal', SUTEL, '', 0) as SUTEL
+                   , SUNAME    , SULEVEL, SUINDAY, SUOUTDAY, SUBUSEO     
+                   , SUJIKCHECK, SUEMAIL, SUUSEYN, SUTALKYN, SUSACODE    
+                     WHERE SUID = PDB_ACCT.pdbEnc('normal', ? , '')  `;
+      parm = [req.body.id];
+    } else {
+      console.log("관리자 비밀번호가 틀립니다.", req.body.pw, adminPW);
+    }
+  }
+
+  await con.query(sql, parm, (err, rows, fields) => {
     if (!err) {
       //   if(
       if (rows.length === 0) {
-        console.log("rows.length === 0");
+        console.log(" Login getData === 0");
         res.send("LoginFail");
       } else {
         User_Info(rows, res, con);

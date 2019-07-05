@@ -10,9 +10,49 @@
     transform: rotate(360deg);
   }
 }
-
+.TableTitle {
+  background-color: slategray;
+  color: white;
+  width: 40%;
+  float: left;
+  height: 40px;
+  text-align: center;
+  padding: 5px 50px;
+}
+.InputContainer {
+  width: 100%;
+  height: 50px;
+  border: 0;
+  font-size: 20px;
+  text-overflow: ellipsis;
+  /* 텍스트 크기 넘어가면 ... 표시 */
+}
 .MainContent {
   display: flex;
   justify-content: center;
   margin: 20px;
+}
+.ColTitle {
+  background-color: slategray;
+  color: white;
+}
+
+.ColGubun {
+  background-color: lightblue;
+  text-align: center;
+  height: 50px;
+}
+
+.MainDivContainer {
+  overflow: scroll;
+  overflow-x: scroll;
+  overflow-y: scroll;
+}
+
+.ModalContainer {
+  max-width: 80% !important;
+
+  /* width 은 적용안됨 */
+  display: block;
+  padding-left: 0px;
 }

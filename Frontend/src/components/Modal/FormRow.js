@@ -45,7 +45,6 @@ const FormRow = props => {
           <td onClick={() => [getCellIndex(index), BGC(index)]}>
             {value.SUID}
           </td>
-          <td onClick={() => [getCellIndex(index), BGC(index)]}>{value.N}</td>
         </tr>
       );
     })

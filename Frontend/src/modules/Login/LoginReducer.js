@@ -7,7 +7,8 @@ const initalState = {
   PassWord: "",
   User_Data: null,
   Success: false,
-  isLogin: false
+  isLogin: false,
+  GlovalValue: null
   // 이부분 추가/수정 하면 서버 재시작 필요
 };
 

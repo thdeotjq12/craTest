@@ -9,7 +9,7 @@ class Multiple extends Component {
     this.onDatetime = this.onDatetime.bind(this);
 
     this.state = {
-      selectedDates: [parseDate(today, "Ymd")],
+      selectedDates: [parseDate(today, "Y")],
       selectedDates2: []
     };
   }
