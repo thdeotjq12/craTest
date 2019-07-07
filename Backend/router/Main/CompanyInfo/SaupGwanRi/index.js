@@ -63,245 +63,105 @@ router.post("/getSaupGwanRi", async (req, res) => {
   con.end();
 });
 
-// 저장하기
-router.post("/BasicInfo_Save", async (req, res) => {
-  console.log("---------- backend ");
-  var con = globalValue.connectDB("g00001");
-  var isSuccess = false;
-  con.connect();
-  // MainAgency 테이블 기본정보를 조회
-  var sql = `UPDATE MAINAGENCY SET                                            
-  MADAMDANG     = PDB_ACCT.pdbEnc('normal', ?     , '') ,
-  MATEL         = PDB_ACCT.pdbEnc('normal', ?     , '') ,
-  MAHP          = PDB_ACCT.pdbEnc('normal', ?     , '') ,
-  MAFAX         = PDB_ACCT.pdbEnc('normal', ?     , '') ,
-  MANAME        =   ?                                   ,
-  MABOSSNAME    =   ?                                   ,
-  MASAUPNUM     =   ?                                   ,
-  MAJUSO        =   ?                                   ,
-  MAHOMEPAGE    =   ?                                   ,
-  MAEMAIL       =   ?                                   ,
-  MAKOOKMINJISA =   ?                                   ,
-  MAKOOKMINTEL  =   ?                                   ,
-  MAKOOKMINFAX  =   ?                                   ,
-  MAGUNGANGJISA =   ?                                   ,
-  MAGUNGANGTEL  =   ?                                   ,
-  MAGUNGANGFAX  =   ?                                   ,
-  MAGOYONGJISA  =   ?                                   ,
-  MAGOYONGTEL   =   ?                                   ,
-  MAGOYONGFAX   =   ?                                   ,
-  MABIGO        =   ?                                   ,
-  MAMEMO        =   ?                                         
- where MACODE   =   ?                                    `;
-
-  var parm = [
-    req.body.MADAMDANG,
-    req.body.MATEL,
-    req.body.MAHP,
-    req.body.MAFAX,
-    req.body.MANAME,
-    req.body.MABOSSNAME,
-    req.body.MASAUPNUM,
-    req.body.MAJUSO,
-    req.body.MAHOMEPAGE,
-    req.body.MAEMAIL,
-    req.body.MAKOOKMINJISA,
-    req.body.MAKOOKMINTEL,
-    req.body.MAKOOKMINFAX,
-    req.body.MAGUNGANGJISA,
-    req.body.MAGUNGANGTEL,
-    req.body.MAGUNGANGFAX,
-    req.body.MAGOYONGJISA,
-    req.body.MAGOYONGTEL,
-    req.body.MAGOYONGFAX,
-    req.body.MABIGO,
-    req.body.MAMEMO,
-    req.body.MACODE
-  ];
-
-  await con.query(sql, parm, (err, rows, fields) => {
-    if (err !== null) {
-      res.status(200).send("서버에러 입니다. 관리자에게 문의하세요");
-      con.rollback();
-      console.log("조회 실패!!!");
-    }
-  });
-
-  console.log("back", req.body.SALIST.length);
-  console.log(req.body.SALIST);
-  for (let i = 0; i < req.body.SALIST.length; i++) {
-    sql = `UPDATE SUBAGENCY SET                                         
-    SADAMDANG   = PDB_ACCT.pdbEnc('normal', ? ,'') ,
-    SATEL       = PDB_ACCT.pdbEnc('normal', ? ,'') ,
-    SAGUBUN     = ?                                ,
-    SANAME      = ?                                ,
-    SABOSSNAME  = ?                                ,
-    SASAUPNUM   = ?                                ,
-    SAEMAIL     = ?                                ,
-    SAJUSO      = ?                                ,
-    SAMEMO      = ?                                ,
-    SADELYN     = ?                                     
-    WHERE SACODE= ?                                `;
-    parm = [
-      req.body.SALIST[i].SADAMDANG,
-      req.body.SALIST[i].SATEL,
-      req.body.SALIST[i].SAGUBUN,
-      req.body.SALIST[i].SANAME,
-      req.body.SALIST[i].SABOSSNAME,
-      req.body.SALIST[i].SASAUPNUM,
-      req.body.SALIST[i].SAEMAIL,
-      req.body.SALIST[i].SAJUSO,
-      req.body.SALIST[i].SAMEMO,
-      "N", // 삭제시엔 Y로 넣기
-      req.body.SALIST[i].SACODE
-    ];
-
-    con.query(sql, parm, (err, rows, fields) => {
-      if (err !== null) {
-        res.status(200).send("SEVER ERROR");
-        isSuccess = false;
-
-        con.rollback();
-        console.log("SUBAGENCY 업데이트 실패!!!", err);
-      } else {
-        isSuccess = true;
-        console.log("SUBAGENCY 업데이트 성공!!!");
-      }
-    });
-  }
-
-  isSuccess ? res.send("OK") : res.send("OK");
-  console.log("isSuccess", isSuccess);
-  con.end();
-});
-
-router.post("/BasicInfo_getDamdang", async (req, res) => {
+router.post("/getSeabuSaupGwanRi", async (req, res) => {
+  console.log("GGGGGGGGGGGGGGGGGGGG");
   var con = globalValue.connectDB("g00001");
   var result = {};
-  con.connect();
-  // MainAgency 테이블 기본정보를 조회
-  // ### 담당자 정보 저장할때 SUID 값이 암호화 되서 올라와서 A.*을 맨 앞으로 옮김.
-  var sql = `SELECT A.*,PDB_ACCT.pdbDec("normal", SUID, "", 0) as SUID,  B.SANAME as SANAME FROM SYSUSER A  
-   LEFT JOIN SUBAGENCY B on A.SUSACODE = B.SACODE          
-   WHERE A.SUSACODE = ?                       `;
-
-  var parm = req.body;
-  console.log(" Print res.body", req.body);
-  await con.query(sql, parm, (err, rows, fields) => {
-    if (!err) {
-      result = {
-        ...result,
-
-        BaicInfo_Damdang: rows
-      };
-      res.send(result);
-      console.log("result", result);
-    } else {
-      console.log("query error : " + err);
-      res.send("NoData");
-    }
-  });
-
-  con.end();
-});
-
-router.post("/BasicInfo_getDamdang_findUser", async (req, res) => {
-  var con = globalValue.connectDB("g00001");
-  var result = {};
-  con.connect();
-  // MainAgency 테이블 기본정보를 조회
-  var sql = `SELECT  PDB_ACCT.pdbDec('normal', SUID , '', 0) AS SUID       
-  , PDB_ACCT.pdbDec('normal', SUPW , '', 0) AS SUPW       
-  , PDB_ACCT.pdbDec('normal', SUTEL, '', 0) AS SUTEL      
-  , A.SUNAME    , A.SULEVEL, A.SUINDAY , A.SUOUTDAY, A.SUBUSEO
-  , A.SUJIKCHECK, A.SUEMAIL, A.SUSACODE, A.SUNAME  , B.SANAME 
-                                                FROM SYSUSER A
-    LEFT JOIN SUBAGENCY B ON A.SUSACODE = B.SACODE                  
-    WHERE A.SULEVEL >= 1000                                          
-    AND A.SUUSEYN = 'Y' `;
-  console.log("findUser parm", req.body);
-  var setParm = req.body;
+  var sql = "";
   var parm = [];
-
-  if (setParm.findUer !== "") {
+  console.log(req.body);
+  con.connect();
+  if (req.body.SULevel <= 1000) {
+    sql = `SELECT PDB_ACCT.pdbDec('normal', C1.SUID, '', 0) as SUID    
+                , A.SDSHCODE      , A.SDCODE   , A.SDNAME   , B.SHNAMESHORT
+                , A.SDMOZIPENDDATE, A.SDSTRDATE, A.SDENDDATE, C2.SACODE    
+                , C2.SANAME       , C1.SUNAME  , A.SDGUBUN    
+                , A.SDMEMO        , D.WSSHCODE , COUNT(E.SSMSTCODE) AS CNT 
+                                                            FROM SAUPDETAIL A  
+           LEFT JOIN SAUPHEAD     B ON     A.SDSHCODE =  B.SHCODE        
+           LEFT JOIN SYSUSER     C1 ON     A.SDSUID   = C1.SUID          
+           LEFT JOIN SUBAGENCY   C2 ON    C1.SUSACODE = C2.SACODE        
+           LEFT JOIN WORKINFOSAUP D ON (   A.SDSHCODE =  D.WSSHCODE      
+                                       AND A.SDCODE   =  D.WSSDCODE     )
+           LEFT JOIN SAUPSTAFF    E ON (   A.SDSHCODE =  E.SSMSHCODE     
+                                       AND A.SDCODE   =  E.SSMSDCODE     
+                                       AND (  E.SSMGUBUN = '1'         
+                                           OR E.SSMGUBUN = '4'         
+                                           OR E.SSMGUBUN = '5')       )
+          WHERE A.SDSTRDATE >= ?                                  
+            AND A.SDSTRDATE <= ?                                  
+            AND B.SHDELYN   <> 'Y'                                     
+            AND A.SDDELYN   <> 'Y'                                   `;
+    parm = [req.body.STRDATE, req.body.ENDDATE];
+    if (req.body.SaupHeadCode) {
+      sql = sql + `and A.SDSHCODE = ? `;
+      parm = [req.body.STRDATE, req.body.ENDDATE, req.body.SaupHeadCode];
+    }
+    if (req.body.Key) {
+      sql = sql + `and  SHName like ? `;
+      parm = [req.body.STRDATE, req.body.ENDDATE, req.body.Key];
+    }
     sql =
       sql +
-      ` AND (  A.SUNAME     = ?
-         OR    A.SUID       = ?
-         OR    A.SUTELKEY   LIKE ? ) `;
-
-    parm = [setParm.findUer, setParm.findUer, setParm.findUer];
-
-    // console.log(
-    //   " 파람 넘어옴 !!! ",
-    //   "(1)" + req.body,
-    //   "(2)" + parm["findUer"],
-    //   "(3)" + parm.findUer,
-    //   "(4)" + parm[0].findUer,
-    //   "(5)" + JSON.stringify(parm),
-    //   "(6)" + JSON.parse(parm[0].findUer)
-    // );
+      `GROUP BY A.SDSHCODE      , A.SDCODE   , A.SDNAME   , B.SHNAMESHORT
+              , A.SDMOZIPENDDATE, A.SDSTRDATE, A.SDENDDATE, C2.SACODE    
+              , C2.SANAME       , C1.SUID    , C1.SUNAME  , A.SDGUBUN    
+              , A.SDMEMO        , D.WSSHCODE                             
+       ORDER BY A.SDSHCODE, A.SDCODE                                          `;
+  } else {
+    sql = ` SELECT PDB_ACCT.pdbDec('normal', C1.SUID, '', 0) as SUID    
+                 , A.SDSHCODE      , A.SDCODE   , A.SDNAME   , B.SHNAMESHORT
+                 , A.SDMOZIPENDDATE, A.SDSTRDATE, A.SDENDDATE, C2.SACODE    
+                 , C2.SANAME       , C1.SUNAME  , A.SDGUBUN                 
+                 , A.SDMEMO        , D.WSSHCODE , COUNT(E.SSMSTCODE) AS CNT 
+                                                         FROM SAUPDETAIL A  
+              LEFT JOIN SAUPHEAD     B ON     A.SDSHCODE =  B.SHCODE        
+              LEFT JOIN SYSUSER     C1 ON     A.SDSUID   = C1.SUID          
+              LEFT JOIN SUBAGENCY   C2 ON    C1.SUSACODE = C2.SACODE        
+              LEFT JOIN WORKINFOSAUP D ON (   A.SDSHCODE =  D.WSSHCODE      
+                                          AND A.SDCODE   =  D.WSSDCODE     )
+              LEFT JOIN SAUPSTAFF    E ON (   A.SDSHCODE =  E.SSMSHCODE     
+                                          AND A.SDCODE   =  E.SSMSDCODE     
+                                          AND (  E.SSMGUBUN = '1'         
+                                              OR E.SSMGUBUN = '4'         
+                                              OR E.SSMGUBUN = '5')       )
+              LEFT JOIN SAUPSYSUSER  F ON (   A.SDSHCODE = F.SUMSHCODE      
+                                          AND A.SDCODE   = F.SUMSDCODE     )
+             WHERE A.SDSTRDATE >= ?                                 
+               AND A.SDSTRDATE <= ?                               
+               and f.SUMSUID    = PDB_ACCT.pdbEnc('normal', ?, '')  
+               AND B.SHDELYN   <> 'Y'                                     
+               AND A.SDDELYN   <> 'Y'                                     
+`;
+    parm = [req.body.STRDATE, req.body.ENDDATE, req.body.SUID];
+    if (req.body.SaupHeadCode) {
+      sql = sql + `and A.SDSHCODE = ? `;
+      parm = [req.body.STRDATE, req.body.ENDDATE, req.body.SaupHeadCode];
+    }
+    if (req.body.Key) {
+      sql = sql + `and  SHName like ? `;
+      parm = [req.body.STRDATE, req.body.ENDDATE, req.body.SUID, req.body.Key];
+    }
+    sql =
+      sql +
+      `GROUP BY A.SDSHCODE      , A.SDCODE   , A.SDNAME   , B.SHNAMESHORT
+              , A.SDMOZIPENDDATE, A.SDSTRDATE, A.SDENDDATE, C2.SACODE    
+              , C2.SANAME       , C1.SUID    , C1.SUNAME  , A.SDGUBUN    
+              , A.SDMEMO        , D.WSSHCODE                             
+       ORDER BY A.SDSHCODE, A.SDCODE') `;
   }
-  console.log(" _findUser res.body", setParm.findUer);
   await con.query(sql, parm, (err, rows, fields) => {
     if (!err) {
       result = {
         ...result,
-        BaicInfo_findDamdang: rows
+        SeabuSaupGwanRi_Data: rows
       };
+      console.log(result);
       res.send(result);
-      console.log(" findUser result", result);
     } else {
-      console.log("query error : " + err);
-      res.send("NoData");
+      console.log("Query ERR : ", err);
     }
   });
-
-  con.end();
-});
-
-// 담당자 정보 저장
-router.post("/BasicInfo_getDamdang_Save", async (req, res) => {
-  var con = globalValue.connectDB("g00001");
-  var isSuccess = false;
-  con.connect();
-  // MainAgency 테이블 기본정보를 조회
-  var sql = `UPDATE SYSUSER SET                                   
-  SUSACODE = ?                             
-  WHERE SUID = PDB_ACCT.pdbEnc('normal', ?, '') `;
-  var parm = [];
-
-  for (let i = 0; i < req.body.Damdang.length; i++) {
-    console.log("N", req.body.Damdang[i].N);
-    console.log("req.body.", req.body);
-    if (req.body.Damdang[i].N === "N") {
-      parm = [req.body.SACODE, req.body.Damdang[i].SUID];
-      sql = `UPDATE SYSUSER SET                                   
-      SUSACODE = ?                             
-      WHERE SUID = PDB_ACCT.pdbEnc('normal', ?, '') `;
-      console.log("업데이트실행됨: ");
-    } else if (req.body.Damdang[i].N === "D") {
-      parm = [req.body.Damdang[i].SUID];
-      sql = `UPDATE SYSUSER SET                                   
-      SUSACODE = ''                             
-      WHERE SUID = PDB_ACCT.pdbEnc('normal', ?, '') `;
-      console.log("삭제실행됨: ");
-    } else {
-      parm = [req.body.SACODE, req.body.Damdang[i].SUID];
-      console.log("아무것도 안됨: ");
-    }
-    // console.log("req.body.", req.body);
-    await con.query(sql, parm, (err, rows, fields) => {
-      if (err !== null) {
-        isSuccess = false;
-        console.log("담당자 정보 저장 에러: ", err);
-      } else {
-        isSuccess = true;
-      }
-    });
-  }
-  console.log(" req.body.length ", req.body.Damdang.length);
-  isSuccess ? res.send("OK") : res.send("NoData");
 
   con.end();
 });

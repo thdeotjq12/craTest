@@ -47,7 +47,9 @@ import Kr from "../../../../components/DatePicker/lang/kr";
 import {
   Loading,
   ADD_Saup_Grid_REQUEST,
-  ADD_Saup_Grid_SUCCESS
+  ADD_Saup_Grid_SUCCESS,
+  ADD_SeabuSaup_Grid_SUCCESS,
+  ADD_SeabuSaup_Grid_REQUEST
 } from "../../../../modules/Main/CompanyInfo/SaupGwanRi/SaupGwanRiReducer";
 // import format from "../../../../function/DateFormat";
 var ko = require("date-fns/locale/ko"); // 참고 https://date-fns.org/docs/I18n
@@ -62,67 +64,123 @@ const Grid_SaupCol = [
   { key: "SUEMAIL", name: "이메일", editable: true },
   { key: "SHMEMO", name: "메모", editable: true }
 ];
+const Grid_SeabuSaupCol = [
+  { key: "SDNAME", name: "세부사업명", editable: true },
+  { key: "SHNAMESHORT", name: "사업명", editable: false },
+  { key: "SDMOZIPENDDATE", name: "마감일", editable: false },
+  { key: "SDSTRDATE", name: "시작일", editable: true },
+  { key: "SDENDDATE", name: "종료일", editable: true },
+  { key: "SUNAME", name: "담당자", editable: true },
+  { key: "SANAME", name: "사업수행부서", editable: true },
+  { key: "SUEMAIL", name: "구분", editable: true },
+  { key: "CNT", name: "선발현황", editable: true },
+  { key: "WSSHCODE", name: "근로정보", editable: true }
+];
+
 const SaupGwanRi = props => {
   const { Grid_Saup } = props;
-  const { SaupGwanRi_Data, SaupGwanRiSeabu_Data, Loading } = useSelector(
-    state => state.SaupGwanRi
-  );
+  const {
+    SaupGwanRi_Data,
+    SeabuSaupGwanRi_Data,
+    Loading,
+    SeabuSaup_Loading
+  } = useSelector(state => state.SaupGwanRi);
   const { BaicInfo_Data } = useSelector(state => state.BasicInfo);
   const dispatch = useDispatch();
   const [startDate, setstartDate] = useState(new Date());
   const [SaupList, setSaupList] = useState("");
-
+  const [SeabuSaupList, setSeabuSaupList] = useState("");
   // var moment = require("moment");
   // moment.lang("kr"); // 언어팩 변경
   // moment.locale("ko");
   useEffect(() => {
     console.log("Saup useEffect 실행됨");
+
+    getSeabuSaup();
     getSaup();
-  });
+  }, [Loading]);
 
   // 사업정보 불러오기 (처음실행)
   const getSaup = () => {
     console.log("getSaup 실행됨");
     console.log("Loading", Loading);
-    if (Loading) {
-      axios
-        .post("http://localhost:5000/CompanyInfo/SaupGwanRi/getSaupGwanRi", {
-          STRDATE: "2019-01-01",
-          ENDDATE: "2019-12-31",
-          SUID: "infra",
-          SULevel: "30"
-        })
-        .then(res => {
-          if (res.data === "NoData") {
-            console.log("SaupGwanRi 데이터가 없습니다");
-          } else {
-            console.log("SaupGwanRi 가져오기 완료", res.data.SaupGwanRi_Data);
 
-            if (res.data) {
-              dispatch({
-                type: ADD_Saup_Grid_SUCCESS,
-                payload: res.data
-              }); // 로딩 => False
+    axios
+      .post("http://localhost:5000/CompanyInfo/SaupGwanRi/getSaupGwanRi", {
+        STRDATE: "2019-01-01",
+        ENDDATE: "2019-12-31",
+        SUID: "infra",
+        SULevel: "30"
+      })
+      .then(res => {
+        if (res.data === "NoData") {
+          console.log("SaupGwanRi 데이터가 없습니다");
+        } else {
+          console.log("SaupGwanRi 가져오기 완료", res.data.SaupGwanRi_Data);
+          setSaupList(res.data.SaupGwanRi_Data);
+          dispatch({
+            type: ADD_Saup_Grid_SUCCESS,
+            payload: res.data
+          }); // 로딩 => False
 
-              console.log(
-                "디스패치  완료",
-                "SaupList :",
-                SaupList,
-                "SaupGwanRi_Data :",
-                SaupGwanRi_Data
-              );
-              setSaupList(res.data.SaupGwanRi_Data);
-            }
+          console.log(
+            "디스패치  완료",
+            "SaupList :",
+            SaupList,
+            "SaupGwanRi_Data :",
+            SaupGwanRi_Data
+          );
 
-            console.log("SaupGwanRi  완료", SaupList, SaupGwanRi_Data);
-          }
-        })
-        .catch(err => {
-          console.log("SaupGwanRi 에러", err);
-        });
-    }
+          console.log("SaupGwanRi  완료", SaupList, SaupGwanRi_Data);
+        }
+      })
+      .catch(err => {
+        console.log("SaupGwanRi 에러", err);
+      });
   };
 
+  // 세부 사업정보 불러오기 (처음실행)
+  const getSeabuSaup = () => {
+    console.log("getSeabuSaup 실행됨");
+    console.log("Loading", Loading);
+
+    axios
+      .post("http://localhost:5000/CompanyInfo/SaupGwanRi/getSeabuSaupGwanRi", {
+        STRDATE: "2019-01-01",
+        ENDDATE: "2019-12-31",
+        SUID: "infra",
+        SULevel: "30"
+      })
+      .then(res => {
+        if (res.data === "NoData") {
+          console.log("SeabuSaupGwanRi_Data 데이터가 없습니다");
+        } else {
+          console.log(
+            "SeabuSaupGwanRi_Data 가져오기 완료",
+            res.data.SeabuSaupGwanRi_Data
+          );
+
+          if (res.data) {
+            dispatch({
+              type: ADD_SeabuSaup_Grid_SUCCESS,
+              payload: res.data
+            }); // 로딩 => False
+            res.data.SeabuSaupGwanRi_Data["CNT"] =
+              res.data.SeabuSaupGwanRi_Data.CNT + "명";
+            setSeabuSaupList(res.data.SeabuSaupGwanRi_Data);
+          }
+
+          console.log(
+            "SeabuSaupGwanRi_Data  완료",
+            SeabuSaupList,
+            SeabuSaupGwanRi_Data
+          );
+        }
+      })
+      .catch(err => {
+        console.log("SeabuSaupGwanRi_Data 에러", err);
+      });
+  };
   return (
     <div>
       <div>
@@ -163,7 +221,10 @@ const SaupGwanRi = props => {
                       aria-describedby="basic-addon2"
                     />
                     <InputGroup.Append>
-                      <Button variant="primary" onClick={getSaup}>
+                      <Button
+                        variant="primary"
+                        onClick={() => [getSaup, getSeabuSaup]}
+                      >
                         검색
                       </Button>
                       <Button variant="secondary">추가</Button>
@@ -264,21 +325,14 @@ const SaupGwanRi = props => {
                 <td className="ColTitle">시작일</td>
                 <td className="ColTitle">종료일</td>
               </tr>
-
-              <tr>
-                <td>세부사업명</td>
-                <td>사업명</td>
-                <td>마감일</td>
-                <td>시작일</td>
-                <td>종료일</td>
-                <td>담당자</td>
-                <td>사업수행부서</td>
-                <td>구분</td>
-                <td>선발현황</td>
-                <td>근로정보</td>
-              </tr>
             </tbody>
           </table>
+          <div>
+            {SeabuSaupGwanRi_Data && (
+              <GridSaebu columns={Grid_SeabuSaupCol} rows={SeabuSaupList} />
+              // 스토어 값을 넣으면 에러,,
+            )}
+          </div>
         </div>
       </div>
     </div>
