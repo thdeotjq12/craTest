@@ -14,7 +14,11 @@ import {
 import {
   ADD_BASIC_Damdang_REQUEST,
   ADD_BASIC_Damdang_SUCCESS
-} from "../../../../modules/Main/CompanyInfo/BasicInfo/BasicInfoReducer";
+} from "../../modules/Main/CompanyInfo/BasicInfo/BasicInfoReducer";
+import {
+  ADD_Saup_Damdang_REQUEST,
+  ADD_Saup_Damdang_SUCCESS
+} from "../../modules/Main/CompanyInfo/SaupGwanRi/SaupGwanRiReducer";
 import {
   useSelector,
   useDispatch,
@@ -22,8 +26,8 @@ import {
   // bindActionCreators
 } from "react-redux";
 import axios from "axios";
-import FormRow from "../../../../components/Modal/FormRow";
-import Grid from "../../../../components/DataGrid/Grid";
+import FormRow from "./FormRow";
+import Grid from "./Grid";
 
 const Grid_findUserCol = [
   { key: "SUID", name: "아이디", editable: true },
@@ -56,9 +60,8 @@ const FindUserText = e => {
 
 const ModalGrid = props => {
   const { SaupRowNum, Modals, handleClose, SAList } = props;
-  const { BaicInfo_Damdang, DamdangLoading } = useSelector(
-    state => state.BasicInfo
-  );
+  const { BaicInfo_DamdangLoading } = useSelector(state => state.BasicInfo);
+  const { Saup_DamdangLoading } = useSelector(state => state.SaupGwanRi);
   const [Damdang, setDamdang] = useState("");
   const [findUserList, setfindUserList] = useState("");
   const [cellValue, setcellValue] = useState("");
@@ -69,7 +72,7 @@ const ModalGrid = props => {
     // 여기서 dispatch > 리퀘스트 로 물어보고 dispatch > suc or fail(err) 분기
 
     getDamdang();
-  }, [DamdangLoading, findUserList, Damdang]);
+  }, [findUserList, Damdang, BaicInfo_DamdangLoading, Saup_DamdangLoading]);
 
   // 그리드 셀 클릭 내용 가져오기
   const getCellValue = value => {
@@ -114,12 +117,13 @@ const ModalGrid = props => {
   // 담당자 불러오기 (처음실행)
   const getDamdang = () => {
     console.log("getDamdang 실행됨");
-    console.log("SAList[0].SACODE", SAList && SAList[SaupRowNum].SACODE);
-    if (DamdangLoading) {
+    console.log("SaupRowNum", SaupRowNum);
+    var parm = [SAList && [SAList[SaupRowNum].SACODE]];
+    if (BaicInfo_DamdangLoading || Saup_DamdangLoading) {
       axios
         .post(
           "http://localhost:5000/CompanyInfo/BasicInfo/BasicInfo_getDamdang",
-          SAList && [SAList[SaupRowNum].SACODE]
+          parm
         )
         .then(res => {
           if (res.data === "NoData") {
@@ -137,7 +141,10 @@ const ModalGrid = props => {
                 type: ADD_BASIC_Damdang_SUCCESS,
                 payload: res.data
               }); // 로딩 => False
-
+              dispatch({
+                type: ADD_Saup_Damdang_SUCCESS,
+                payload: res.data
+              }); // 로딩 => False
               setDamdang(res.data.BaicInfo_Damdang);
             }
 
@@ -147,6 +154,8 @@ const ModalGrid = props => {
         .catch(err => {
           console.log("담당조회 에러", err);
         });
+    } else {
+      console.log("담당자 불러올 수 없습니다. (로딩상태 = FALSE 입니다)");
     }
   };
   // 담당자 저장

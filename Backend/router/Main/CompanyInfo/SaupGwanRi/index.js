@@ -4,26 +4,28 @@ var globalValue = require("../../../../globalValue");
 const passport = require("passport");
 // ------------------------------------------------- 사업관리 탭
 router.post("/getSaupGwanRi", async (req, res) => {
-  console.log("TTTTTTTTTTTTTTTTTTTTT");
+  console.log("getSaupGwanRi 실행됨");
   var con = globalValue.connectDB("g00001");
   var result = {};
   var sql = "";
   var parm = [];
-  console.log(req.body);
+  var LikeKey = "%" + req.body.Key + "%";
+
   con.connect();
+
   if (req.body.SULevel <= 1000) {
     sql = `SELECT PDB_ACCT.pdbDec('normal', B.SUTEL, '', 0) as SUTEL
                 , A.SHCODE   , A.SHGUBUN  , A.SHNAME, A.SHNAMESHORT     
                 , A.SHSTRDATE, A.SHENDDATE, A.SHSUID, B.SUNAME          
                 , B.SUEMAIL  , A.SHMEMO                  FROM SAUPHEAD A
-          LEFT JOIN SYSUSER     B ON A.SHSUID  = B.SUID              
-          WHERE SHSTRDATE >= ?                                 
-          AND SHSTRDATE <= ?                                 
-          AND SHDELYN   <> 'Y'     `;
+           LEFT JOIN SYSUSER     B ON A.SHSUID  = B.SUID              
+           WHERE SHSTRDATE >= ?                                 
+           AND   SHSTRDATE <= ?                                 
+           AND   SHDELYN   <> 'Y'     `;
     parm = [req.body.STRDATE, req.body.ENDDATE];
     if (req.body.Key) {
       sql = sql + `and  SHName like ? `;
-      parm = [req.body.STRDATE, req.body.ENDDATE, req.body.Key];
+      parm.push(LikeKey);
     }
     sql = sql + `order by SHCode`;
   } else {
@@ -43,10 +45,12 @@ router.post("/getSaupGwanRi", async (req, res) => {
     parm = [req.body.STRDATE, req.body.ENDDATE, req.body.SUID];
     if (req.body.Key) {
       sql = sql + `and  SHName like ? `;
-      parm = [req.body.STRDATE, req.body.ENDDATE, req.body.SUID, req.body.Key];
+      parm.push(LikeKey);
       sql = sql + `order by SHCode`;
     }
   }
+  console.log("Parm", parm);
+  console.log("sql", sql);
   await con.query(sql, parm, (err, rows, fields) => {
     if (!err) {
       result = {
@@ -64,11 +68,12 @@ router.post("/getSaupGwanRi", async (req, res) => {
 });
 
 router.post("/getSeabuSaupGwanRi", async (req, res) => {
-  console.log("GGGGGGGGGGGGGGGGGGGG");
+  console.log("getSeabuSaupGwanRi 실행됨 ");
   var con = globalValue.connectDB("g00001");
   var result = {};
   var sql = "";
   var parm = [];
+  var LikeKey = "%" + req.body.Key + "%";
   console.log(req.body);
   con.connect();
   if (req.body.SULevel <= 1000) {
@@ -95,11 +100,13 @@ router.post("/getSeabuSaupGwanRi", async (req, res) => {
     parm = [req.body.STRDATE, req.body.ENDDATE];
     if (req.body.SaupHeadCode) {
       sql = sql + `and A.SDSHCODE = ? `;
-      parm = [req.body.STRDATE, req.body.ENDDATE, req.body.SaupHeadCode];
+      parm.push(req.body.SaupHeadCode);
+      console.log("SaupHeadCode 존재");
     }
     if (req.body.Key) {
-      sql = sql + `and  SHName like ? `;
-      parm = [req.body.STRDATE, req.body.ENDDATE, req.body.Key];
+      sql = sql + `and  SDName like ? `;
+      console.log("LikeKey 존재");
+      parm.push(LikeKey);
     }
     sql =
       sql +
@@ -136,11 +143,13 @@ router.post("/getSeabuSaupGwanRi", async (req, res) => {
     parm = [req.body.STRDATE, req.body.ENDDATE, req.body.SUID];
     if (req.body.SaupHeadCode) {
       sql = sql + `and A.SDSHCODE = ? `;
-      parm = [req.body.STRDATE, req.body.ENDDATE, req.body.SaupHeadCode];
+      parm.push(req.body.SaupHeadCode);
+      console.log("SaupHeadCode 존재");
     }
     if (req.body.Key) {
-      sql = sql + `and  SHName like ? `;
-      parm = [req.body.STRDATE, req.body.ENDDATE, req.body.SUID, req.body.Key];
+      sql = sql + `and  SDName like ? `;
+      parm.push(LikeKey);
+      console.log("LikeKey 존재");
     }
     sql =
       sql +
@@ -148,16 +157,19 @@ router.post("/getSeabuSaupGwanRi", async (req, res) => {
               , A.SDMOZIPENDDATE, A.SDSTRDATE, A.SDENDDATE, C2.SACODE    
               , C2.SANAME       , C1.SUID    , C1.SUNAME  , A.SDGUBUN    
               , A.SDMEMO        , D.WSSHCODE                             
-       ORDER BY A.SDSHCODE, A.SDCODE') `;
+       ORDER BY A.SDSHCODE, A.SDCODE  `;
   }
+  console.log("Parm", parm);
+  console.log("sql", sql);
   await con.query(sql, parm, (err, rows, fields) => {
     if (!err) {
       result = {
         ...result,
         SeabuSaupGwanRi_Data: rows
       };
-      console.log(result);
+
       res.send(result);
+      // console.log(result);
     } else {
       console.log("Query ERR : ", err);
     }

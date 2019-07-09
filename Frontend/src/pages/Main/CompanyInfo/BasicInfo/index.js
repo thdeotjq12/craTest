@@ -1,8 +1,8 @@
 import "./index.css";
 import React, { useEffect, useState, useCallback, PropTypes } from "react";
-import FormRow from "../../../../components/Modal/FormRow";
+import FormRow from "../../../../components/DataGrid/FormRow";
 import Grid from "../../../../components/DataGrid/Grid";
-import ModalGrid from "./ModalGrid";
+import ModalGrid from "../../../../components/DataGrid/Modal";
 import {
   Button,
   Modal,

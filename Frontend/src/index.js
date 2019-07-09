@@ -11,6 +11,8 @@ import { createStore } from "redux";
 import { composeWithDevTools } from "redux-devtools-extension";
 import rootReducer from "./modules";
 import { Provider } from "react-redux";
+import axios from "axios";
+
 const store = createStore(rootReducer, composeWithDevTools());
 
 ReactDOM.render(

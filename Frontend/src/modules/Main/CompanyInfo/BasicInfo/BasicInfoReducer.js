@@ -14,7 +14,7 @@ const initalState = {
   BaicInfo_Data: null, // 기본정보 데이터 리스트
   BaicInfo_Damdang: null, // 담당자 상세보기 리스트
   Loading: true, // 데이터 불러오는 중
-  DamdangLoading: true,
+  BaicInfo_DamdangLoading: false,
   BaicInfo_DamGridCell: null // 담당자 - 그리드 셀 클릭 정보
 };
 
@@ -48,20 +48,20 @@ const BasicInfo = (state = initalState, action) => {
       console.log("ADD_BASIC_Damdang_REQUEST 요청 Loading True");
       return {
         ...state,
-        DamdangLoading: true
+        BaicInfo_DamdangLoading: true
       };
     case ADD_BASIC_Damdang_SUCCESS:
       console.log("BasicIn_data 불러오기 완료, Loading False", action.payload);
       return {
         ...state,
-        DamdangLoading: false,
+        BaicInfo_DamdangLoading: false,
         BaicInfo_Damdang: action.payload
       };
     case ADD_BASIC_Damdang_FAILURE:
       console.log("BasicIn_data 불러오기 실패");
       return {
         ...state,
-        DamdangLoading: false
+        BaicInfo_DamdangLoading: false
       };
 
     case ADD_BASIC_DamGrid_REQUEST:

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import ReactDataGrid from "react-data-grid";
-import FormRow from "../../components/Modal/FormRow";
-import ModalGrid from "../../pages/Main/CompanyInfo/BasicInfo/ModalGrid";
+import FormRow from "./FormRow";
+import ModalGrid from "./Modal";
 import { ADD_BASIC_DamGrid_SUCCESS } from "../../modules/Main/CompanyInfo/BasicInfo/BasicInfoReducer";
 const Grid = props => {
   const { columns, rows } = props;

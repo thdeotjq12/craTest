@@ -56,3 +56,14 @@
   display: block;
   padding-left: 0px;
 }
+
+.YearPicker {
+  position: relative;
+  z-index: 1;
+}
+
+.YearPicker {
+  width: 50%;
+  height: 79px;
+  border: 0;
+}
