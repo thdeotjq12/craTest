@@ -5,7 +5,7 @@ const passport = require("passport");
 // ------------------------------------------------- 사업관리 탭
 router.post("/getSaupGwanRi", async (req, res) => {
   console.log("getSaupGwanRi 실행됨");
-  var con = globalValue.connectDB("g00001");
+  var con = await globalValue.connectDB("g00001");
   var result = {};
   var sql = "";
   var parm = [];
@@ -49,15 +49,14 @@ router.post("/getSaupGwanRi", async (req, res) => {
       sql = sql + `order by SHCode`;
     }
   }
-  console.log("Parm", parm);
-  console.log("sql", sql);
+
   await con.query(sql, parm, (err, rows, fields) => {
     if (!err) {
       result = {
         ...result,
         SaupGwanRi_Data: rows
       };
-      console.log(result);
+
       res.send(result);
     } else {
       console.log("Query ERR : ", err);
@@ -68,13 +67,12 @@ router.post("/getSaupGwanRi", async (req, res) => {
 });
 
 router.post("/getSeabuSaupGwanRi", async (req, res) => {
-  console.log("getSeabuSaupGwanRi 실행됨 ");
-  var con = globalValue.connectDB("g00001");
+  var con = await globalValue.connectDB("g00001");
   var result = {};
   var sql = "";
   var parm = [];
   var LikeKey = "%" + req.body.Key + "%";
-  console.log(req.body);
+
   con.connect();
   if (req.body.SULevel <= 1000) {
     sql = `SELECT PDB_ACCT.pdbDec('normal', C1.SUID, '', 0) as SUID    
@@ -101,11 +99,10 @@ router.post("/getSeabuSaupGwanRi", async (req, res) => {
     if (req.body.SaupHeadCode) {
       sql = sql + `and A.SDSHCODE = ? `;
       parm.push(req.body.SaupHeadCode);
-      console.log("SaupHeadCode 존재");
     }
     if (req.body.Key) {
       sql = sql + `and  SDName like ? `;
-      console.log("LikeKey 존재");
+
       parm.push(LikeKey);
     }
     sql =
@@ -144,12 +141,10 @@ router.post("/getSeabuSaupGwanRi", async (req, res) => {
     if (req.body.SaupHeadCode) {
       sql = sql + `and A.SDSHCODE = ? `;
       parm.push(req.body.SaupHeadCode);
-      console.log("SaupHeadCode 존재");
     }
     if (req.body.Key) {
       sql = sql + `and  SDName like ? `;
       parm.push(LikeKey);
-      console.log("LikeKey 존재");
     }
     sql =
       sql +
@@ -159,8 +154,7 @@ router.post("/getSeabuSaupGwanRi", async (req, res) => {
               , A.SDMEMO        , D.WSSHCODE                             
        ORDER BY A.SDSHCODE, A.SDCODE  `;
   }
-  console.log("Parm", parm);
-  console.log("sql", sql);
+
   await con.query(sql, parm, (err, rows, fields) => {
     if (!err) {
       result = {
@@ -175,6 +169,172 @@ router.post("/getSeabuSaupGwanRi", async (req, res) => {
     }
   });
 
+  con.end();
+});
+
+const GetSysCode_Child = async con => {
+  var moment = require("moment");
+  var Today = moment().format("YYYY-MM");
+  var sql = `SELECT * FROM SYSCODE   
+         WHERE SCDATE = ?   `;
+  var parm = [Today];
+
+  var result = await globalValue.PromiseQuery(con, sql, parm);
+  console.log("SCCODE", result[0].SCCODE);
+  return result[0].SCCODE;
+};
+
+const GetSysCode = async (
+  con,
+  res,
+  TableName,
+  CodeName,
+  GroupFieldName,
+  GroupValue,
+  Disit
+) => {
+  var sql = "";
+  var parm = [];
+  var Code = "";
+  var iCode = "";
+  var HexCode_2 = "";
+  // 숫자, 크기를 넣으면 크기만큼 숫자앞에 0을 채워줌
+  function pad(n, width) {
+    n = n + "";
+    return n.length >= width
+      ? n
+      : new Array(width - n.length + 1).join("0") + n;
+  }
+  Code = await GetSysCode_Child(con);
+  sql =
+    `SELECT MAX(` +
+    CodeName +
+    `) AS MAXCODE FROM ` +
+    TableName +
+    `
+         WHERE ` +
+    CodeName +
+    ` LIKE '` +
+    Code +
+    `%'`;
+  if (GroupFieldName) {
+    sql = sql + ` AND ` + GroupFieldName + `= ? `;
+    parm = [GroupValue];
+  }
+  var result = await globalValue.PromiseQuery(con, sql, parm);
+  if (result.MAXCODE === null) {
+    iCode = 0;
+  } else {
+    HexCode = "" + result[0].MAXCODE;
+    console.log("Code", Code);
+    console.log("Hex", HexCode);
+    HexCode_2 = HexCode.substr(2, HexCode.length);
+    console.log("Hex substr", HexCode);
+    iCode = parseInt(HexCode_2, 16) + 1;
+    iCode = iCode.toString(16);
+    iCode = pad(iCode.toUpperCase(), Disit - 2);
+    console.log("iCode", iCode);
+  }
+  HexCode = HexCode.substr(0, 2) + String(iCode);
+  console.log("HexCode + String(iCode)", HexCode);
+  Code = HexCode;
+
+  // con.end();
+  console.log("(1)Code", Code);
+  return Code;
+};
+
+const SaveSaup = async (con, req, SHCODE) => {
+  for (let i = 0; i < req.body.SaupList.length; i++) {
+    // 신규저장
+    if (req.body.SaupList[i].N === "N") {
+      var sql = `INSERT INTO SAUPHEAD( SHSUID                                       
+                                 , SHCODE   ,  SHGUBUN  ,  SHNAME,  SHNAMESHORT 
+                                 , SHSTRDATE,  SHENDDATE,  SHMEMO,  SHDELYN    )
+                           VALUES(PDB_ACCT.pdbEnc('normal', ? , '')    
+                                 ,?, ?, ?, ?, ?, ?, ? ,? ) `;
+      if (req.body.SaupList[i].SHSTRDATE === "Invalid date") {
+        req.body.SaupList[i].SHSTRDATE = "1899-12-30";
+      }
+      if (req.body.SaupList[i].SHENDDATE === "Invalid date") {
+        req.body.SaupList[i].SHENDDATE = "1899-12-30";
+      }
+
+      console.log(req.body.SaupList[i].SHSTRDATE);
+      var parm = [
+        req.body.SaupList[i].SHSUID,
+        SHCODE,
+        req.body.SaupList[i].SHGUBUN,
+        req.body.SaupList[i].SHNAME,
+        req.body.SaupList[i].SHNAMESHORT,
+        req.body.SaupList[i].SHSTRDATE,
+        req.body.SaupList[i].SHENDDATE,
+        req.body.SaupList[i].SHMEMO,
+        "N"
+      ];
+      await globalValue.PromiseQuery(con, sql, parm);
+      console.log("인서트 실행됨");
+    } else if (req.body.SaupList[i].N === "U") {
+      sql = ` UPDATE SAUPHEAD SET                                        
+      SHSUID       = PDB_ACCT.pdbEnc('normal', ?, ''    ),
+      SHGUBUN      = ?                                   ,
+      SHNAME       = ?                                   ,
+      SHNAMESHORT  = ?                                   ,
+      SHSTRDATE    = ?                                   ,
+      SHENDDATE    = ?                                   ,
+      SHMEMO       = ?                                   ,
+      SHDELYN      = ?                                   
+     WHERE SHCODE  = ?                                    `;
+      if (req.body.SaupList[i].SHSTRDATE === "Invalid date") {
+        req.body.SaupList[i].SHSTRDATE = "1899-12-30";
+      }
+      if (req.body.SaupList[i].SHENDDATE === "Invalid date") {
+        req.body.SaupList[i].SHENDDATE = "1899-12-30";
+      }
+      parm = [
+        req.body.SaupList[i].SHSUID,
+        req.body.SaupList[i].SHCODE,
+        req.body.SaupList[i].SHGUBUN,
+        req.body.SaupList[i].SHNAME,
+        req.body.SaupList[i].SHNAMESHORT,
+        req.body.SaupList[i].SHSTRDATE,
+        req.body.SaupList[i].SHENDDATE,
+
+        req.body.SaupList[i].SHMEMO,
+        "N"
+      ];
+      await globalValue.PromiseQuery(con, sql, parm);
+      console.log("업데이트 실행됨");
+    } else if (req.body.SaupList[i].N === "D") {
+      sql = `UPDATE SAUPHEAD SET      
+              SHDELYN    = ?   
+             WHERE SHCODE= ?  `;
+      parm = ["Y", SHCODE];
+      await globalValue.PromiseQuery(con, sql, parm);
+    }
+  }
+  console.log("(2)Saup 실행됨");
+};
+router.post("/getSaupGwanRi_Save", async (req, res) => {
+  console.log("getSaupGwanRi_Save 실행됨");
+  console.log("저장 리스트", req.body.SaupList[0].N);
+  var con = await globalValue.connectDB("g00001");
+  var isSuccess = false;
+  var sql = "";
+  var parm = [];
+  var SHCODE = "";
+
+  // 추진사업 저장
+  try {
+    var result = await GetSysCode(con, res, "SaupHead", "SHCode", "", "", 4);
+    await SaveSaup(con, req, result); // 업뎃.인서트,딜리트
+    isSuccess = true;
+  } catch (err) {
+    console.log("추진사업 저장 실패 err ", err);
+  }
+
+  isSuccess ? res.send("OK") : res.send("Fail");
+  console.log("isSuccess", isSuccess);
   con.end();
 });
 

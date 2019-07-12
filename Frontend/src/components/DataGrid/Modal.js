@@ -90,6 +90,10 @@ const ModalGrid = props => {
   const DeleteDamdang = () => {
     Damdang[formIdx].N = "D";
   };
+  // 닫기 버튼
+  const Close = handleCloser => {
+    props.handleClose(handleCloser);
+  };
 
   // 담당자 검색
   const getDamdang_find = () => {
@@ -253,7 +257,7 @@ const ModalGrid = props => {
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button onClick={() => (Modals ? false : true)}>Close</Button>
+        <Button onClick={() => Close(false)}>Close</Button>
       </Modal.Footer>
     </Modal>
   );

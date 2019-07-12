@@ -16,10 +16,15 @@ export const ADD_Saup_Damdang_FAILURE = "SaupGwanRi/ADD_Saup_Damdang_FAILURE";
 export const ADD_Saup_DamGrid_REQUEST = "SaupGwanRi/ADD_Saup_DamGrid_REQUEST";
 export const ADD_Saup_DamGrid_SUCCESS = "SaupGwanRi/ADD_Saup_DamGrid_SUCCESS";
 
+// 저장
+export const ADD_Saup_Save_REQUEST = "SaupGwanRi/ADD_Saup_Save_REQUEST";
+export const ADD_Saup_Save_SUCCESS = "SaupGwanRi/ADD_Saup_Save_SUCCESS";
+export const ADD_Saup_Save_FAILURE = "SaupGwanRi/ADD_Saup_Save_FAILURE";
 const initalState = {
   SaupGwanRi_Data: null, // 기본정보 데이터 리스트
   SeabuSaupGwanRi_Data: null,
   Loading: true, // 데이터 불러오는 중
+  Saving: false, // 데이터 저장 중
   SeabuSaup_Loading: true, // 세부사업 로딩중
   Saup_DamdangLoading: false, // 담당자 검색 로딩중
   Saup_DamGridCell: null, // 담당자 - 그리드 셀 클릭 정보
@@ -85,7 +90,22 @@ const SaupGwanRi = (state = initalState, action) => {
         ...state,
         Saup_DamGridCell: action.payload
       };
-
+    // 저장 부분
+    case ADD_Saup_Save_REQUEST:
+      return {
+        ...state,
+        Saving: true
+      };
+    case ADD_Saup_Save_SUCCESS:
+      return {
+        ...state,
+        Saving: false
+      };
+    case ADD_Saup_Save_FAILURE:
+      return {
+        ...state,
+        Saving: false
+      };
     default:
       return state;
   }

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 import { useSelector, useDispatch } from "react-redux";
+
 import "./index.css";
 import {
   Button,
@@ -54,11 +56,15 @@ import {
   ADD_Saup_Grid_SUCCESS,
   ADD_SeabuSaup_Grid_SUCCESS,
   ADD_SeabuSaup_Grid_REQUEST,
-  ADD_Saup_Damdang_REQUEST
+  ADD_Saup_Damdang_REQUEST,
+  ADD_Saup_Save_REQUEST,
+  ADD_Saup_Save_SUCCESS,
+  ADD_Saup_Save_FAILURE
 } from "../../../../modules/Main/CompanyInfo/SaupGwanRi/SaupGwanRiReducer";
 // import format from "../../../../function/DateFormat";
 var ko = require("date-fns/locale/ko"); // 참고 https://date-fns.org/docs/I18n
 registerLocale("ko", ko);
+const MemoEditor = <Modal_Memo Modals={Modal} />;
 const Grid_SaupCol = [
   { key: "SHNAME", name: "사업명", editable: true },
   { key: "SHNAMESHORT", name: "사업명요약", editable: false },
@@ -69,6 +75,7 @@ const Grid_SaupCol = [
   { key: "SUEMAIL", name: "이메일", editable: true },
   { key: "SHMEMO", name: "메모", editable: true }
 ];
+
 const Grid_SeabuSaupCol = [
   { key: "SDNAME", name: "세부사업명", editable: true },
   { key: "SHNAMESHORT", name: "사업명", editable: false },
@@ -88,6 +95,7 @@ const SaupGwanRi = props => {
     SaupGwanRi_Data,
     SeabuSaupGwanRi_Data,
     Loading,
+    Saving,
     SeabuSaup_Loading
   } = useSelector(state => state.SaupGwanRi);
   const dispatch = useDispatch();
@@ -99,13 +107,21 @@ const SaupGwanRi = props => {
   // 그리드 관련 변수
   const [SaupList, setSaupList] = useState("");
   const [SeabuSaupList, setSeabuSaupList] = useState("");
+  const [SaveSaup, setSaveSaup] = useState(""); // 사업 저장
+  const [SaveSeabuSaup, setSaveSeabu] = useState("");
   const [SaupKeyword, setSaupKey] = useState("");
   const [SeabuSaupKeyword, setSeabuKey] = useState("");
   const [SaupHeadCODE, setSaupHeadCODE] = useState("");
+  const [Saup_NowRowNum, setSaup_NowRowNum] = useState("");
   // 담당자 상세보기 관련 변수
   const [SAList, setSAList] = useState("");
-  const [Modals, setModals] = useState(false); // 모달 상태
+  const [Modals, setModals] = useState(false); // 담당자 모달 상태
+  const [Modals_Memo, setMdals_Memo] = useState(false); // 메모 모달 상태
+  const [Modals_GeunLo, setMdals_GeunLo] = useState(false); // 근로정보 모달 상태
   const [SaupRowNum, setSaupRowNum] = useState(0); // 클릭한 그리드 순번 저장(SACODE 추출용)
+  // 버튼 이벤트
+  // const [btnSave, setBtnSave] = useState(false); // 저장 버튼
+  const [btnDel_Saup, setBtnDel_Saup] = useState(""); // 사업 제거 버튼
   var moment = require("moment");
   // moment.lang("kr"); // 언어팩 변경
   // moment.locale("ko");
@@ -113,6 +129,7 @@ const SaupGwanRi = props => {
     console.log("Saup  ★★★★★★★★★★★★★★★★useEffect 실행됨");
     getSaup();
     getSeabuSaup();
+    Save();
   }, [Loading, startDate]);
 
   // 그리드 셀 클릭시 내용 가져오기 (0: 로우넘버, 1:STRDATE, 2:ENDDATE)
@@ -120,10 +137,20 @@ const SaupGwanRi = props => {
     // setState
     console.log("가져온 셀 값", value);
     SaupList && setSaupHeadCODE(SaupList[value[0]].SHCODE);
-
+    setSaup_NowRowNum(value[0]);
     setStartDate_Seabu(value[1]); // 그리드 클릭시 세부사업 날짜를 맞춰준다.
     setEndDate_Seabu(value[1]); // 그리드 클릭시 세부사업 날짜를 맞춰준다.
     getSeabuSaup(value);
+  };
+  // 사업 - 저장 버튼 클릭시 Row 가져오기
+  const Saup_Save = SaveList => {
+    setSaveSaup(SaveList);
+    console.log("사업 저장됨", SaveSaup);
+  };
+  // 세부사업 - 저장버튼 클릭 시 Row 가져오기
+  const SeabuSaup_Save = SaveList => {
+    setSaveSeabu(SaveList);
+    console.log("세부사업 저장됨", SaveSeabuSaup);
   };
 
   const getCellValue_Seabu = value => {
@@ -140,41 +167,95 @@ const SaupGwanRi = props => {
     setSeabuKey(e.target.value);
   };
 
-  // 모달 열기/닫기
+  // 담당자 모달 열기/닫기
   const handleClose = () => {
-    setModals(false);
+    setModals(Modals ? false : true);
+  };
+  const handleClose_Memo = () => {
+    setMdals_Memo(Modals_Memo ? false : true);
+  };
+  const handleClose_GeunLo = () => {
+    setMdals_GeunLo(Modals_GeunLo ? false : true);
+  };
+  // 메모 모달 플레그
+  const MemoShow = Memo => {
+    if (Memo === "T") {
+      setMdals_Memo(true);
+    }
+  };
+  const GeunLoShow = GeunLo => {
+    if (GeunLo === "T") {
+      setMdals_GeunLo(true);
+    }
+  };
+  // 추진사업 , 세부사업 그리드 내용을 저장하는 함수
+  const Save = () => {
+    if (Saving) {
+      console.log("Saving 실행됨");
+      console.log("SVAE 사업담당자 리스트 ", SaupList);
+      var parm = {
+        SaupList,
+        SeabuSaupList
+      };
+      axios
+        .post(
+          "http://localhost:5000/CompanyInfo/SaupGwanRi/getSaupGwanRi_Save",
+          parm
+        )
+        .then(res => {
+          if (res.data === "OK") {
+            console.log("사업관리 업데이트 성공!!!");
+            dispatch({
+              type: ADD_Saup_Save_SUCCESS
+            });
+          } else {
+            console.log("사업관리 업데이트 실패! :", res.data);
+            dispatch({
+              type: ADD_Saup_Save_FAILURE
+            });
+          }
+        })
+        .catch(err => {
+          console.log("SaupGwanRi 에러", err);
+        });
+    }
   };
 
   // 사업정보 불러오기 (처음실행)
   const getSaup = () => {
     console.log("getSaup 실행됨");
     console.log("Loading", Loading);
-    var parm = {
-      STRDATE: moment(startDate).format("YYYY-01-01"),
-      ENDDATE: moment(endDate).format("YYYY-12-31"),
-      SUID: "infra",
-      SULevel: "30",
-      Key: SaupKeyword
-    };
-    axios
-      .post("http://localhost:5000/CompanyInfo/SaupGwanRi/getSaupGwanRi", parm)
-      .then(res => {
-        if (res.data === "NoData") {
-          console.log("SaupGwanRi 데이터가 없습니다");
-        } else {
-          setSaupList(res.data.SaupGwanRi_Data);
-          dispatch({
-            type: ADD_Saup_Grid_SUCCESS,
-            payload: res.data
-          }); // 로딩 => False
+    if (Loading) {
+      var parm = {
+        STRDATE: moment(startDate).format("YYYY-01-01"),
+        ENDDATE: moment(endDate).format("YYYY-12-31"),
+        SUID: "infra",
+        SULevel: "30",
+        Key: SaupKeyword
+      };
+      axios
+        .post(
+          "http://localhost:5000/CompanyInfo/SaupGwanRi/getSaupGwanRi",
+          parm
+        )
+        .then(res => {
+          if (res.data === "NoData") {
+            console.log("SaupGwanRi 데이터가 없습니다");
+          } else {
+            setSaupList(res.data.SaupGwanRi_Data);
+            dispatch({
+              type: ADD_Saup_Grid_SUCCESS,
+              payload: res.data
+            }); // 로딩 => False
 
-          console.log("SaupGwanRi  완료", SaupList, SaupGwanRi_Data);
-          console.log("Getdata Key :", SaupKeyword);
-        }
-      })
-      .catch(err => {
-        console.log("SaupGwanRi 에러", err);
-      });
+            console.log("SaupGwanRi  완료", SaupList, SaupGwanRi_Data);
+            console.log("Getdata Key :", SaupKeyword);
+          }
+        })
+        .catch(err => {
+          console.log("SaupGwanRi 에러", err);
+        });
+    }
   };
 
   // 세부 사업정보 불러오기 (처음실행)
@@ -235,6 +316,21 @@ const SaupGwanRi = props => {
     <div>
       <div>
         <label className="TableTitle">사업명 등록</label>
+        <Button
+          variant="primary"
+          style={{ float: "right" }}
+          onClick={() => [
+            dispatch({
+              type: ADD_Saup_Save_REQUEST
+            }),
+            Save()
+          ]}
+        >
+          저장
+        </Button>
+        <Button variant="primary" style={{ float: "right" }}>
+          수정
+        </Button>
         <div>
           <table className="table table-bordered">
             <tbody>
@@ -297,10 +393,39 @@ const SaupGwanRi = props => {
                       onChange={Saup_Search}
                     />
                     <InputGroup.Append>
-                      <Button variant="primary" onClick={() => [getSaup()]}>
+                      <Button
+                        variant="primary"
+                        onClick={() => [
+                          dispatch({
+                            type: ADD_Saup_Grid_REQUEST
+                            // Loading = True 로만들기 (getData() 실행됨)
+                          })
+                        ]}
+                      >
                         검색
                       </Button>
-                      <Button variant="secondary">추가</Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() =>
+                          setSaupList(
+                            SaupList.concat({
+                              SHCODE: "",
+                              SHENDDATE: "",
+                              SHGUBUN: "",
+                              SHMEMO: "",
+                              SHNAME: "",
+                              SHNAMESHORT: "",
+                              SHSTRDATE: "",
+                              SHSUID: "",
+                              SUEMAIL: "",
+                              SUNAME: "",
+                              SUTEL: ""
+                            })
+                          )
+                        }
+                      >
+                        추가
+                      </Button>
                       <Button variant="secondary">제거</Button>
                     </InputGroup.Append>
                   </InputGroup>
@@ -310,13 +435,22 @@ const SaupGwanRi = props => {
           </table>
           <div>
             {SaupGwanRi_Data && (
+              // comp = { comp } comp(props)가 실행되면 부모의 {comp}를 실행
               <GridSaup
                 columns={Grid_SaupCol}
                 rows={SaupList}
                 getCellValue={getCellValue}
+                MemoShow={MemoShow}
+                // 그리드안의 MemoShow 함수를 True 리턴하고 index에서 setModal True
+                Saup_Save={Saup_Save}
               />
               // 스토어 값을 넣으면 에러,,
             )}
+            <Modal_Memo
+              handleClose={handleClose_Memo}
+              Modals={Modals_Memo}
+              // MemoShow={MemoShow}
+            />
           </div>
         </div>
         <label className="TableTitle">세부사업 등록</label>
@@ -403,7 +537,32 @@ const SaupGwanRi = props => {
                         handleClose={handleClose}
                         SAList={SeabuSaupList} // sa코드 변수 이름 prop 화 하기
                       />
-                      <Button variant="secondary">추가</Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() =>
+                          setSeabuSaupList(
+                            SeabuSaupList.concat({
+                              CNT: "",
+                              SACODE: "",
+                              SANAME: "",
+                              SDCODE: "",
+                              SDENDDATE: "",
+                              SDGUBUN: "",
+                              SDMEMO: "",
+                              SDMOZIPENDDATE: "",
+                              SDNAME: "",
+                              SDSHCODE: "",
+                              SDSTRDATE: "",
+                              SHNAMESHORT: "",
+                              SUID: "",
+                              SUNAME: "",
+                              WSSHCODE: ""
+                            })
+                          )
+                        }
+                      >
+                        추가
+                      </Button>
                       <Button variant="secondary">제거</Button>
                     </InputGroup.Append>
                   </InputGroup>
@@ -452,10 +611,8 @@ const SaupGwanRi = props => {
                   근로정보
                 </td>
               </tr>
-
               <tr>
                 <td className="ColTitle">마감일</td>
-
                 <td className="ColTitle">시작일</td>
                 <td className="ColTitle">종료일</td>
               </tr>
@@ -467,9 +624,16 @@ const SaupGwanRi = props => {
                 columns={Grid_SeabuSaupCol}
                 rows={SeabuSaupList}
                 getCellValue_Seabu={getCellValue_Seabu}
+                SeabuSaup_Save={SeabuSaup_Save}
+                GeunLoShow={GeunLoShow}
               />
               // 스토어 값을 넣으면 에러,,
             )}
+
+            <Modal_GeunLo
+              Modals={Modals_GeunLo}
+              handleClose={handleClose_GeunLo}
+            />
           </div>
         </div>
       </div>

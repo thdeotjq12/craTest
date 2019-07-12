@@ -4,7 +4,7 @@ var globalValue = require("../../../../globalValue");
 const passport = require("passport");
 // ------------------------------------------------- 기관정보 탭
 router.post("/BasicInfo", async (req, res) => {
-  var con = globalValue.connectDB("g00001");
+  var con = await globalValue.connectDB("g00001");
   var result = {};
   con.connect();
   // MainAgency 테이블 기본정보를 조회
@@ -19,13 +19,15 @@ router.post("/BasicInfo", async (req, res) => {
     "     , MAGOYONGFAX   , MABIGO       , MAMEMO                        FROM MAINAGENCY";
 
   var parm = "";
-  await con.query(sql, parm, (err, rows, fields) => {
+  con.query(sql, parm, (err, rows, fields) => {
     if (!err) {
       //   if(
       result = {
         ...result,
         BaicInfo_Data: rows
       };
+    } else {
+      console.log("기본정보 조회 에러 : ", err);
     }
   });
   sql =
@@ -56,7 +58,7 @@ router.post("/BasicInfo", async (req, res) => {
 // 저장하기
 router.post("/BasicInfo_Save", async (req, res) => {
   console.log("---------- backend ");
-  var con = globalValue.connectDB("g00001");
+  var con = await globalValue.connectDB("g00001");
   var isSuccess = false;
   con.connect();
   // MainAgency 테이블 기본정보를 조회
@@ -166,7 +168,7 @@ router.post("/BasicInfo_Save", async (req, res) => {
 });
 
 router.post("/BasicInfo_getDamdang", async (req, res) => {
-  var con = globalValue.connectDB("g00001");
+  var con = await globalValue.connectDB("g00001");
   var result = {};
   con.connect();
   // MainAgency 테이블 기본정보를 조회
@@ -196,7 +198,7 @@ router.post("/BasicInfo_getDamdang", async (req, res) => {
 });
 
 router.post("/BasicInfo_getDamdang_findUser", async (req, res) => {
-  var con = globalValue.connectDB("g00001");
+  var con = await globalValue.connectDB("g00001");
   var result = {};
   con.connect();
   // MainAgency 테이블 기본정보를 조회
@@ -252,7 +254,7 @@ router.post("/BasicInfo_getDamdang_findUser", async (req, res) => {
 
 // 담당자 정보 저장
 router.post("/BasicInfo_getDamdang_Save", async (req, res) => {
-  var con = globalValue.connectDB("g00001");
+  var con = await globalValue.connectDB("g00001");
   var isSuccess = false;
   con.connect();
   // MainAgency 테이블 기본정보를 조회
