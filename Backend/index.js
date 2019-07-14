@@ -10,8 +10,10 @@ const passportConfig = require("./passport");
 // ROUTER
 
 const Login = require("./router/login");
+//기관정보 탭
 const BasicInfo = require("./router/Main/CompanyInfo/BasicInfo");
 const SaupGwanRi = require("./router/Main/CompanyInfo/SaupGwanRi");
+const ZiwonGwanRi = require("./router/Main/CompanyInfo/ZiwonGwanRi");
 const app = express();
 dotenv.config();
 passportConfig();
@@ -36,7 +38,6 @@ app.use(
 
 app.use(passport.initialize());
 app.use(passport.session()); // express session 아래 넣어줘야 한다. 미들웨어간의 서로 의존관계가 있어서
-
 app.use((req, res, next) => {
   const mysql = require("mysql");
   var connection = mysql.createConnection({
@@ -73,6 +74,7 @@ app.use((req, res, next) => {
 app.use("/Login", Login);
 app.use("/CompanyInfo/BasicInfo", BasicInfo);
 app.use("/CompanyInfo/SaupGwanRi", SaupGwanRi);
+app.use("/CompanyInfo/ZiwonGwanRi", ZiwonGwanRi);
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });
