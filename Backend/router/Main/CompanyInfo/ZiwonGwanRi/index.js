@@ -9,59 +9,101 @@ router.post("/getZiwonGwanRi", async (req, res) => {
   var result = {};
   var sql = "";
   var parm = [];
-  var LikeKey = "%" + req.body.Key + "%";
-
+  var KeyWord = "%" + req.body[0].KeyWord + "%";
+  var STRDate = req.body[0].KeyYear + "-01-01";
+  var ENDDate = req.body[0].KeyYear + "-12-31";
   con.connect();
+  console.log("BODY", req.body[0]);
+  if (req.body[0].SULevel <= 1000) {
+    sql = `SELECT A.*, B.*, C1.SUNAME AS SHSUNAME, C2.SUNAME AS SDSUNAME, D.SANAME
+             FROM SAUPHEAD A 
+             LEFT JOIN SAUPDETAIL  B  ON A.SHCODE   = B.SDSHCODE                    
+             LEFT JOIN SYSUSER     C1  ON A.SHSUID  = C1.SUID                      
+             LEFT JOIN SYSUSER     C2  ON B.SDSUID  = C2.SUID                      
+             LEFT JOIN SUBAGENCY   D  ON B.SDSACODE = D.SACODE  `;
 
-  if (req.body.SULevel <= 1000) {
-    sql = `SELECT PDB_ACCT.pdbDec('normal', B.SUTEL, '', 0) as SUTEL
-                , A.SHCODE   , A.SHGUBUN  , A.SHNAME, A.SHNAMESHORT     
-                , A.SHSTRDATE, A.SHENDDATE, A.SHSUID, B.SUNAME          
-                , B.SUEMAIL  , A.SHMEMO                  FROM SAUPHEAD A
-           LEFT JOIN SYSUSER     B ON A.SHSUID  = B.SUID              
-           WHERE SHSTRDATE >= ?                                 
-           AND   SHSTRDATE <= ?                                 
-           AND   SHDELYN   <> 'Y'     `;
-    parm = [req.body.STRDATE, req.body.ENDDATE];
-    if (req.body.Key) {
-      sql = sql + `and  SHName like ? `;
-      parm.push(LikeKey);
-    }
-    sql = sql + `order by SHCode`;
-  } else {
-    sql = ` SELECT PDB_ACCT.pdbDec('normal', B.SUTEL, '', 0) as SUTEL 
-                  , A.SHCODE   , A.SHGUBUN  , A.SHNAME, A.SHNAMESHORT      
-                  , A.SHSTRDATE, A.SHENDDATE, A.SHSUID, B.SUNAME           
-                  , B.SUEMAIL  , A.SHMEMO                   FROM SAUPHEAD A
-               LEFT JOIN SYSUSER     B ON   A.SHSUID  = B.SUID             
-               LEFT JOIN SAUPSYSUSER C ON ( A.SHCODE = C.SUMSHCODE        )
-              WHERE A.SHSTRDATE >= ?                              
-                AND A.SHSTRDATE <= ?                                
-                AND C.SUMSUID    = PDB_ACCT.pdbEnc('normal', ?, '')
-                AND A.SHDELYN   <> 'Y'                                  
-              GROUP BY A.SHCODE, A.SHGUBUN  , A.SHNAME, A.SHNAMESHORT      
-                     , A.SHSTRDATE, A.SHENDDATE, A.SHSUID, B.SUNAME        
-                     , B.SUTEL    , B.SUEMAIL  , A.SHMEMO                `;
-    parm = [req.body.STRDATE, req.body.ENDDATE, req.body.SUID];
-    if (req.body.Key) {
-      sql = sql + `and  SHName like ? `;
-      parm.push(LikeKey);
-      sql = sql + `order by SHCode`;
-    }
-  }
-
-  await con.query(sql, parm, (err, rows, fields) => {
-    if (!err) {
-      result = {
-        ...result,
-        SaupGwanRi_Data: rows
-      };
-
-      res.send(result);
+    if (req.body[0].KeyGubun === "추진") {
+      sql = sql + " WHERE A.SHNAME LIKE ? ";
+      parm.push(KeyWord);
+      if (req.body[0].KeyYear !== "전체") {
+        sql = sql + "  AND (A.SHSTRDATE >= ? AND A.SHENDDATE <= ?) ";
+        parm.push(STRDate, ENDDate);
+      }
+    } else if (req.body[0].KeyGubun === "세부") {
+      sql = sql + " WHERE B.SDNAME LIKE ? ";
+      parm.push(KeyWord);
+      if (req.body[0].KeyYear !== "전체") {
+        sql = sql + " AND (B.SDSTRDATE >= ? AND B.SDENDDATE <= ?)";
+        parm.push(STRDate, ENDDate);
+      }
     } else {
-      console.log("Query ERR : ", err);
+      // 전체 조회
+      sql = sql + ` WHERE (  A.SHNAME LIKE ? OR B.SDNAME LIKE ?) `;
+      parm.push(KeyWord, KeyWord);
+      if (req.body[0].KeyYear !== "전체") {
+        sql =
+          sql +
+          `  AND (  (A.SHSTRDATE >= ? AND A.SHENDDATE <= ? ) 
+              OR (B.SDSTRDATE    >= ? AND B.SDENDDATE <= ? )) `;
+        parm.push(STRDate, ENDDate);
+        parm.push(STRDate, ENDDate);
+      }
     }
-  });
+    if (req.body[0].SHCODE === "") {
+      sql = sql + ` AND A.SHCODE = ?`;
+      parm.push(req.body[0].SHCODE);
+    }
+
+    // if (req.body[0].KeyYear !== "전체") {
+    //   parm.push(STRDate, ENDDate);
+    // }
+    sql = sql + ` ORDER BY A.SHCODE, A.SHNAME , B.SDNAME`;
+    await con.query(sql, parm, (err, rows, fields) => {
+      if (!err) {
+        result = {
+          ...result,
+          SAList: rows
+        };
+        console.log("SQL", sql);
+        console.log("PARM", parm);
+        console.log("rows", rows.length);
+        res.send(result);
+      } else {
+        console.log("Query ERR : ", err);
+      }
+    });
+  } else {
+    //추진사업담당자 이하 레벨, 본인에게 배정된 사업만 조회할 수 있다.
+    sql = ` SELECT A.SUMSHCODE,A.SUMSDCODE                                                                            
+                , B1.SHCODE, B1.SHNAME, B1.SHNAMESHORT, B1.SHSTRDATE, B1.SHENDDATE, B1.SHGUBUN, B1.SHMEMO            
+                , B2.SDSHCODE, B2.SDCODE, B2.SDNAME, B2.SDSTRDATE, B2.SDENDDATE, B2.SDGUBUN, B2.SDMEMO, B2.SDSACODE  
+                , C1.SDSHCODE AS SDSHCODE2, C1.SDCODE AS SDCODE2, C1.SDNAME AS SDNAME2, C1.SDSTRDATE AS SDSTRDATE2   
+                , C1.SDENDDATE AS SDENDDATE2, C1.SDGUBUN AS SDGUBUN2, C1.SDMEMO AS SDMEMO2, C1.SDSACODE AS SDSACODE2 
+                , C2.SHNAME AS SHNAME2, D.SANAME , E1.SUNAME AS SDSUNAME1 , E2.SUNAME AS SDSUNAME2 FROM SAUPSYSUSER A
+            LEFT JOIN SAUPHEAD   B1 ON ( A.SUMSHCODE = B1.SHCODE AND A.SUMSDCODE = -1                                )
+            LEFT JOIN SAUPDETAIL B2 ON ( B1.SHCODE   = B2.SDSHCODE                                                   )
+            LEFT JOIN SAUPDETAIL C1 ON ( A.SUMSHCODE = C1.SDSHCODE AND A.SUMSDCODE = C1.SDCODE                       )
+            LEFT JOIN SAUPHEAD   C2 ON ( C1.SDSHCODE = C2.SHCODE                                                     )
+            LEFT JOIN SUBAGENCY  D  ON ( C1.SDSACODE  = D.SACODE                                                     )
+            LEFT JOIN SYSUSER    E1  ON ( B1.SHSUID   = E1.SUID                                                      )
+            LEFT JOIN SYSUSER    E2  ON ( C1.SDSUID   = E1.SUID                                                      )
+            WHERE A.SUMSUID = PDB_ACCT.pdbEnc('normal', ? , '')                                               
+            ORDER BY A.SUMSDCODE, B1.SHCODE, B2.SDSHCODE, B2.SDCODE                                                  `;
+
+    parm.push(req.body.SUID);
+    await con.query(sql, parm, (err, rows, fields) => {
+      if (!err) {
+        result = {
+          ...result,
+          SAList: rows
+        };
+
+        res.send(result);
+      } else {
+        console.log("Query ERR : ", err);
+      }
+    });
+  }
 
   con.end();
 });

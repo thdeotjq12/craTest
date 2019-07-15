@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal } from "react-bootstrap";
 import ReactDOM from "react-dom";
 import ReactDataGrid from "react-data-grid";
-import Modal_Memo from "./Modal_Memo";
+
 const Grid_Ziwon = props => {
   const { columns, rows, btnRowAdd } = props;
   const [reRows, setrows] = useState(rows);
@@ -15,7 +15,6 @@ const Grid_Ziwon = props => {
     console.log("Grid - useEffect 실행됨");
     // 여기서 dispatch > 리퀘스트 로 물어보고 dispatch > suc or fail(err) 분기
     RowFix();
-
     setrows(rows);
   }, [rows]);
   const getCellActions = GetRowIdx => {
@@ -23,32 +22,47 @@ const Grid_Ziwon = props => {
     setNowRow(GetRowIdx.rowIdx);
     setNowCol(GetRowIdx.idx);
     props.getCellValue([
-      GetRowIdx.rowIdx,
-      moment(rows[GetRowIdx.rowIdx].SHSTRDATE).format("YYYY-MM-DD"),
-      moment(rows[GetRowIdx.rowIdx].SHENDDATE).format("YYYY-MM-DD")
+      GetRowIdx.rowIdx
+      // moment(rows[GetRowIdx.rowIdx].SHSTRDATE).format("YYYY-MM-DD"),
+      // moment(rows[GetRowIdx.rowIdx].SHENDDATE).format("YYYY-MM-DD")
     ]);
   };
   // 수정된 사업 배열 리턴해주기
   const Saup_Save = () => {
-    console.log("사업 업데이트 실행댐", rows);
-    for (let i = 0; i < rows.length; i++) {
-      if (rows[i].SHCODE === "") {
-        rows[i].N = "N";
-      }
-    }
-    props.Saup_Save(rows);
+    // console.log("사업 업데이트 실행댐", rows);
+    // for (let i = 0; i < rows.length; i++) {
+    //   if (rows[i].SHCODE === "") {
+    //     rows[i].N = "N";
+    //   }
+    // }
+    props.Close(false);
   };
+  // sdname  세부사업명 shname 추진 사업명
   const RowFix = () => {
+    var Test = [];
+    var j = 0;
     for (let i = 0; i < rows.length; i++) {
-      rows[i].SHSTRDATE = moment(rows[i].SHSTRDATE).format("YYYY-MM-DD"); // 시작일
-      rows[i].SHENDDATE = moment(rows[i].SHENDDATE).format("YYYY-MM-DD"); // 종료일
+      if (i === 0) {
+        j++;
+        Test[j - 1] = rows[i];
+      } else if (Test[j - 1].SDSHCODE !== rows[i].SHCODE) {
+        j++;
+        Test[j - 1] = rows[i];
+        Test[j - 1].SDNAME = rows[i].SHNAME;
+        console.log("R", rows[i]);
+        console.log("T", Test[j - 1]);
+      }
+      if (rows[i].SDSHCODE !== "") {
+        j++;
+        Test[j - 1] = rows[i];
+        Test[j - 1].SDNAME = " -  " + rows[i].SDNAME;
+      }
+
+      rows[i].SDSTRDATE = moment(rows[i].SDSTRDATE).format("YYYY-MM-DD"); // 시작일
+      rows[i].SDENDDATE = moment(rows[i].SDENDDATE).format("YYYY-MM-DD"); // 종료일
     }
-  };
-  // 메모 모달 열기
-  const MemoShow = () => {
-    if (NowCol === 7) {
-      props.MemoShow("T");
-    }
+    setrows(Test);
+    console.log("TEST", Test);
   };
 
   const onGridRowsUpdated = ({ fromRow, toRow, updated }) => {
@@ -70,7 +84,7 @@ const Grid_Ziwon = props => {
       onCellSelected={getCellActions}
       // rowRenderer
       enableCellSelect={true}
-      onRowDoubleClick={MemoShow}
+      onRowDoubleClick={Saup_Save}
       onGridRowsUpdated={onGridRowsUpdated}
     />
   );
