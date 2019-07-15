@@ -67,6 +67,7 @@ router.post("/getZiwonGwanRi", async (req, res) => {
         console.log("SQL", sql);
         console.log("PARM", parm);
         console.log("rows", rows.length);
+        // console.log("rows", rows);
         res.send(result);
       } else {
         console.log("Query ERR : ", err);

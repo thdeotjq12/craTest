@@ -35,22 +35,25 @@ const Grid_Ziwon = props => {
     //     rows[i].N = "N";
     //   }
     // }
+    props.getCellValue[]
     props.Close(false);
   };
   // sdname  세부사업명 shname 추진 사업명
   const RowFix = () => {
     var Test = [];
     var j = 0;
+    var TT = [];
     for (let i = 0; i < rows.length; i++) {
       if (i === 0) {
         j++;
         Test[j - 1] = rows[i];
+        Test[j - 1].SDNAME = rows[i].SHNAME;
       } else if (Test[j - 1].SDSHCODE !== rows[i].SHCODE) {
+        TT.push(Test[j - 1].SDSHCODE);
         j++;
+
         Test[j - 1] = rows[i];
         Test[j - 1].SDNAME = rows[i].SHNAME;
-        console.log("R", rows[i]);
-        console.log("T", Test[j - 1]);
       }
       if (rows[i].SDSHCODE !== "") {
         j++;
@@ -58,11 +61,12 @@ const Grid_Ziwon = props => {
         Test[j - 1].SDNAME = " -  " + rows[i].SDNAME;
       }
 
-      rows[i].SDSTRDATE = moment(rows[i].SDSTRDATE).format("YYYY-MM-DD"); // 시작일
-      rows[i].SDENDDATE = moment(rows[i].SDENDDATE).format("YYYY-MM-DD"); // 종료일
+      // rows[i].SDSTRDATE = moment(rows[i].SDSTRDATE).format("YYYY-MM-DD"); // 시작일
+      // rows[i].SDENDDATE = moment(rows[i].SDENDDATE).format("YYYY-MM-DD"); // 종료일
     }
-    setrows(Test);
+
     console.log("TEST", Test);
+    console.log("TT", TT);
   };
 
   const onGridRowsUpdated = ({ fromRow, toRow, updated }) => {
