@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Modal } from "react-bootstrap";
 import ReactDOM from "react-dom";
 import ReactDataGrid from "react-data-grid";
-
-const Grid_Ziwon = props => {
+import "./index.css";
+const Grid_Holiday = props => {
   const { columns, rows, btnRowAdd } = props;
   const [reRows, setrows] = useState(rows);
   const [NowRow, setNowRow] = useState(0); // 현재 행
@@ -35,13 +35,12 @@ const Grid_Ziwon = props => {
     //     rows[i].N = "N";
     //   }
     // }
-
-    props.getCellValue({
-      SDSHCODE: rows[NowRow].SDSHCODE,
-      SHCODE: rows[NowRow].SHCODE
-    });
-    console.log("전달합니다", rows[NowRow]);
-    props.Close(false);
+    // props.getCellValue({
+    //   SDSHCODE: rows[NowRow].SDSHCODE,
+    //   SHCODE: rows[NowRow].SHCODE
+    // });
+    // console.log("전달합니다", rows[NowRow]);
+    // props.Close(false);
   };
   // sdname  세부사업명 shname 추진 사업명
   const RowFix = () => {
@@ -72,8 +71,9 @@ const Grid_Ziwon = props => {
       enableCellSelect={true}
       onRowDoubleClick={Saup_Save}
       onGridRowsUpdated={onGridRowsUpdated}
+      minWidth={1200}
     />
   );
 };
 
-export default Grid_Ziwon;
+export default Grid_Holiday;

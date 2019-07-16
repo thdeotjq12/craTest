@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import BasicInfo from "./BasicInfo";
 import SaupGwanRi from "./SaupGwanRi";
 import ZiwonGwanRi from "./ZiwonGwanRi";
+import CommonInfo from "./CommonInfo";
 import MainLayout from "../../../components/Layout/MainLayout";
 import { ADD_BASIC_SUCCESS } from "../../../modules/Main/CompanyInfo/BasicInfo/BasicInfoReducer";
 import axios from "axios";
@@ -46,7 +47,7 @@ const CompanyInfo = props => {
         {selectedMenu === 1 && <BasicInfo />}
         {selectedMenu === 2 && <SaupGwanRi />}
         {selectedMenu === 3 && <ZiwonGwanRi />}
-        {selectedMenu === 4 && <div>공통근로정보</div>}
+        {selectedMenu === 4 && <CommonInfo />}
       </div>
     </div>
   );

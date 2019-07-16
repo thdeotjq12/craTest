@@ -35,7 +35,12 @@ const Grid_Ziwon = props => {
     //     rows[i].N = "N";
     //   }
     // }
-    props.getCellValue[]
+
+    props.getCellValue({
+      SDSHCODE: rows[NowRow].SDSHCODE,
+      SDCODE: rows[NowRow].SDCODE
+    });
+    console.log("전달합니다", rows[NowRow]);
     props.Close(false);
   };
   // sdname  세부사업명 shname 추진 사업명

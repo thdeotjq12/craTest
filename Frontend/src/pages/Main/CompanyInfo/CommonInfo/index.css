@@ -13,12 +13,10 @@
   border: 0;
   font-size: 20px;
   text-overflow: ellipsis;
-  padding: 0;
   /* 텍스트 크기 넘어가면 ... 표시 */
 }
 #TdInput {
   padding: 0;
-  height: 100%;
 }
 .ColTitle {
   background-color: slategray;
@@ -28,7 +26,8 @@
 .ColGubun {
   background-color: lightblue;
   text-align: center;
-  height: 50px;
+  height: 35px;
+  width: 15%;
 }
 
 .MainDivContainer {

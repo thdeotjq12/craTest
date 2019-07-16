@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Modal } from "react-bootstrap";
 import ReactDOM from "react-dom";
 import ReactDataGrid from "react-data-grid";
-
-const Grid_Ziwon = props => {
+import "./index.css";
+const Grid_BeGwaSudang = props => {
   const { columns, rows, btnRowAdd } = props;
   const [reRows, setrows] = useState(rows);
   const [NowRow, setNowRow] = useState(0); // 현재 행
@@ -35,13 +35,12 @@ const Grid_Ziwon = props => {
     //     rows[i].N = "N";
     //   }
     // }
-
-    props.getCellValue({
-      SDSHCODE: rows[NowRow].SDSHCODE,
-      SHCODE: rows[NowRow].SHCODE
-    });
-    console.log("전달합니다", rows[NowRow]);
-    props.Close(false);
+    // props.getCellValue({
+    //   SDSHCODE: rows[NowRow].SDSHCODE,
+    //   SHCODE: rows[NowRow].SHCODE
+    // });
+    // console.log("전달합니다", rows[NowRow]);
+    // props.Close(false);
   };
   // sdname  세부사업명 shname 추진 사업명
   const RowFix = () => {
@@ -63,17 +62,48 @@ const Grid_Ziwon = props => {
   };
 
   return (
-    <ReactDataGrid
-      columns={columns}
-      rowGetter={i => reRows[i]} //(필수) 일반 키 / 값 쌍 객체를 반환해야하는 각 렌더링 된 행에 대해 호출되는 함수
-      rowsCount={reRows.length} // (필수) 렌더링 될 행의 수
-      onCellSelected={getCellActions}
-      // rowRenderer
-      enableCellSelect={true}
-      onRowDoubleClick={Saup_Save}
-      onGridRowsUpdated={onGridRowsUpdated}
-    />
+    <div>
+      <div className="input-group mb-3" style={{ marginBottom: "0px" }}>
+        <div className="input-group-prepend">
+          <span
+            className="input-group-text"
+            id="basic-addon1"
+            style={{ width: "120px" }}
+          >
+            비과세수당
+          </span>
+
+          <button
+            className="btn btn-outline-secondary"
+            type="button"
+            id="button-addon2"
+            style={{ width: "90px" }}
+          >
+            추가
+          </button>
+          <button
+            className="btn btn-outline-secondary"
+            type="button"
+            id="button-addon2"
+            style={{ width: "90px" }}
+          >
+            제거
+          </button>
+        </div>
+      </div>
+      <ReactDataGrid
+        columns={columns}
+        rowGetter={i => reRows[i]} //(필수) 일반 키 / 값 쌍 객체를 반환해야하는 각 렌더링 된 행에 대해 호출되는 함수
+        rowsCount={reRows.length} // (필수) 렌더링 될 행의 수
+        onCellSelected={getCellActions}
+        // rowRenderer
+        enableCellSelect={true}
+        onRowDoubleClick={Saup_Save}
+        onGridRowsUpdated={onGridRowsUpdated}
+        minWidth={300}
+      />
+    </div>
   );
 };
 
-export default Grid_Ziwon;
+export default Grid_BeGwaSudang;

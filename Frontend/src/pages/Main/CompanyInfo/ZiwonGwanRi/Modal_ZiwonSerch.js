@@ -49,7 +49,10 @@ const Modal_ZiwonSerch = props => {
   // 그리드 셀 클릭 내용 가져오기
   const getCellValue = value => {
     // setState
-    setSSN(value[0]);
+    console.log("TTTTTTT", value);
+    console.log("TTTDDF", value.SDSHCODE);
+
+    props.getCellValue(value);
   };
   // 검색 키워드
   const ChangeKeyWord = KeyWord => {
@@ -65,7 +68,7 @@ const Modal_ZiwonSerch = props => {
 
     axios
       .post(
-        "http://localhost:5000/CompanyInfo/ZiwonGwanRi/getZiwonGwanRi",
+        "http://localhost:5000/CompanyInfo/ZiwonGwanRi/getZiwonSearch",
         parm
       )
       .then(res => {
