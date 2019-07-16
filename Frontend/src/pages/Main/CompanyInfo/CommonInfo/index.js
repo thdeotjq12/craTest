@@ -440,25 +440,146 @@ const CommonInfo = props => {
               </td>
             </tr>
             <tr>
-              <td className="ColGubun">
+              <td className="ColGubun" rowSpan="5">
                 고용보험
-                <td id="TdInput" />
-                <td id="TdInput" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
               </td>
 
-              <td id="TdInput">
+              <td>
                 <input className="InputContainer" />
               </td>
-              <td id="TdInput">
+            </tr>
+            <tr>
+              <td>
                 <input className="InputContainer" />
               </td>
-              <td id="TdInput">
+              <td>
                 <input className="InputContainer" />
               </td>
-              <td id="TdInput">
+              <td>
                 <input className="InputContainer" />
               </td>
-              <td id="TdInput">
+              <td>
+                <input className="InputContainer" />
+              </td>
+
+              <td>
+                <input className="InputContainer" />
+              </td>
+            </tr>
+            <tr>
+              <td rowSpan="3">
+                <input className="InputContainer" />
+              </td>
+
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+            </tr>
+            <tr>
+              <td className="ColGubun" rowSpan="3">
+                산재보험
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
+                <input className="InputContainer" />
+              </td>
+              <td>
                 <input className="InputContainer" />
               </td>
             </tr>

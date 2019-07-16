@@ -1,0 +1,48 @@
+.TableTitle {
+  background-color: slategray;
+  color: white;
+  width: 40%;
+  float: left;
+  height: 40px;
+  text-align: center;
+  padding: 5px 50px;
+}
+.InputContainer {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  font-size: 20px;
+  text-overflow: ellipsis;
+  padding: 0;
+  /* 텍스트 크기 넘어가면 ... 표시 */
+}
+#TdInput {
+  padding: 0;
+  height: 100%;
+}
+.ColTitle {
+  /* height: 40px;
+  text-align: center; */
+  background-color: slategray;
+  color: white;
+}
+
+.ColGubun {
+  background-color: lightblue;
+  text-align: center;
+  height: 50px;
+}
+
+.MainDivContainer {
+  overflow: scroll;
+  overflow-x: scroll;
+  overflow-y: scroll;
+}
+
+.ModalContainer {
+  max-width: 80% !important;
+
+  /* width 은 적용안됨 */
+  display: block;
+  padding-left: 0px;
+}

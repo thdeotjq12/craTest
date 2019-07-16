@@ -1,5 +1,6 @@
 import React, { useState, Component } from "react";
-
+import Insa from "./Insa";
+import Staff from "./Staff";
 import CompanyInfo from "./CompanyInfo";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 const Main = ({ createBasicInfo, BaicInfo_Data }) => {
@@ -40,8 +41,8 @@ const Main = ({ createBasicInfo, BaicInfo_Data }) => {
         {selectedMenu === 2 && (
           <CompanyInfo createBasicInfo={createBasicInfo} />
         )}
-        {selectedMenu === 3 && <div />}
-        {selectedMenu === 4 && <div />}
+        {selectedMenu === 3 && <Staff />}
+        {selectedMenu === 4 && <Insa />}
       </div>
     </div>
   );
