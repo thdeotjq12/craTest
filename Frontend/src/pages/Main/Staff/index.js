@@ -1,16 +1,35 @@
-import React from "react";
+import React, { useState, Component } from "react";
+import ING_N from "../../../Images/ING_N.bmp";
+import ING_Y from "../../../Images/ING_Y.bmp";
+import Info from "./Info";
+import Info_Seabu from "./Info_Seabu";
+import Grid_STList from "./Grid_STList";
+
 import "./index.css";
 
-const index = () => {
+const Grid_STListCol = [
+  { key: "DDD1", name: "전체선택", width: 40, editable: true },
+  { key: "DDD2", name: "구분", width: 40, editable: true },
+  { key: "DDD3", name: "근로자명", width: 80, editable: true },
+  { key: "DDD4", name: "세부사업명", width: 120, editable: true }
+];
+
+const Staff = props => {
+  const getCellValue = value => {};
+  const [selectedMenu, setSeletedMenu] = useState(1);
+  const onMenuClick = idx => {
+    setSeletedMenu(idx);
+  };
+
   return (
-    <div>
+    <div className="MainDivContainer">
       <div>
-        <table>
+        <table className="table table-bordered">
           <tbody>
             <tr className="ColTitle">
               <td style={{ width: "150px" }}>사업시작연도</td>
-              <td style={{ width: "350px" }}>참여사업</td>
-              <td style={{ width: "350px" }}>참여 세부사업</td>
+              <td style={{ width: "250px" }}>참여사업</td>
+              <td style={{ width: "250px" }}>참여 세부사업</td>
               <td style={{ width: "150px" }}>검색어</td>
               <td rowSpan="2">
                 <button
@@ -19,6 +38,60 @@ const index = () => {
                   style={{ width: "100%", height: "80px", padding: "0" }}
                 >
                   검색
+                </button>
+              </td>
+              <td rowSpan="2">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  style={{ width: "100%", height: "80px", padding: "0" }}
+                >
+                  사원복사
+                </button>
+              </td>
+              <td rowSpan="2">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  style={{ width: "100%", height: "80px", padding: "0" }}
+                >
+                  삭제
+                </button>
+              </td>
+              <td rowSpan="2">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  style={{ width: "100%", height: "80px", padding: "0" }}
+                >
+                  엑셀
+                </button>
+              </td>
+              <td rowSpan="2">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  style={{ width: "100%", height: "80px", padding: "0" }}
+                >
+                  신규등록
+                </button>
+              </td>
+              <td rowSpan="2">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  style={{ width: "100%", height: "80px", padding: "0" }}
+                >
+                  수정
+                </button>
+              </td>
+              <td rowSpan="2">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  style={{ width: "100%", height: "80px", padding: "0" }}
+                >
+                  저장
                 </button>
               </td>
             </tr>
@@ -110,10 +183,47 @@ const index = () => {
                   </div>
                 </div>
               </td>
-              <td>
-                <input type="text" class="form-control" />
-              </td>
+
               <td />
+            </tr>
+
+            <tr>
+              <td className="ColGubun">범례</td>
+              <td>
+                <img src={ING_Y} /> 진행중
+                <img src={ING_N} />
+                사업종료
+                <img src={ING_N} />
+                선택
+              </td>
+
+              <td>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => onMenuClick(1)}
+                >
+                  기본정보
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => onMenuClick(2)}
+                >
+                  급여정보
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td colSpan="2">
+                <Grid_STList
+                  columns={Grid_STListCol}
+                  rows={["123", "123"]}
+                  getCellValue={getCellValue}
+                />
+              </td>
+              <td colSpan="9" style={{ verticalAlign: "top" }}>
+                {selectedMenu === 1 && <Info />}
+                {selectedMenu === 2 && <Info_Seabu />}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -122,4 +232,4 @@ const index = () => {
   );
 };
 
-export default index;
+export default Staff;

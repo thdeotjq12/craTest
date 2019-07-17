@@ -64,8 +64,7 @@ router.post("/getZiwonSearch", async (req, res) => {
           ...result,
           SAList: rows
         };
-        console.log("SQL", sql);
-        console.log("PARM", parm);
+
         console.log("rows", rows.length);
         // console.log("rows", rows);
         res.send(result);

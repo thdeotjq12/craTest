@@ -21,8 +21,9 @@
   height: 100%;
 }
 .ColTitle {
-  /* height: 40px;
-  text-align: center; */
+  height: 40px;
+
+  text-align: center;
   background-color: slategray;
   color: white;
 }
@@ -34,9 +35,9 @@
 }
 
 .MainDivContainer {
-  overflow: auto;
-  overflow-x: auto;
-  overflow-y: auto;
+  overflow: scroll;
+  overflow-x: scroll;
+  overflow-y: scroll;
 }
 
 .ModalContainer {
@@ -45,4 +46,9 @@
   /* width 은 적용안됨 */
   display: block;
   padding-left: 0px;
+}
+
+.ColMultiGubun {
+  background-color: lightblue;
+  text-align: center;
 }

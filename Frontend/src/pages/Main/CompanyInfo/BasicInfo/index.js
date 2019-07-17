@@ -545,26 +545,12 @@ const BasicInfo = ({ props }) => {
 
             {/* 버튼 반응이 없음 - reactstrap*/}
             <div>
-              <ButtonToolbar>
-                <Button
-                  variant="primary"
-                  onClick={() => [
-                    setModals(true),
-                    dispatch({
-                      type: ADD_BASIC_Damdang_REQUEST
-                    })
-                  ]}
-                >
-                  Launch modal with grid
-                </Button>
-
-                <ModalGrid
-                  SaupRowNum={SaupRowNum}
-                  Modals={Modals}
-                  handleClose={handleClose}
-                  SAList={SAList}
-                />
-              </ButtonToolbar>
+              <ModalGrid
+                SaupRowNum={SaupRowNum}
+                Modals={Modals}
+                handleClose={handleClose}
+                SAList={SAList}
+              />
             </div>
             <div>
               <table className="table table-bordered">
@@ -968,7 +954,16 @@ const BasicInfo = ({ props }) => {
               </table>
             </div>
             <label className="TableTitle">지자체/사업추진부서 등록</label>
-            <button type="button" className="btn btn-primary">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => [
+                setModals(true),
+                dispatch({
+                  type: ADD_BASIC_Damdang_REQUEST
+                })
+              ]}
+            >
               담당자 상세보기
             </button>
             <button

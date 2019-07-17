@@ -111,13 +111,12 @@ const ZiwonGwanRi = props => {
       <div>
         <div className="input-group mb-3">
           <span className="input-group-text" id="inputGroup-sizing-default">
-            Default
+            사업검색
           </span>
           <input
             type="text"
             // className="form-control"
-            placeholder="Recipient's username"
-            aria-label="Recipient's username"
+
             aria-describedby="button-addon2"
           />
           <Modal_ZiwonSerch
@@ -127,7 +126,7 @@ const ZiwonGwanRi = props => {
           />
           <div className="input-group-append">
             <button
-              className="btn btn-outline-secondary"
+              className="btn btn-primary"
               type="button"
               id="button-addon2"
               onClick={() => setMD_ZiwonSerch(true)}
@@ -135,13 +134,11 @@ const ZiwonGwanRi = props => {
               검색
             </button>
             <span className="input-group-text" id="inputGroup-sizing-default">
-              Default
+              세부사업
             </span>
             <input
               type="text"
               className="form-control"
-              placeholder="Recipient's username"
-              aria-label="Recipient's username"
               aria-describedby="button-addon2"
             />
           </div>
@@ -150,7 +147,7 @@ const ZiwonGwanRi = props => {
         <div className="input-group mb-3">
           <div className="input-group-prepend">
             <span className="input-group-text" id="basic-addon1">
-              @
+              전체지원자
             </span>
           </div>
           <input
@@ -161,7 +158,7 @@ const ZiwonGwanRi = props => {
             aria-describedby="basic-addon1"
           />
           <span className="input-group-text" id="basic-addon1">
-            @
+            선발자
           </span>
           <input
             type="text"
@@ -171,7 +168,7 @@ const ZiwonGwanRi = props => {
             aria-describedby="basic-addon1"
           />
           <span className="input-group-text" id="basic-addon1">
-            @
+            미선발
           </span>
           <input
             type="text"
@@ -181,7 +178,7 @@ const ZiwonGwanRi = props => {
             aria-describedby="basic-addon1"
           />
           <span className="input-group-text" id="basic-addon1">
-            @
+            후보자
           </span>
           <input
             type="text"
@@ -191,7 +188,7 @@ const ZiwonGwanRi = props => {
             aria-describedby="basic-addon1"
           />
           <span className="input-group-text" id="basic-addon1">
-            @
+            포기
           </span>
           <input
             type="text"
@@ -201,27 +198,7 @@ const ZiwonGwanRi = props => {
             aria-describedby="basic-addon1"
           />
           <span className="input-group-text" id="basic-addon1">
-            @
-          </span>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Username"
-            aria-label="Username"
-            aria-describedby="basic-addon1"
-          />
-          <span className="input-group-text" id="basic-addon1">
-            @
-          </span>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Username"
-            aria-label="Username"
-            aria-describedby="basic-addon1"
-          />
-          <span className="input-group-text" id="basic-addon1">
-            @
+            지원자등록
           </span>
           <input
             type="text"
@@ -234,18 +211,17 @@ const ZiwonGwanRi = props => {
 
         <div className="input-group mb-3">
           <span className="input-group-text" id="inputGroup-sizing-default">
-            Default
+            이름/주민번호
           </span>
           <input
             type="text"
             // className="form-control"
-            placeholder="Recipient's username"
-            aria-label="Recipient's username"
+
             aria-describedby="button-addon2"
           />
           <div className="input-group-append">
             <span className="input-group-text" id="inputGroup-sizing-default">
-              Default
+              선발구분
             </span>
 
             <button
@@ -274,22 +250,22 @@ const ZiwonGwanRi = props => {
             </div>
             <div className="btnSideFun">
               <button className="btn btn-outline-secondary" type="button">
-                Button
+                검색
               </button>
               <button className="btn btn-outline-secondary" type="button">
-                Button
+                선발
               </button>
               <button className="btn btn-outline-secondary" type="button">
-                Button
+                후선발
               </button>
               <button className="btn btn-outline-secondary" type="button">
-                Button
+                후보
               </button>
               <button className="btn btn-outline-secondary" type="button">
-                Button
+                포기
               </button>
               <button className="btn btn-outline-secondary" type="button">
-                Button
+                삭제
               </button>
             </div>
           </div>
