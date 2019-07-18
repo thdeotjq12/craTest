@@ -26,21 +26,29 @@ const Staff = props => {
       <div>
         <table className="table table-bordered">
           <tbody>
-            <tr className="ColTitle">
-              <td style={{ width: "150px" }}>사업시작연도</td>
-              <td style={{ width: "250px" }}>참여사업</td>
-              <td style={{ width: "250px" }}>참여 세부사업</td>
-              <td style={{ width: "150px" }}>검색어</td>
-              <td rowSpan="2">
+            <tr>
+              <td className="ColTitle" style={{ width: "150px" }}>
+                사업시작연도
+              </td>
+              <td className="ColTitle" style={{ width: "250px" }}>
+                참여사업
+              </td>
+              <td className="ColTitle" style={{ width: "250px" }}>
+                참여 세부사업
+              </td>
+              <td className="ColTitle" style={{ width: "150px" }}>
+                검색어
+              </td>
+              <td rowSpan="2" style={{ padding: "0", height: "100%" }}>
                 <button
                   type="button"
                   class="btn btn-primary"
-                  style={{ width: "100%", height: "80px", padding: "0" }}
+                  style={{ width: "100%", height: "80px" }}
                 >
                   검색
                 </button>
               </td>
-              <td rowSpan="2">
+              <td rowSpan="2" style={{ padding: "0", height: "100%" }}>
                 <button
                   type="button"
                   class="btn btn-primary"
@@ -49,7 +57,7 @@ const Staff = props => {
                   사원복사
                 </button>
               </td>
-              <td rowSpan="2">
+              <td rowSpan="2" style={{ padding: "0", height: "100%" }}>
                 <button
                   type="button"
                   class="btn btn-primary"
@@ -58,7 +66,7 @@ const Staff = props => {
                   삭제
                 </button>
               </td>
-              <td rowSpan="2">
+              <td rowSpan="2" style={{ padding: "0", height: "100%" }}>
                 <button
                   type="button"
                   class="btn btn-primary"
@@ -67,7 +75,7 @@ const Staff = props => {
                   엑셀
                 </button>
               </td>
-              <td rowSpan="2">
+              <td rowSpan="2" style={{ padding: "0", height: "100%" }}>
                 <button
                   type="button"
                   class="btn btn-primary"
@@ -76,7 +84,7 @@ const Staff = props => {
                   신규등록
                 </button>
               </td>
-              <td rowSpan="2">
+              <td rowSpan="2" style={{ padding: "0", height: "100%" }}>
                 <button
                   type="button"
                   class="btn btn-primary"
@@ -85,7 +93,7 @@ const Staff = props => {
                   수정
                 </button>
               </td>
-              <td rowSpan="2">
+              <td rowSpan="2" style={{ padding: "0", height: "100%" }}>
                 <button
                   type="button"
                   class="btn btn-primary"

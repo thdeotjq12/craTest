@@ -544,7 +544,7 @@ const BasicInfo = ({ props }) => {
             {/* Button, Modal, ModalHeader, ModalBody, ModalFooter */}
 
             {/* 버튼 반응이 없음 - reactstrap*/}
-            <div>
+            <div className="ModalContainer">
               <ModalGrid
                 SaupRowNum={SaupRowNum}
                 Modals={Modals}

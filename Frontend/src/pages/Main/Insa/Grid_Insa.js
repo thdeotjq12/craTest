@@ -2,14 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Modal } from "react-bootstrap";
 import ReactDOM from "react-dom";
 import ReactDataGrid from "react-data-grid";
-
-const Grid_Ziwon = props => {
+import "./index.css";
+const Grid_Insa = props => {
   const { columns, rows, btnRowAdd } = props;
   const [reRows, setrows] = useState(rows);
   const [NowRow, setNowRow] = useState(0); // 현재 행
   const [NowCol, setNowCol] = useState(0); // 현재 열
   const [Count, setCount] = useState(0);
-  const [Select, setSelect] = useState([]); // 체크한 행 번호
   var moment = require("moment");
 
   useEffect(() => {
@@ -22,11 +21,11 @@ const Grid_Ziwon = props => {
     // 델파이 SelectSaupHeadList 함수 구현
     setNowRow(GetRowIdx.rowIdx);
     setNowCol(GetRowIdx.idx);
-    // props.getCellValue([
-    //   GetRowIdx.rowIdx
-    //   // moment(rows[GetRowIdx.rowIdx].SHSTRDATE).format("YYYY-MM-DD"),
-    //   // moment(rows[GetRowIdx.rowIdx].SHENDDATE).format("YYYY-MM-DD")
-    // ]);
+    props.getCellValue([
+      GetRowIdx.rowIdx
+      // moment(rows[GetRowIdx.rowIdx].SHSTRDATE).format("YYYY-MM-DD"),
+      // moment(rows[GetRowIdx.rowIdx].SHENDDATE).format("YYYY-MM-DD")
+    ]);
   };
   // 수정된 사업 배열 리턴해주기
   const Saup_Save = () => {
@@ -41,6 +40,7 @@ const Grid_Ziwon = props => {
     //   SHCODE: rows[NowRow].SHCODE
     // });
     // console.log("전달합니다", rows[NowRow]);
+    // props.Close(false);
   };
   // sdname  세부사업명 shname 추진 사업명
   const RowFix = () => {
@@ -61,40 +61,49 @@ const Grid_Ziwon = props => {
     return { Update_rows };
   };
 
-  const onRowsSelected = rows => {
-    setSelect(Select.concat(rows.map(r => r.rowIdx)));
-    console.log("Select!! ", rows.rowIdx);
-    console.log("Select ?? ", Select, Select.rowIdx);
-  };
-
-  const onRowsDeselected = rows => {
-    let rowIndexes = rows.map(r => r.rowIdx);
-
-    setSelect(Select.filter(i => rowIndexes.indexOf(i) === -1));
-    console.log("Select ?? ", Select, Select.rowIdx);
-  };
-
   return (
-    <ReactDataGrid
-      columns={columns}
-      rowGetter={i => reRows[i]} //(필수) 일반 키 / 값 쌍 객체를 반환해야하는 각 렌더링 된 행에 대해 호출되는 함수
-      rowsCount={reRows.length} // (필수) 렌더링 될 행의 수
-      onCellSelected={getCellActions}
-      // rowRenderer
-      enableCellSelect={true}
-      onRowDoubleClick={Saup_Save}
-      onGridRowsUpdated={onGridRowsUpdated}
-      rowSelection={{
-        showCheckbox: true,
-        enableShiftSelect: true,
-        onRowsSelected: onRowsSelected,
-        onRowsDeselected: onRowsDeselected,
-        selectBy: {
-          indexes: Select
-        }
-      }}
-    />
+    <div>
+      <div className="input-group mb-3" style={{ marginBottom: "0px" }}>
+        <div className="input-group-prepend">
+          <span
+            className="input-group-text"
+            id="basic-addon1"
+            // style={{ width: "120px" }}
+          >
+            날짜입력은 '-' 기호 없이 숫자만 입력(YYYYMMDD 또는 MMDD)
+          </span>
+
+          <button
+            className="btn btn-outline-secondary"
+            type="button"
+            id="button-addon2"
+            style={{ width: "90px" }}
+          >
+            추가
+          </button>
+          <button
+            className="btn btn-outline-secondary"
+            type="button"
+            id="button-addon2"
+            style={{ width: "90px" }}
+          >
+            제거
+          </button>
+        </div>
+      </div>
+      <ReactDataGrid
+        columns={columns}
+        rowGetter={i => reRows[i]} //(필수) 일반 키 / 값 쌍 객체를 반환해야하는 각 렌더링 된 행에 대해 호출되는 함수
+        rowsCount={reRows.length} // (필수) 렌더링 될 행의 수
+        onCellSelected={getCellActions}
+        // rowRenderer
+        enableCellSelect={true}
+        onRowDoubleClick={Saup_Save}
+        onGridRowsUpdated={onGridRowsUpdated}
+        minWidth={800}
+      />
+    </div>
   );
 };
 
-export default Grid_Ziwon;
+export default Grid_Insa;

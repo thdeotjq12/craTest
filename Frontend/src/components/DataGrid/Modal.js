@@ -25,6 +25,8 @@ import {
   connect
   // bindActionCreators
 } from "react-redux";
+
+import "./index.css";
 import axios from "axios";
 import FormRow from "./FormRow";
 import Grid from "./Grid";
@@ -192,7 +194,7 @@ const ModalGrid = props => {
       onHide={handleClose}
       aria-labelledby="contained-modal-title-vcenter"
       dialogClassName="ModalContainer"
-      centered
+      // centered
       // modal-dialog modal-lg
     >
       <Modal.Header closeButton>

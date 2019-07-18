@@ -1,7 +1,26 @@
 import React from "react";
 import "./index.css";
 import Grid_ChamYeo from "./Grid_ChamYeo";
-
+import Grid_NomalSudang from "./Grid_NomalSudang";
+import Grid_TimeSudang from "./Grid_TimeSudang";
+import Grid_DaySudang from "./Grid_DaySudang";
+import Grid_BeGwaSudang from "./Grid_BeGwaSudang";
+const Grid_NomalSudangCol = [
+  { key: "DDD", name: "일반수당", width: 150, editable: true },
+  { key: "DDD", name: "수당금액", width: 150, editable: true }
+];
+const Grid_TimeSudangCol = [
+  { key: "DDD", name: "시간비례수당", width: 150, editable: true },
+  { key: "DDD", name: "수당금액", width: 150, editable: true }
+];
+const Grid_DaySudangCol = [
+  { key: "DDD", name: "일자비례수당", width: 150, editable: true },
+  { key: "DDD", name: "수당금액", width: 150, editable: true }
+];
+const Grid_BeGwaSudangCol = [
+  { key: "DDD", name: "비과세수당", width: 150, editable: true },
+  { key: "DDD", name: "수당금액", width: 150, editable: true }
+];
 const Grid_ChamYeoCol = [
   { key: "DDD1", name: "사업명", width: 180, editable: true },
   { key: "DDD2", name: "시작일", width: 80, editable: true },
@@ -508,7 +527,232 @@ const Info_Seabu = props => {
         </div>
         <table className="table table-bordered">
           <tbody>
-            <tr />
+            <tr>
+              <td>
+                <Grid_NomalSudang
+                  columns={Grid_NomalSudangCol}
+                  rows={["123", "123"]}
+                  getCellValue={getCellValue}
+                />
+              </td>
+              <td>
+                <Grid_TimeSudang
+                  columns={Grid_TimeSudangCol}
+                  rows={["123", "123"]}
+                  getCellValue={getCellValue}
+                />
+              </td>
+              <td>
+                <Grid_DaySudang
+                  columns={Grid_DaySudangCol}
+                  rows={["123", "123"]}
+                  getCellValue={getCellValue}
+                />
+              </td>
+              <td>
+                <Grid_BeGwaSudang
+                  columns={Grid_BeGwaSudangCol}
+                  rows={["123", "123"]}
+                  getCellValue={getCellValue}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div>
+          <label className="TableTitle">사회보험</label>
+        </div>
+        <table className="table table-bordered">
+          <tbody>
+            <tr>
+              <td className="ColGubun">실수령급여</td>
+              <td id="TdInput">
+                <label class="form-check-label">
+                  <input type="radio" name="optradio" />
+                  귀속월액
+                </label>
+                <label class="form-check-label">
+                  <input type="radio" name="optradio" />
+                  보수월액
+                </label>
+                <label class="form-check-label">
+                  <input type="radio" name="optradio" />
+                  납입액입력
+                </label>
+                <label class="form-check-label">
+                  <input type="radio" name="optradio" />
+                  외부파일등록
+                </label>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div>
+          <label className="TableTitle">사회보험 관리</label>
+        </div>
+        <table className="table table-bordered">
+          <tbody>
+            <tr>
+              <td className="ColGubun">구분</td>
+              <td className="ColGubun">여/부</td>
+              <td className="ColGubun">취득월 납부</td>
+              <td className="ColGubun">취득일</td>
+              <td className="ColGubun">상실일</td>
+              <td className="ColGubun" colSpan="2">
+                보험료
+              </td>
+              <td className="ColGubun">관리번호</td>
+            </tr>
+            <tr>
+              <td className="ColGubun">국민연금</td>
+              <td id="TdInput">
+                <label class="form-check-label">
+                  <input type="checkbox" name="optradio" />
+                </label>
+              </td>
+              <td id="TdInput">
+                <label class="form-check-label">
+                  <input type="checkbox" name="optradio" />
+                </label>
+              </td>
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+            </tr>
+            <tr>
+              <td className="ColGubun" rowSpan="2">
+                건강보험
+              </td>
+              <td id="TdInput" rowSpan="2">
+                <label class="form-check-label">
+                  <input type="checkbox" name="optradio" />
+                </label>
+              </td>
+              <td id="TdInput" rowSpan="2">
+                <label class="form-check-label">
+                  <input type="checkbox" name="optradio" />
+                </label>
+              </td>
+              <td id="TdInput" rowSpan="2">
+                <input className="InputContainer" />
+              </td>
+
+              <td id="TdInput" rowSpan="2">
+                <input className="InputContainer" />
+              </td>
+              <td id="TdInput">건강보험</td>
+
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+              <td id="TdInput" rowSpan="2">
+                <input className="InputContainer" />
+              </td>
+              <td id="TdInput" rowSpan="2">
+                <input className="InputContainer" />
+              </td>
+            </tr>
+
+            <tr>
+              <td id="TdInput">장기요양</td>
+
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+            </tr>
+            <tr>
+              <td className="ColGubun">고용보험</td>
+              <td id="TdInput">
+                <label class="form-check-label">
+                  <input type="checkbox" name="optradio" />
+                </label>
+              </td>
+              <td id="TdInput">
+                <label class="form-check-label">
+                  <input type="checkbox" name="optradio" />
+                </label>
+              </td>
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+            </tr>
+            <tr>
+              <td className="ColGubun">산재보험</td>
+              <td id="TdInput">
+                <label class="form-check-label">
+                  <input type="checkbox" name="optradio" />
+                </label>
+              </td>
+              <td id="TdInput">
+                <label class="form-check-label">
+                  <input type="checkbox" name="optradio" />
+                </label>
+              </td>
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+              <td id="TdInput">
+                <input className="InputContainer" />
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>

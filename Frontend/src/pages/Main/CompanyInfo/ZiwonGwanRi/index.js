@@ -107,13 +107,14 @@ const ZiwonGwanRi = props => {
     setMD_ZiwonSerch(Modals_ZiwonSerch ? false : true);
   };
   return (
-    <div>
+    <div className="MainDivContainer">
       <div>
         <div className="input-group mb-3">
           <span className="input-group-text" id="inputGroup-sizing-default">
             사업검색
           </span>
           <input
+            className="form-control"
             type="text"
             // className="form-control"
 
@@ -124,23 +125,47 @@ const ZiwonGwanRi = props => {
             handleClose={handleClose_ZiwonSerch}
             getCellValue={getCellValue}
           />
-          <div className="input-group-append">
+
+          <button
+            className="btn btn-primary"
+            type="button"
+            id="button-addon2"
+            onClick={() => setMD_ZiwonSerch(true)}
+          >
+            검색
+          </button>
+          <span className="input-group-text" id="inputGroup-sizing-default">
+            세부사업
+          </span>
+          <input
+            type="text"
+            className="form-control"
+            aria-describedby="button-addon2"
+          />
+
+          <div
+            style={{
+              float: "right"
+            }}
+          >
             <button
-              className="btn btn-primary"
               type="button"
-              id="button-addon2"
-              onClick={() => setMD_ZiwonSerch(true)}
+              class="btn btn-primary"
+              style={{
+                float: "right"
+              }}
             >
-              검색
+              저장
             </button>
-            <span className="input-group-text" id="inputGroup-sizing-default">
-              세부사업
-            </span>
-            <input
-              type="text"
-              className="form-control"
-              aria-describedby="button-addon2"
-            />
+            <button
+              type="button"
+              class="btn btn-primary"
+              style={{
+                float: "right"
+              }}
+            >
+              수정
+            </button>
           </div>
         </div>
 

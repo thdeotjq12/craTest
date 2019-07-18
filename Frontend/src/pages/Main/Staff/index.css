@@ -34,9 +34,9 @@
 }
 
 .MainDivContainer {
-  overflow: auto;
-  overflow-x: auto;
-  overflow-y: auto;
+  overflow: scroll;
+  overflow-x: scroll;
+  overflow-y: scroll;
 }
 
 .ModalContainer {

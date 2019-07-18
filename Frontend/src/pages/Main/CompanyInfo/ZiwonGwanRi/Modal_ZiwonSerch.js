@@ -92,7 +92,7 @@ const Modal_ZiwonSerch = props => {
       onHide={handleClose}
       aria-labelledby="contained-modal-title-vcenter"
       dialogClassName="ModalContainer"
-      centered
+      // centered
       // modal-dialog modal-lg
     >
       <Modal.Header closeButton>
