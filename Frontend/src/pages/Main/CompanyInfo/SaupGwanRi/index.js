@@ -68,7 +68,7 @@ const MemoEditor = <Modal_Memo Modals={Modal} />;
 const Grid_SaupCol = [
   { key: "SHNAME", name: "사업명", editable: true },
   { key: "SHNAMESHORT", name: "사업명요약", editable: false },
-  { key: "SHSTRDATE", name: "시작일", editable: false },
+  { key: "SHSTRDATE", name: "시작일", editable: true },
   { key: "SHENDDATE", name: "종료일", editable: true },
   { key: "SUNAME", name: "사업담당자", editable: true },
   { key: "SUTEL", name: "전화번호", editable: true },
@@ -118,7 +118,7 @@ const SaupGwanRi = props => {
   const [Modals, setModals] = useState(false); // 담당자 모달 상태
   const [Modals_Memo, setMdals_Memo] = useState(false); // 메모 모달 상태
   const [Modals_GeunLo, setMdals_GeunLo] = useState(false); // 근로정보 모달 상태
-  const [SaupRowNum, setSaupRowNum] = useState(0); // 클릭한 그리드 순번 저장(SACODE 추출용)
+  const [SaupRowNum, setSaupRowNum] = useState(0); // 클릭한 그리드 순번 저장(SACODE 추출), 담당자 상세보기용
   // 버튼 이벤트
   // const [btnSave, setBtnSave] = useState(false); // 저장 버튼
   const [btnDel_Saup, setBtnDel_Saup] = useState(""); // 사업 제거 버튼
@@ -216,7 +216,7 @@ const SaupGwanRi = props => {
           }
         })
         .catch(err => {
-          console.log("SaupGwanRi 에러", err);
+          console.log("SaupGwanRi 쿼리에러!! 필수입력 항목 확인요망", err);
         });
     }
   };
@@ -230,7 +230,7 @@ const SaupGwanRi = props => {
         STRDATE: moment(startDate).format("YYYY-01-01"),
         ENDDATE: moment(endDate).format("YYYY-12-31"),
         SUID: "infra",
-        SULevel: "30",
+        SULevel: "1000",
         Key: SaupKeyword
       };
       axios
@@ -409,6 +409,7 @@ const SaupGwanRi = props => {
                         onClick={() =>
                           setSaupList(
                             SaupList.concat({
+                              N: "N",
                               SHCODE: "",
                               SHENDDATE: "",
                               SHGUBUN: "",
@@ -420,7 +421,7 @@ const SaupGwanRi = props => {
                               SUEMAIL: "",
                               SUNAME: "",
                               SUTEL: ""
-                            })
+                            }) //저장 시 Insert 하기위해 N: "N"
                           )
                         }
                       >

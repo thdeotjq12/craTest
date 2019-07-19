@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback, PropTypes } from "react";
 import FormRow from "../../../../components/DataGrid/FormRow";
 import Grid from "../../../../components/DataGrid/Grid";
 import ModalGrid from "../../../../components/DataGrid/Modal";
+import Grid_SAList from "./Grid_SAList";
 import {
   Button,
   Modal,
@@ -31,6 +32,17 @@ import {
   ADD_BASIC_Damdang_REQUEST,
   ADD_BASIC_Damdang_SUCCESS
 } from "../../../../modules/Main/CompanyInfo/BasicInfo/BasicInfoReducer";
+
+const Grid_SAListCol = [
+  { key: "SANAME", name: "주민센터(참여기관)명", width: 180, editable: true },
+  { key: "SABOSSNAME", name: "대표자", width: 80, editable: true },
+  { key: "SASAUPNUM", name: "고유(사업자번호)", width: 80, editable: true },
+  { key: "SATEL", name: "전화번호", width: 200, editable: true },
+  { key: "SAJUSO", name: "주소", width: 80, editable: true },
+  { key: "SAGUBUN", name: "구분", width: 80, editable: true },
+  { key: "SAMEMO", name: "메모", width: 80, editable: true }
+];
+
 const BasicInfo = ({ props }) => {
   const { BaicInfo_Data, Loading } = useSelector(state => state.BasicInfo);
   const [Modals, setModals] = useState(false); // 모달 상태
@@ -39,54 +51,31 @@ const BasicInfo = ({ props }) => {
   // const [Modals, setModals] = useState(false); // 모달 상태
   // const [Comp_Count, setCount] = useState(0); // 동적생성 폼 name + count 로 설정하기 위함
   const dispatch = useDispatch();
-
-  const [MACODE, setMACode] = useState(
-    BaicInfo_Data && BaicInfo_Data.BaicInfo_Data[0].MACODE
-  );
-  const [MANAME, setMAName] = useState("");
-  const [MABOSSNAME, setMABossName] = useState("");
-  const [MASAUPNUM, setMASaupNum] = useState("");
-  const [MAJUSO, setMAJuso] = useState("");
-  const [MAHOMEPAGE, setMAHomepage] = useState("");
-  const [MADAMDANG, setMADamdang] = useState("");
-  const [MAEMAIL, setMAEMail] = useState("");
-  const [MATEL, setMATel] = useState("");
-  const [MAHP, setMAHP] = useState("");
-  const [MAFAX, setMAFax] = useState("");
-  const [MAKOOKMINJISA, setMAKookminJisa] = useState("");
-  const [MAKOOKMINTEL, setMAKookminTel] = useState("");
-  const [MAKOOKMINFAX, setMAKookminFax] = useState("");
-  const [MAGUNGANGJISA, setMAGungangJisa] = useState("");
-  const [MAGUNGANGTEL, setMAGungangTel] = useState("");
-  const [MAGUNGANGFAX, setMAGungangFax] = useState("");
-  const [MAGOYONGJISA, setMAGoyongJisa] = useState("");
-  const [MAGOYONGTEL, setMAGoyongTel] = useState("");
-  const [MAGOYONGFAX, setMAGoyongFax] = useState("");
-  const [MABIGO, setMABigo] = useState("");
-  const [MAMEMO, setMAMemo] = useState("");
-
-  const [SACODE, setSACode] = useState("");
-  const [SABOSSNAME, setSABossName] = useState("");
-  const [SASAUPNUM, setSASaupNum] = useState("");
-  const [SADAMDANG, setSADamdang] = useState("");
-  const [SATEL, setSATel] = useState("");
-  const [SAEMAIL, setSAEMail] = useState("");
-  const [SAJUSO, setSAJuso] = useState("");
-  const [SAGUBUN, setSAGubun] = useState("");
-  const [SAMEMO, setSAMemo] = useState("");
-  const [SAList, setSAList] = useState("");
-
+  const [MAList, setMAList] = useState("");
+  const [SAList, setSAList] = useState(""); // 사업 리스트
+  const [SAListDel, setSAListDel] = useState(""); // 행 제거된 리스트
+  const [SaveSAList, setSaveSAList] = useState("");
+  const [SaupRowNum, setSaupRowNum] = useState(0);
   // 모달 열기/닫기
   const handleClose = () => {
     setModals(false);
   };
+  const getCellValue = value => {
+    setSaupRowNum(value); // 셀 클릭 시 행 순번저장 (담당자 상세보기 전용)
+  };
+  const Saup_Save = SaveSAList => {
+    console.log("저장할 SALIST", SaveSAList);
+    setSaveSAList(SaveSAList);
+  };
 
-  // 처음한번실행,           그다음 [] 내용이 변하면 실행
-  // useEffect 는 리액트 컴포넌트가 렌더링 될 때마다 특정 작업을 수행하도록 설정 할 수 있는 Hook 입니다.
-  // 클래스형 컴포넌트의 componentDidMount 와 componentDidUpdate 를 합친 형태로 보아도 무방
-  // useEffect는 해당 컴포넌트의 연산이 끝난 이후 함수를 실행합니다.
-  // 거칠게 표현하자면 화면에 그리는 작업이 끝난 이후에 useEffect 함수가 발동한다고 할 수 있습니다.
-  // 비동기방식 - 중간에 다른 함수도 실행됨(render 등)
+  const DeleteRow = List => {
+    List.splice(SaupRowNum, 1);
+    // SaveSAList[SaupRowNum].N = "D";
+    console.log("Delete Row", List);
+    setSAList(List);
+    console.log("Delete SALIST", SAList);
+  };
+
   const getData = () => {
     // if (BaicInfo_Data === null) {
     console.log("getData 실행됨");
@@ -101,7 +90,7 @@ const BasicInfo = ({ props }) => {
           } else {
             console.log("BasicInfo (dispatch) 불러옴", res.data);
             setSAList(res.data.BaicInfoSaup_Data); //-- 담당이랑 충돌?? 담당값이 안들어감..,임시 주석
-            setMACode(res.data.BaicInfo_Data[0].MACODE);
+            setMAList(res.data.BaicInfo_Data);
 
             dispatch({
               type: ADD_BASIC_SUCCESS,
@@ -122,6 +111,7 @@ const BasicInfo = ({ props }) => {
       console.log("Loading False 데이터 이미 존재합니다");
       if (SAList === "" && BaicInfo_Data) {
         setSAList(BaicInfo_Data.BaicInfoSaup_Data);
+        setMAList(BaicInfo_Data.BaicInfo_Data);
       }
       // 다른 페이지로 넘어갔다 왔는데 , loading = false 상태라 SAList를 따로 할당함.
     }
@@ -138,29 +128,29 @@ const BasicInfo = ({ props }) => {
     console.log("Save 버튼클릭됨 Loading True");
 
     var parm = {
-      MADAMDANG: BaicInfo_Data.BaicInfo_Data[0].MADAMDANG,
-      MATEL: MATEL,
-      MAHP: MAHP,
-      MAFAX: MAFAX,
-      MANAME: MANAME,
-      MABOSSNAME: MABOSSNAME,
-      MASAUPNUM: MASAUPNUM,
-      MAJUSO: MAJUSO,
-      MAHOMEPAGE: MAHOMEPAGE,
-      MAEMAIL: MAEMAIL,
-      MAKOOKMINJISA: MAKOOKMINJISA,
-      MAKOOKMINTEL: MAKOOKMINTEL,
-      MAKOOKMINFAX: MAKOOKMINFAX,
-      MAGUNGANGJISA: MAGUNGANGJISA,
-      MAGUNGANGTEL: MAGUNGANGTEL,
-      MAGUNGANGFAX: MAGUNGANGFAX,
-      MAGOYONGJISA: MAGOYONGJISA,
-      MAGOYONGTEL: MAGOYONGTEL,
-      MAGOYONGFAX: MAGOYONGFAX,
-      MABIGO: MABIGO,
-      MAMEMO: MAMEMO,
-      MACODE: MACODE,
-      SALIST: SAList
+      MADAMDANG: MAList[0].MADAMDANG,
+      MATEL: MAList[0].MATEL,
+      MAHP: MAList[0].MAHP,
+      MAFAX: MAList[0].MAFAX,
+      MANAME: MAList[0].MANAME,
+      MABOSSNAME: MAList[0].MABOSSNAME,
+      MASAUPNUM: MAList[0].MASAUPNUM,
+      MAJUSO: MAList[0].MAJUSO,
+      MAHOMEPAGE: MAList[0].MAHOMEPAGE,
+      MAEMAIL: MAList[0].MAEMAIL,
+      MAKOOKMINJISA: MAList[0].MAKOOKMINJISA,
+      MAKOOKMINTEL: MAList[0].MAKOOKMINTEL,
+      MAKOOKMINFAX: MAList[0].MAKOOKMINFAX,
+      MAGUNGANGJISA: MAList[0].MAGUNGANGJISA,
+      MAGUNGANGTEL: MAList[0].MAGUNGANGTEL,
+      MAGUNGANGFAX: MAList[0].MAGUNGANGFAX,
+      MAGOYONGJISA: MAList[0].MAGOYONGJISA,
+      MAGOYONGTEL: MAList[0].MAGOYONGTEL,
+      MAGOYONGFAX: MAList[0].MAGOYONGFAX,
+      MABIGO: MAList[0].MABIGO,
+      MAMEMO: MAList[0].MAMEMO,
+      MACODE: MAList[0].MACODE,
+      SALIST: SaveSAList
     };
     console.log("parm", parm);
 
@@ -186,330 +176,6 @@ const BasicInfo = ({ props }) => {
       });
   };
 
-  // 텍스트 변경 > 상태저장 하기 위함
-  const onChangeText = useCallback(e => {
-    setFisrtData(false);
-    if (e.target.name === "MANAME") {
-      setMAName(e.target.value);
-    } else if (e.target.name === "MABOSSNAME") {
-      setMABossName(e.target.value);
-    } else if (e.target.name === "MASAUPNUM") {
-      setMASaupNum(e.target.value);
-    } else if (e.target.name === "MAJUSO") {
-      setMAJuso(e.target.value);
-    } else if (e.target.name === "MAHOMEPAGE") {
-      setMAHomepage(e.target.value);
-    } else if (e.target.name === "MADAMDANG") {
-      setMADamdang(e.target.value);
-    } else if (e.target.name === "MAEMAIL") {
-      setMAEMail(e.target.value);
-    } else if (e.target.name === "MATEL") {
-      setMATel(e.target.value);
-    } else if (e.target.name === "MAHP") {
-      setMAHP(e.target.value);
-    } else if (e.target.name === "MAFAX") {
-      setMAFax(e.target.value);
-    } else if (e.target.name === "MAKOOKMINJISA") {
-      setMAKookminJisa(e.target.value);
-    } else if (e.target.name === "MAKOOKMINTEL") {
-      setMAKookminTel(e.target.value);
-    } else if (e.target.name === "MAKOOKMINFAX") {
-      setMAKookminFax(e.target.value);
-    } else if (e.target.name === "MAGUNGANGJISA") {
-      setMAGungangJisa(e.target.value);
-    } else if (e.target.name === "MAGUNGANGTEL") {
-      setMAGungangTel(e.target.value);
-    } else if (e.target.name === "MAGUNGANGFAX") {
-      setMAGungangFax(e.target.value);
-    } else if (e.target.name === "MAGOYONGJISA") {
-      setMAGoyongJisa(e.target.value);
-    } else if (e.target.name === "MAGOYONGTEL") {
-      setMAGoyongTel(e.target.value);
-    } else if (e.target.name === "MAGOYONGFAX") {
-      setMAGoyongFax(e.target.value);
-    } else if (e.target.name === "MABIGO") {
-      setMABigo(e.target.value);
-    } else if (e.target.name === "MAMEMO") {
-      setMAMemo(e.target.value);
-    } else {
-    }
-  });
-
-  const [AddArray, setAddArray] = useState([
-    {
-      SANAME: "",
-      SABOSSNAME: "",
-      SASAUPNUM: "",
-      SATEL: "",
-      SAJUSO: "",
-      SAGUBUN: "",
-      SAMEMO: ""
-    }
-  ]);
-  const ReArray = [];
-  const onChangeValue = (e, idx) => {
-    console.log("onChangeValue", e.target.name);
-    console.log("SAList", SAList);
-    const TName = e.target.name;
-
-    if (SAList.length === 0) {
-      //splice(인덱스, 인덱스부터 삭제(1)추가(0)할 원소개수, 추가할 원소..)
-
-      // 1. 원본에서 가져오고
-      // ReArray.concat(AddArray);
-      // 2. 복사본에 입력 받고
-      ReArray.splice(idx, 0, {
-        SANAME: idx === 0 ? e.target.value : "",
-        SABOSSNAME: idx === 1 ? e.target.value : "",
-        SASAUPNUM: idx === 2 ? e.target.value : "",
-        SATEL: idx === 3 ? e.target.value : "",
-        SAJUSO: idx === 4 ? e.target.value : "",
-        SAGUBUN: idx === 5 ? e.target.value : "",
-        SAMEMO: idx === 6 ? e.target.value : ""
-      });
-
-      // 3. 복사본 > 원본으로 복사
-
-      setAddArray(
-        AddArray.splice(idx, 0, {
-          SANAME: idx === 0 ? e.target.value : "",
-          SABOSSNAME: idx === 1 ? e.target.value : "",
-          SASAUPNUM: idx === 2 ? e.target.value : "",
-          SATEL: idx === 3 ? e.target.value : "",
-          SAJUSO: idx === 4 ? e.target.value : "",
-          SAGUBUN: idx === 5 ? e.target.value : "",
-          SAMEMO: idx === 6 ? e.target.value : ""
-        })
-      );
-      // temp = ReArray.map((value, index) => {
-      //   if (idx === index) {
-      //     return { ...value, [TName]: e.target.value };
-      //   } else {
-      //     return { ...value };
-      //   }
-      // });
-      // setAddArray(temp);
-    }
-
-    console.log("ReArray", ReArray);
-    console.log("AddArray", AddArray);
-
-    var temp = SAList.map((value, index) => {
-      console.log("Value", value);
-      if (idx === index) {
-        return { ...value, [TName]: e.target.value };
-      } else {
-        return { ...value };
-      }
-    });
-    setSAList(temp);
-  };
-
-  const [Test, setTest] = useState(0);
-  // 지자체 / 사업추진부서 등록 폼
-
-  const AddRow = () => {
-    console.log("AddRow 실행됨");
-    return (
-      <tr>
-        <td id="TdInput">
-          <input
-            className="InputContainer"
-            name={"SANAME"}
-            readOnly={ReadOnly}
-            onChange={e => onChangeValue(e, 0)}
-          />
-        </td>
-        <td id="TdInput">
-          <input
-            className="InputContainer"
-            name={"SABOSSNAME"}
-            readOnly={ReadOnly}
-            onChange={e => onChangeValue(e, 1)}
-          />
-        </td>
-        <td id="TdInput">
-          <input
-            className="InputContainer"
-            name={"SASAUPNUM"}
-            readOnly={ReadOnly}
-            onChange={e => onChangeValue(e, 2)}
-          />
-        </td>
-        <td id="TdInput">
-          <input
-            className="InputContainer"
-            name={"SATEL"}
-            readOnly={ReadOnly}
-            onChange={e => onChangeValue(e, 3)}
-          />
-        </td>
-        <td id="TdInput">
-          <input
-            className="InputContainer"
-            name={"SAJUSO"}
-            readOnly={ReadOnly}
-            onChange={e => onChangeValue(e, 4)}
-          />
-        </td>
-        <td id="TdInput">
-          <input
-            className="InputContainer"
-            name={"SAGUBUN"}
-            readOnly={ReadOnly}
-            onChange={e => onChangeValue(e, 5)}
-          />
-        </td>
-        <td id="TdInput">
-          <input
-            className="InputContainer"
-            name={"SAMEMO"}
-            readOnly={ReadOnly}
-            onChange={e => onChangeValue(e, 6)}
-          />
-        </td>
-      </tr>
-    );
-  };
-  const [SaupRowNum, setSaupRowNum] = useState(0);
-  const List = () => {
-    // console.log("array", array);
-    // console.log("SAList2", SAList);
-    // console.log("MACODE", MACODE);
-    // console.log("Test", Test);
-    if (SAList.length === 0) {
-      console.log("SAList.length === 0");
-    }
-    return SAList.length !== 0
-      ? SAList.map((value, index) => {
-          console.log("SaupRowNum :::::  ", SaupRowNum);
-          return (
-            <tr>
-              <td id="TdInput">
-                <input
-                  className="InputContainer"
-                  key={0 + index}
-                  onChange={e => onChangeValue(e, index)}
-                  value={
-                    FirstData
-                      ? BaicInfo_Data && value.SANAME
-                      : SAList.SANAME
-                      ? SAList.SANAME
-                      : value.SANAME
-                  }
-                  name={"SANAME"}
-                  readOnly={ReadOnly}
-                  // onClick={() => [getDamdang(), setSaupRowNum(index)]}
-                  onClick={() => setSaupRowNum(index)}
-                />
-              </td>
-              <td id="TdInput">
-                <input
-                  className="InputContainer"
-                  key={1 + index}
-                  onChange={e => onChangeValue(e, index)}
-                  value={
-                    FirstData
-                      ? BaicInfo_Data && value.SABOSSNAME
-                      : SABOSSNAME
-                      ? SABOSSNAME
-                      : value.SABOSSNAME
-                  }
-                  name={"SABOSSNAME"}
-                  readOnly={ReadOnly}
-                  onClick={() => setSaupRowNum(index + 1)}
-                />
-              </td>
-              <td id="TdInput">
-                <input
-                  className="InputContainer"
-                  key={2 + index}
-                  onChange={e => onChangeValue(e, index)}
-                  value={
-                    FirstData
-                      ? BaicInfo_Data && value.SASAUPNUM
-                      : SASAUPNUM
-                      ? SASAUPNUM
-                      : value.SASAUPNUM
-                  }
-                  name={"SASAUPNUM"}
-                  readOnly={ReadOnly}
-                  onClick={() => setSaupRowNum(index + 1)}
-                />
-              </td>
-              <td id="TdInput">
-                <input
-                  className="InputContainer"
-                  key={3 + index}
-                  onChange={e => onChangeValue(e, index)}
-                  value={
-                    FirstData
-                      ? BaicInfo_Data && value.SATEL
-                      : SATEL
-                      ? SATEL
-                      : value.SATEL
-                  }
-                  name={"SATEL"}
-                  readOnly={ReadOnly}
-                  onClick={() => setSaupRowNum(index + 1)}
-                />
-              </td>
-              <td id="TdInput">
-                <input
-                  className="InputContainer"
-                  key={4 + index}
-                  onChange={e => onChangeValue(e, index)}
-                  value={
-                    FirstData
-                      ? BaicInfo_Data && value.SAJUSO
-                      : SAJUSO
-                      ? SAJUSO
-                      : value.SAJUSO
-                  }
-                  name={"SAJUSO"}
-                  readOnly={ReadOnly}
-                  onClick={() => setSaupRowNum(index + 1)}
-                />
-              </td>
-              <td id="TdInput">
-                <input
-                  className="InputContainer"
-                  key={5 + index}
-                  onChange={e => onChangeValue(e, index)}
-                  value={
-                    FirstData
-                      ? BaicInfo_Data && value.SAGUBUN
-                      : SAGUBUN
-                      ? SAGUBUN
-                      : value.SAGUBUN
-                  }
-                  name={"SAGUBUN"}
-                  readOnly={ReadOnly}
-                  onClick={() => setSaupRowNum(index + 1)}
-                />
-              </td>
-              <td id="TdInput">
-                <input
-                  className="InputContainer"
-                  key={6 + index}
-                  onChange={e => onChangeValue(e, index)}
-                  value={
-                    FirstData
-                      ? BaicInfo_Data && value.SAMEMO
-                      : SAMEMO
-                      ? SAMEMO
-                      : value.SAMEMO
-                  }
-                  name={"SAMEMO"}
-                  readOnly={ReadOnly}
-                  onClick={() => setSaupRowNum(index + 1)}
-                />
-              </td>
-            </tr>
-          );
-        })
-      : AddRow();
-  };
   //css 속성
   return (
     <div className="MainDivContainer">
@@ -561,16 +227,11 @@ const BasicInfo = ({ props }) => {
                       <input
                         className="InputContainer"
                         type="text"
-                        onChange={onChangeText}
-                        value={
-                          // 수정 or 기본값 넣기(비었을 경우 = 기본값)
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MANAME
-                            : MANAME
-                            ? MANAME
-                            : BaicInfo_Data.BaicInfo_Data[0].MANAME
+                        // onFocusout={e => (MAList[0].MANAME = e.target.value)}
+                        onChange={e =>
+                          MAList && (MAList[0].MANAME = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MANAME}
                         name="MANAME"
                         readOnly={ReadOnly}
                       />
@@ -579,15 +240,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MABOSSNAME
-                            : MABOSSNAME
-                            ? MABOSSNAME
-                            : BaicInfo_Data.BaicInfo_Data[0].MABOSSNAME
+                        onChange={e =>
+                          MAList && (MAList[0].MABOSSNAME = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MABOSSNAME}
                         name="MABOSSNAME"
                         readOnly={ReadOnly}
                       />
@@ -596,15 +252,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MASAUPNUM
-                            : MASAUPNUM
-                            ? MASAUPNUM
-                            : BaicInfo_Data.BaicInfo_Data[0].MASAUPNUM
+                        onChange={e =>
+                          MAList && (MAList[0].MASAUPNUM = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MASAUPNUM}
                         name="MASAUPNUM"
                         readOnly={ReadOnly}
                       />
@@ -615,15 +266,10 @@ const BasicInfo = ({ props }) => {
                     <td colSpan="3" id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MAJUSO
-                            : MAJUSO
-                            ? MAJUSO
-                            : BaicInfo_Data.BaicInfo_Data[0].MAJUSO
+                        onChange={e =>
+                          MAList && (MAList[0].MAJUSO = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MAJUSO}
                         name="MAJUSO"
                         readOnly={ReadOnly}
                       />
@@ -632,15 +278,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MAHOMEPAGE
-                            : MAHOMEPAGE
-                            ? MAHOMEPAGE
-                            : BaicInfo_Data.BaicInfo_Data[0].MAHOMEPAGE
+                        onChange={e =>
+                          MAList && (MAList[0].MAHOMEPAGE = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MAHOMEPAGE}
                         name="MAHOMEPAGE"
                         readOnly={ReadOnly}
                       />
@@ -658,15 +299,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MADAMDANG
-                            : MADAMDANG
-                            ? MADAMDANG
-                            : BaicInfo_Data.BaicInfo_Data[0].MADAMDANG
+                        onChange={e =>
+                          MAList && (MAList[0].MADAMDANG = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MADAMDANG}
                         name="MADAMDANG"
                         readOnly={ReadOnly}
                       />
@@ -675,15 +311,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MAEMAIL
-                            : MAEMAIL
-                            ? MAEMAIL
-                            : BaicInfo_Data.BaicInfo_Data[0].MAEMAIL
+                        onChange={e =>
+                          MAList && (MAList[0].MAEMAIL = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MAEMAIL}
                         name="MAEMAIL"
                         readOnly={ReadOnly}
                       />
@@ -692,15 +323,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MATEL
-                            : MATEL
-                            ? MATEL
-                            : BaicInfo_Data.BaicInfo_Data[0].MATEL
+                        onChange={e =>
+                          MAList && (MAList[0].MATEL = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MATEL}
                         name="MATEL"
                         readOnly={ReadOnly}
                       />
@@ -711,15 +337,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MAHP
-                            : MAHP
-                            ? MAHP
-                            : BaicInfo_Data.BaicInfo_Data[0].MAHP
+                        onChange={e =>
+                          MAList && (MAList[0].MAHP = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MAHP}
                         name="MAHP"
                         readOnly={ReadOnly}
                       />
@@ -728,15 +349,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MAFAX
-                            : MAFAX
-                            ? MAFAX
-                            : BaicInfo_Data.BaicInfo_Data[0].MAFAX
+                        onChange={e =>
+                          MAList && (MAList[0].MAFAX = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MAFAX}
                         name="MAFAX"
                         readOnly={ReadOnly}
                       />
@@ -745,15 +361,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MABIGO
-                            : MABIGO
-                            ? MABIGO
-                            : BaicInfo_Data.BaicInfo_Data[0].MABIGO
+                        onChange={e =>
+                          MAList && (MAList[0].MABIGO = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MABIGO}
                         name="MABIGO"
                         readOnly={ReadOnly}
                       />
@@ -764,15 +375,10 @@ const BasicInfo = ({ props }) => {
                     <td colSpan="5" id="TdInput">
                       <textarea
                         style={{ width: "100%", border: "0" }}
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MAMEMO
-                            : MAMEMO
-                            ? MAMEMO
-                            : BaicInfo_Data.BaicInfo_Data[0].MAMEMO
+                        onChange={e =>
+                          MAList && (MAList[0].MAMEMO = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MAMEMO}
                         name="MAMEMO"
                         readOnly={ReadOnly}
                       />
@@ -808,15 +414,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MAKOOKMINJISA
-                            : MAKOOKMINJISA
-                            ? MAKOOKMINJISA
-                            : BaicInfo_Data.BaicInfo_Data[0].MAKOOKMINJISA
+                        onChange={e =>
+                          MAList && (MAList[0].MAKOOKMINJISA = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MAKOOKMINJISA}
                         name="MAKOOKMINJISA"
                         readOnly={ReadOnly}
                       />
@@ -824,15 +425,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MAKOOKMINTEL
-                            : MAKOOKMINTEL
-                            ? MAKOOKMINTEL
-                            : BaicInfo_Data.BaicInfo_Data[0].MAKOOKMINTEL
+                        onChange={e =>
+                          MAList && (MAList[0].MAKOOKMINTEL = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MAKOOKMINTEL}
                         name="MAKOOKMINTEL"
                         readOnly={ReadOnly}
                       />
@@ -840,15 +436,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MAKOOKMINFAX
-                            : MAKOOKMINFAX
-                            ? MAKOOKMINFAX
-                            : BaicInfo_Data.BaicInfo_Data[0].MAKOOKMINFAX
+                        onChange={e =>
+                          MAList && (MAList[0].MAKOOKMINFAX = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MAKOOKMINFAX}
                         name="MAKOOKMINFAX"
                         readOnly={ReadOnly}
                       />
@@ -856,15 +447,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MAGUNGANGJISA
-                            : MAGUNGANGJISA
-                            ? MAGUNGANGJISA
-                            : BaicInfo_Data.BaicInfo_Data[0].MAGUNGANGJISA
+                        onChange={e =>
+                          MAList && (MAList[0].MAGUNGANGJISA = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MAGUNGANGJISA}
                         name="MAGUNGANGJISA"
                         readOnly={ReadOnly}
                       />
@@ -872,15 +458,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MAGUNGANGTEL
-                            : MAGUNGANGTEL
-                            ? MAGUNGANGTEL
-                            : BaicInfo_Data.BaicInfo_Data[0].MAGUNGANGTEL
+                        onChange={e =>
+                          MAList && (MAList[0].MAGUNGANGTEL = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MAGUNGANGTEL}
                         name="MAGUNGANGTEL"
                         readOnly={ReadOnly}
                       />
@@ -888,15 +469,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MAGUNGANGFAX
-                            : MAGUNGANGFAX
-                            ? MAGUNGANGFAX
-                            : BaicInfo_Data.BaicInfo_Data[0].MAGUNGANGFAX
+                        onChange={e =>
+                          MAList && (MAList[0].MAGUNGANGFAX = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MAGUNGANGFAX}
                         name="MAGUNGANGFAX"
                         readOnly={ReadOnly}
                       />
@@ -904,15 +480,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MAGOYONGJISA
-                            : MAGOYONGJISA
-                            ? MAGOYONGJISA
-                            : BaicInfo_Data.BaicInfo_Data[0].MAGOYONGJISA
+                        onChange={e =>
+                          MAList && (MAList[0].MAGOYONGJISA = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MAGOYONGJISA}
                         name="MAGOYONGJISA"
                         readOnly={ReadOnly}
                       />
@@ -920,15 +491,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MAGOYONGTEL
-                            : MAGOYONGTEL
-                            ? MAGOYONGTEL
-                            : BaicInfo_Data.BaicInfo_Data[0].MAGOYONGTEL
+                        onChange={e =>
+                          MAList && (MAList[0].MAGOYONGTEL = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MAGOYONGTEL}
                         name="MAGOYONGTEL"
                         readOnly={ReadOnly}
                       />
@@ -936,15 +502,10 @@ const BasicInfo = ({ props }) => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        onChange={onChangeText}
-                        value={
-                          FirstData
-                            ? BaicInfo_Data &&
-                              BaicInfo_Data.BaicInfo_Data[0].MAGOYONGFAX
-                            : MAGOYONGFAX
-                            ? MAGOYONGFAX
-                            : BaicInfo_Data.BaicInfo_Data[0].MAGOYONGFAX
+                        onChange={e =>
+                          MAList && (MAList[0].MAGOYONGFAX = e.target.value)
                         }
+                        defaultValue={MAList && MAList[0].MAGOYONGFAX}
                         name="MAGOYONGFAX"
                         readOnly={ReadOnly}
                       />
@@ -970,6 +531,7 @@ const BasicInfo = ({ props }) => {
               type="button"
               className="btn btn-primary"
               style={{ float: "Right" }}
+              onClick={() => DeleteRow(SAList)}
             >
               제거
             </button>
@@ -977,7 +539,23 @@ const BasicInfo = ({ props }) => {
               type="button"
               className="btn btn-primary"
               style={{ float: "Right" }}
-              onClick={AddRow}
+              onClick={() =>
+                setSAList(
+                  SAList.concat({
+                    N: "N",
+                    SANAME: "",
+                    SABOSSNAME: "",
+                    SACODE: "",
+                    SASAUPNUM: "",
+                    SADAMDANG: "",
+                    SATEL: "",
+                    SAEMAIL: "",
+                    SAJUSO: "",
+                    SAGUBUN: "",
+                    SAMEMO: ""
+                  }) //저장 시 Insert 하기위해 N: "N"
+                )
+              }
             >
               추가
             </button>
@@ -985,15 +563,13 @@ const BasicInfo = ({ props }) => {
               <table className="table table-bordered">
                 <tbody>
                   <tr>
-                    <td className="ColGubun">주민센터(참여기관)명</td>
-                    <td className="ColGubun">대표자</td>
-                    <td className="ColGubun">고유(사업자번호)</td>
-                    <td className="ColGubun">전화번호</td>
-                    <td className="ColGubun">주소</td>
-                    <td className="ColGubun">구분</td>
-                    <td className="ColGubun">메모</td>
+                    <Grid_SAList
+                      columns={Grid_SAListCol}
+                      rows={SAList}
+                      getCellValue={getCellValue}
+                      Saup_Save={Saup_Save}
+                    />
                   </tr>
-                  {List()}
                 </tbody>
               </table>
             </div>

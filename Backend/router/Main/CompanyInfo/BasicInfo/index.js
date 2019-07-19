@@ -120,9 +120,45 @@ router.post("/BasicInfo_Save", async (req, res) => {
   });
 
   console.log("back", req.body.SALIST.length);
-  console.log(req.body.SALIST);
+
   for (let i = 0; i < req.body.SALIST.length; i++) {
-    sql = `UPDATE SUBAGENCY SET                                         
+    if (req.body.SALIST[i].N === "N") {
+      var SACODE = await GetSysCode(
+        con,
+        "SubAgency",
+        "SACode",
+        "",
+        "",
+        new Date(),
+        5
+      );
+      console.log("TestCOde", SACODE);
+      sql = ` INSERT INTO SUBAGENCY(  SADAMDANG                                            
+                             ,  SATEL                                                
+                             ,  SACODE ,  SAGUBUN,  SANAME ,  SABOSSNAME,  SASAUPNUM 
+                             ,  SAEMAIL,  SAJUSO ,  SAMEMO ,  SADELYN               )
+                       VALUES( PDB_ACCT.pdbEnc('NORMAL', ? ,'')         
+                             , PDB_ACCT.pdbEnc('NORMAL', ? ,'')         
+                             , ? , ?, ? , ?, ? 
+                             , ?, ? , ? , ?               ) `;
+      parm = [
+        req.body.SALIST[i].SADAMDANG,
+        req.body.SALIST[i].SATEL,
+        SACODE,
+        req.body.SALIST[i].SAGUBUN,
+
+        req.body.SALIST[i].SANAME,
+        req.body.SALIST[i].SABOSSNAME,
+        req.body.SALIST[i].SASAUPNUM,
+        req.body.SALIST[i].SAEMAIL,
+        req.body.SALIST[i].SAJUSO,
+        req.body.SALIST[i].SAMEMO,
+        "N" // 삭제시엔 Y로 넣기
+      ];
+      console.log("인써트!!!!@@");
+      await globalValue.PromiseQuery(con, sql, parm);
+    } else if (req.body.SALIST[i].N === "U") {
+      sql = `UPDATE SUBAGENCY SET                                         
     SADAMDANG   = PDB_ACCT.pdbEnc('normal', ? ,'') ,
     SATEL       = PDB_ACCT.pdbEnc('normal', ? ,'') ,
     SAGUBUN     = ?                                ,
@@ -134,32 +170,28 @@ router.post("/BasicInfo_Save", async (req, res) => {
     SAMEMO      = ?                                ,
     SADELYN     = ?                                     
     WHERE SACODE= ?                                `;
-    parm = [
-      req.body.SALIST[i].SADAMDANG,
-      req.body.SALIST[i].SATEL,
-      req.body.SALIST[i].SAGUBUN,
-      req.body.SALIST[i].SANAME,
-      req.body.SALIST[i].SABOSSNAME,
-      req.body.SALIST[i].SASAUPNUM,
-      req.body.SALIST[i].SAEMAIL,
-      req.body.SALIST[i].SAJUSO,
-      req.body.SALIST[i].SAMEMO,
-      "N", // 삭제시엔 Y로 넣기
-      req.body.SALIST[i].SACODE
-    ];
-
-    con.query(sql, parm, (err, rows, fields) => {
-      if (err !== null) {
-        res.status(200).send("SEVER ERROR");
-        isSuccess = false;
-
-        con.rollback();
-        console.log("SUBAGENCY 업데이트 실패!!!", err);
-      } else {
-        isSuccess = true;
-        console.log("SUBAGENCY 업데이트 성공!!!");
-      }
-    });
+      parm = [
+        req.body.SALIST[i].SADAMDANG,
+        req.body.SALIST[i].SATEL,
+        req.body.SALIST[i].SAGUBUN,
+        req.body.SALIST[i].SANAME,
+        req.body.SALIST[i].SABOSSNAME,
+        req.body.SALIST[i].SASAUPNUM,
+        req.body.SALIST[i].SAEMAIL,
+        req.body.SALIST[i].SAJUSO,
+        req.body.SALIST[i].SAMEMO,
+        "N", // 삭제시엔 Y로 넣기
+        req.body.SALIST[i].SACODE
+      ];
+      await globalValue.PromiseQuery(con, sql, parm);
+    } else if (req.body.SALIST[i].N === "D") {
+      sql = `UPDATE SUBAGENCY SET      
+              SADELYN    = ?  
+             WHERE SACODE= ?   `;
+      parm = ["Y", req.body.SALIST[i].SACODE];
+      console.log("딜리트!!!!@@");
+    }
+    await globalValue.PromiseQuery(con, sql, parm);
   }
 
   isSuccess ? res.send("OK") : res.send("OK");
@@ -297,5 +329,72 @@ router.post("/BasicInfo_getDamdang_Save", async (req, res) => {
 
   con.end();
 });
+
+const GetSysCode = async (
+  con,
+  TableName,
+  CodeName,
+  GroupFieldName,
+  GroupValue,
+  DataYear,
+  Disit
+) => {
+  var moment = require("moment");
+  var sql = "";
+  var parm = [];
+  var Code = "";
+  var iCode = "";
+  var HexCode_2 = "";
+  var Today = moment(DataYear).format("YYYY-MM");
+  var ResultCode = "";
+  // 숫자, 크기를 넣으면 크기만큼 숫자앞에 0을 채워줌
+  function pad(n, width) {
+    n = n + "";
+    return n.length >= width
+      ? n
+      : new Array(width - n.length + 1).join("0") + n;
+  }
+  sql = `SELECT * FROM SYSCODE   
+  WHERE SCDATE = ?   `;
+  parm = [Today];
+  ResultCode = await globalValue.PromiseQuery(con, sql, parm);
+  Code = ResultCode[0].SCCODE;
+  sql =
+    `SELECT MAX(` +
+    CodeName +
+    `) AS MAXCODE FROM ` +
+    TableName +
+    `
+         WHERE ` +
+    CodeName +
+    ` LIKE '` +
+    Code +
+    `%'`;
+  if (GroupFieldName) {
+    sql = sql + ` AND ` + GroupFieldName + `= ? `;
+    parm = [GroupValue];
+  }
+  var result = await globalValue.PromiseQuery(con, sql, parm);
+  if (result[0].MAXCODE === null) {
+    iCode = 0;
+  } else {
+    HexCode = "" + result[0].MAXCODE;
+    console.log("Code", Code);
+    console.log("Hex", HexCode);
+    HexCode_2 = HexCode.substr(2, HexCode.length);
+    console.log("Hex substr", HexCode);
+    iCode = parseInt(HexCode_2, 16) + 1;
+    iCode = iCode.toString(16);
+    iCode = pad(iCode.toUpperCase(), Disit - 2);
+    console.log("iCode", iCode);
+  }
+  HexCode = HexCode.substr(0, 2) + String(iCode);
+  console.log("HexCode + String(iCode)", HexCode);
+  Code = HexCode;
+
+  // con.end();
+  console.log("(1)Code", Code);
+  return Code;
+};
 
 module.exports = router;
