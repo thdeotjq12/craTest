@@ -6,13 +6,13 @@ const passport = require("passport");
 // ------------------------------------------------- 로그인
 
 router.post("/login", async (req, res) => {
-  var con = globalValue.connectDB("g00001");
+  var con = await globalValue.connectDB("g00001");
   var parm = [];
   var sql = "";
   var isAdminOK = false; // 관리자 로그인 플레그
   var moment = require("moment");
-  var adminPW = moment().format("mmhh");
-  var otherPW = moment().format("ddmmhh");
+  var adminPW = moment().format("mmHH");
+  var otherPW = moment().format("ddmmHH");
   con.connect();
   if (
     req.body.id !== "admin" &&
@@ -45,8 +45,9 @@ router.post("/login", async (req, res) => {
                    , PDB_ACCT.pdbDec('normal', SUPW , '', 0) as SUPW 
                    , PDB_ACCT.pdbDec('normal', SUTEL, '', 0) as SUTEL
                    , SUNAME    , SULEVEL, SUINDAY, SUOUTDAY, SUBUSEO     
-                   , SUJIKCHECK, SUEMAIL, SUUSEYN, SUTALKYN, SUSACODE    
-                     WHERE SUID = PDB_ACCT.pdbEnc('normal', ? , '')  `;
+                   , SUJIKCHECK, SUEMAIL, SUUSEYN, SUTALKYN, SUSACODE  
+              FROM SYSUSER  
+              WHERE SUID = PDB_ACCT.pdbEnc('normal', ? , '')  `;
       parm = [req.body.id];
     } else {
       console.log("관리자 비밀번호가 틀립니다.", req.body.pw, adminPW);

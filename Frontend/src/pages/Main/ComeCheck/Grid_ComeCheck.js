@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Modal } from "react-bootstrap";
 import ReactDOM from "react-dom";
 import ReactDataGrid from "react-data-grid";
-import "moment/locale/ko";
 import "./index.css";
-const Grid_Holiday = props => {
+const Grid_ComeCheck = props => {
   const { columns, rows, btnRowAdd } = props;
   const [reRows, setrows] = useState(rows);
   const [NowRow, setNowRow] = useState(0); // 현재 행
@@ -46,55 +45,6 @@ const Grid_Holiday = props => {
   // sdname  세부사업명 shname 추진 사업명
   const RowFix = () => {
     for (let i = 0; i < rows.length; i++) {
-      if (rows[i].CHGUBUN === "0") {
-      } else if (rows[i].CHGUBUN === "1") {
-        rows[i].CHGUBUN = "신정";
-      } else if (rows[i].CHGUBUN === "2") {
-        rows[i].CHGUBUN = "설날연휴(전)";
-      } else if (rows[i].CHGUBUN === "3") {
-        rows[i].CHGUBUN = "설날연휴(후)";
-      } else if (rows[i].CHGUBUN === "4") {
-        rows[i].CHGUBUN = "설날";
-      } else if (rows[i].CHGUBUN === "5") {
-        rows[i].CHGUBUN = "삼일절";
-      } else if (rows[i].CHGUBUN === "6") {
-        rows[i].CHGUBUN = "석가탄신일";
-      } else if (rows[i].CHGUBUN === "7") {
-        rows[i].CHGUBUN = "어린이날";
-      } else if (rows[i].CHGUBUN === "8") {
-        rows[i].CHGUBUN = "현충일";
-      } else if (rows[i].CHGUBUN === "9") {
-        rows[i].CHGUBUN = "추석연휴(전)";
-      } else if (rows[i].CHGUBUN === "A") {
-        rows[i].CHGUBUN = "추석";
-      } else if (rows[i].CHGUBUN === "B") {
-        rows[i].CHGUBUN = "추석연휴(후)";
-      } else if (rows[i].CHGUBUN === "C") {
-        rows[i].CHGUBUN = "개천절";
-      } else if (rows[i].CHGUBUN === "D") {
-        rows[i].CHGUBUN = "한글날";
-      } else if (rows[i].CHGUBUN === "E") {
-        rows[i].CHGUBUN = "성탄절";
-      } else if (rows[i].CHGUBUN === "F") {
-        rows[i].CHGUBUN = "지정휴무";
-      } else if (rows[i].CHGUBUN === "X") {
-        rows[i].CHGUBUN = "광복절";
-      } else if (rows[i].CHGUBUN === "Y") {
-        rows[i].CHGUBUN = "임시휴일";
-      } else if (rows[i].CHGUBUN === "Z") {
-        rows[i].CHGUBUN = "대체휴일";
-      }
-      for (let j = 0; j < 3; j++) {
-        if (rows[i]["CHCCGUBUN" + String(j)] === "0") {
-          rows[i]["CHCCGUBUN" + String(j)] = "정상근무";
-        } else if (rows[i]["CHCCGUBUN" + String(j)] === "5") {
-          rows[i]["CHCCGUBUN" + String(j)] = "무급휴무";
-        } else if (rows[i]["CHCCGUBUN" + String(j)] === "6") {
-          rows[i]["CHCCGUBUN" + String(j)] = "유급휴무";
-        }
-      }
-
-      rows[i].DAYOFWEEK = moment(rows[i].CHDATE).format("dddd");
       // rows[i].SDSTRDATE = moment(rows[i].SDSTRDATE).format("YYYY-MM-DD"); // 시작일
       // rows[i].SDENDDATE = moment(rows[i].SDENDDATE).format("YYYY-MM-DD"); // 종료일
     }
@@ -121,9 +71,9 @@ const Grid_Holiday = props => {
       enableCellSelect={true}
       onRowDoubleClick={Saup_Save}
       onGridRowsUpdated={onGridRowsUpdated}
-      minWidth={1200}
+      minWidth={1870}
     />
   );
 };
 
-export default Grid_Holiday;
+export default Grid_ComeCheck;

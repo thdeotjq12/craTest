@@ -2,6 +2,9 @@ import React, { useState, Component } from "react";
 import Insa from "./Insa";
 import Staff from "./Staff";
 import CompanyInfo from "./CompanyInfo";
+import ComeCheckDate from "./ComeCheckDate";
+import ComeCheck from "./ComeCheck";
+import PayList from "./PayList";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 const Main = ({ createBasicInfo, BaicInfo_Data }) => {
   // console.log("MainProps", createBasicInfo);
@@ -26,6 +29,15 @@ const Main = ({ createBasicInfo, BaicInfo_Data }) => {
         <button className="btn btn-primary" onClick={() => onMenuClick(4)}>
           인사관리
         </button>
+        <button className="btn btn-primary" onClick={() => onMenuClick(5)}>
+          일별근태
+        </button>
+        <button className="btn btn-primary" onClick={() => onMenuClick(6)}>
+          근태정산
+        </button>
+        <button className="btn btn-primary" onClick={() => onMenuClick(7)}>
+          급여대장
+        </button>
         {/* <button
           onClick={() =>
             props.history.replace({
@@ -43,6 +55,9 @@ const Main = ({ createBasicInfo, BaicInfo_Data }) => {
         )}
         {selectedMenu === 3 && <Staff />}
         {selectedMenu === 4 && <Insa />}
+        {selectedMenu === 5 && <ComeCheckDate />}
+        {selectedMenu === 6 && <ComeCheck />}
+        {selectedMenu === 7 && <PayList />}
       </div>
     </div>
   );

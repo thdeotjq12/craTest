@@ -14,6 +14,13 @@ const Login = require("./router/login");
 const BasicInfo = require("./router/Main/CompanyInfo/BasicInfo");
 const SaupGwanRi = require("./router/Main/CompanyInfo/SaupGwanRi");
 const ZiwonGwanRi = require("./router/Main/CompanyInfo/ZiwonGwanRi");
+const CommonInfo = require("./router/Main/CompanyInfo/CommonInfo");
+const Staff = require("./router/Main/Staff");
+const ComeCheckDate = require("./router/Main/ComeCheckDate");
+const ComeCheck = require("./router/Main/ComeCheck");
+const PayList = require("./router/Main/PayList");
+const Func = require("./router/Func");
+
 const app = express();
 dotenv.config();
 passportConfig();
@@ -75,6 +82,13 @@ app.use("/Login", Login);
 app.use("/CompanyInfo/BasicInfo", BasicInfo);
 app.use("/CompanyInfo/SaupGwanRi", SaupGwanRi);
 app.use("/CompanyInfo/ZiwonGwanRi", ZiwonGwanRi);
+app.use("/CompanyInfo/CommonInfo", CommonInfo);
+app.use("/Staff", Staff);
+app.use("/ComeCheckDate", ComeCheckDate);
+app.use("/ComeCheck", ComeCheck);
+app.use("/PayList", PayList);
+app.use("/Func", Func);
+
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });

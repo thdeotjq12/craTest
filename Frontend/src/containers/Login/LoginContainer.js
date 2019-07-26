@@ -5,6 +5,7 @@ import {
   INPUT_PW,
   USERINFO_DATA
 } from "../../modules/Login/LoginReducer";
+import { ADD_ValList_SUCCESS } from "../../modules/Func/ValListReducer";
 import React, { useEffect, useCallback } from "react";
 import Login from "../../pages/Login";
 import axios from "axios";
@@ -30,12 +31,24 @@ const LoginContainer = props => {
         if (res.data === "LoginFail") {
           alert("아이디 또는 비밀번호를 확인해주세요 !");
         } else {
-          console.log("LOGIN 성공 !");
-          localStorage.setItem("USER_Info", JSON.stringify(res.data));
+          console.log("LOGIN 성공 !", res.data);
+
           dispatch({
             type: USERINFO_DATA,
             payload: res.data
           });
+          axios.post("http://localhost:5000/Func/SetPublicInfo").then(res => {
+            if (res.data) {
+              dispatch({
+                type: ADD_ValList_SUCCESS,
+                payload: res.data
+              });
+              console.log("전역변수 ", res.data);
+            } else {
+              console.log("전역변수 할당 실패");
+            }
+          });
+
           console.log("Login pathname", res.data);
           props.history.replace({
             pathname: "/Main"
