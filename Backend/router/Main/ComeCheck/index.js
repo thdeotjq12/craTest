@@ -33,12 +33,14 @@ router.post("/CleanComeCheckTot", async (req, res) => {
                  OR   ( B.SSMSTRDATE <= ? AND B.SSMENDDATE >= ?))      `;
   parm = [FirstDate, FirstDate, FirstDate, ENDDate, ENDDate];
 
-  con.query(sql, parm, (err, rows, fields) => {
+  await con.query(sql, parm, (err, rows, fields) => {
     if (!err) {
-      for (let i = 0; i < rows.length; i++) {
-        CTSTCode.push(rows[i].CTSTCODE);
-        CTSHCode.push(rows[i].CTSHCODE);
-        CTSDCODE.push(rows[i].CTSDCODE);
+      if (rows) {
+        for (let i = 0; i < rows.length; i++) {
+          CTSTCode.push(rows[i].CTSTCODE);
+          CTSHCode.push(rows[i].CTSHCODE);
+          CTSDCODE.push(rows[i].CTSDCODE);
+        }
       }
     } else {
       console.log("Query ERR : ", err);
@@ -46,22 +48,27 @@ router.post("/CleanComeCheckTot", async (req, res) => {
   });
   if (CTSTCode.length === 0) {
     console.log("CTSTCode 가 존재하지 않음");
+    // await globalValue.PromiseQuery(con, sql, parm);
+    con.end();
+    return;
   } else {
     sql = ` DELETE FROM COMECHECKTOT
             WHERE               `;
     for (let i = 0; i < CTSTCode.length; i++) {
       if (i > 0) {
-        sql =
-          sql +
-          ` OR
-        (   CTSTCode    =  ?                          
+        sql = sql + ` OR `;
+      }
+      sql =
+        sql +
+        `(  CTSTCode    =  ?                          
         and CTSHCode    =  ?
         and CTSDCode    =  ?
         and CTYearMonth =  ?)   `;
-        parm = [CTSTCode[i], CTSHCode[i], CTSDCode[i], FirstDate];
-      }
+      parm.push([CTSTCode[i], CTSHCode[i], CTSDCode[i], FirstDate]);
+      console.log("CTSTCode 가 존재함", rows);
     }
-    con.query(sql, parm, (err, rows, fields) => {
+
+    await con.query(sql, parm, (err, rows, fields) => {
       if (!err) {
         console.log("CleanComeCheckTot 성공");
       } else {
@@ -145,7 +152,7 @@ router.post("/ShowCCList_admin", async (req, res) => {
     parm.push(SHCode);
   }
   if (SaupDetailKeyWord !== "전체") {
-    if (GetSDCode !== null) {
+    if (GetSDCode) {
       sql =
         sql +
         ` AND A.SSMSHCODE = ?
@@ -163,9 +170,8 @@ router.post("/ShowCCList_admin", async (req, res) => {
         SaupDetailList: rows
       };
 
-      console.log("rows", rows.length);
       console.log("parm", parm);
-      console.log("rows", rows);
+
       // console.log("rows", rows);
       res.send(result);
     } else {

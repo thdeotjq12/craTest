@@ -18,6 +18,7 @@ const CommonInfo = require("./router/Main/CompanyInfo/CommonInfo");
 const Staff = require("./router/Main/Staff");
 const ComeCheckDate = require("./router/Main/ComeCheckDate");
 const ComeCheck = require("./router/Main/ComeCheck");
+const ComeCheckDetail = require("./router/Main/ComeCheckDetail");
 const PayList = require("./router/Main/PayList");
 const Func = require("./router/Func");
 
@@ -86,6 +87,7 @@ app.use("/CompanyInfo/CommonInfo", CommonInfo);
 app.use("/Staff", Staff);
 app.use("/ComeCheckDate", ComeCheckDate);
 app.use("/ComeCheck", ComeCheck);
+app.use("/ComeCheckDetail", ComeCheckDetail);
 app.use("/PayList", PayList);
 app.use("/Func", Func);
 

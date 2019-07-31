@@ -7,7 +7,7 @@ const passport = require("passport");
 router.post("/SetPublicInfo", async (req, res) => {
   console.log("SetPublicInfo");
   var con = await globalValue.connectDB("g00001");
-  var result = {};
+
   var sql = "";
   var parm = [];
   var moment = require("moment");
