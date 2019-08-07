@@ -12,17 +12,17 @@ router.post("/SetHolidays", async (req, res) => {
   var moment = require("moment");
   var StrDate = req.body.StrDate;
   var EndDate = req.body.EndDAte;
-
+  var SWGubun = req.body.SWGubun;
   con.connect();
 
   sql =
-    ` SELECT CHCODE, CHGUBUN, CHNAME, CHDATE, CHMEMO, CHCCGUBUN ` +
-    req.body.SWGUBUN +
+    ` SELECT CHCODE, CHGUBUN, CHNAME, CHDATE, CHMEMO, CHCCGUBUN` +
+    SWGubun +
     ` AS CHCCGUBUN FROM COMPANYHOLIDAYS
            WHERE CHDATE >= ?                                                                             
              AND CHDATE <= ?
            ORDER BY CHDATE                                                                                        `;
-  parm = [SWGUBUN, StrDate, EndDate];
+  parm = [StrDate, EndDate];
 
   await con.query(sql, parm, (err, rows, fields) => {
     if (!err) {

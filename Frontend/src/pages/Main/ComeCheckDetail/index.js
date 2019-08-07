@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
   Button,
   Modal,
@@ -15,7 +16,9 @@ import "./index.css";
 import Grid_ComeCheckDetail from "./Grid_ComeCheckDetail";
 import { formatRelative } from "date-fns/esm";
 import WTimes from "../../../function/WTimes";
+
 import GongLib from "../../../function/GongLib";
+import InfraLib from "../../../function/InfraLib";
 import axios from "axios";
 const Grid_ComeCheckDetailCol = [
   { key: "CDDate", name: "근무날짜", width: 80, editable: true },
@@ -43,9 +46,12 @@ const Grid_ComeCheckDetailCol = [
 const ComeCheckDetail = props => {
   const { handleClose, Modals, CCList, Year, Month } = props;
   var moment = require("moment");
-  const [DetailList, setDetailList] = useState("");
+  const { ValList } = useSelector(state => state.ValList);
+  const [HoliDays, SetHoli] = useState(""); // 휴일 리스트
+  const [DetailList, setDetailList] = useState(""); // 달력 리스트
   const [DetailList_Bef, setDetailList_Bef] = useState("");
   const [DetailList_Aft, setDetailList_Aft] = useState("");
+  const [MuHueWeek, setMuHueWeek] = useState(""); //무휴요일
   const [NowDate, setNowDate] = useState(Year + "-" + Month + "-" + "01");
   const [LastDate, setLastDate] = useState(
     Year +
@@ -56,9 +62,12 @@ const ComeCheckDetail = props => {
         .endOf("month")
         .format("DD")
   );
+
   //빈 배열을 useEffect의 두 번째 인수로 전달하면 마운트 및 마운트 해제시에만 실행되므로 무한 루프가 중지됩니다.
   useEffect(() => {
-    SetCalenderGrid(DetailList, NowDate, LastDate);
+    SetCalendar(true);
+    // SetCalenderGrid(DetailList, NowDate, LastDate);
+
     console.log("NowDate", NowDate, "LastDate", LastDate);
     console.log("CCList", CCList);
   }, []);
@@ -77,10 +86,10 @@ const ComeCheckDetail = props => {
   };
   const ShowComeCheckDate = () => {};
   //현재달 달력 셋팅
-  const SetCalenderNow = ShowDB => {
+  const SetCalendarNow = ShowDB => {
     var WeekDayIndex = moment(NowDate).day() + 1;
     //시작일부터 말일까지 grid에 달력을 셋팅하는 함수
-    SetCalenderGrid(NowDate, LastDate);
+    SetCalenderGrid(DetailList, NowDate, LastDate);
     //이번달 달력에 일자별 근태를 조회하는 함수
     if (ShowDB) ShowComeCheckDate(DetailList);
   };
@@ -134,15 +143,38 @@ const ComeCheckDetail = props => {
     console.log("nowDate ggggg", nowDate, "NowDate", NowDate);
     console.log("LastDat GGGGGG", LastDate, "iSSHoliWeek", iSSHoliWeek);
   };
+  //달력을 셋팅하는 함수
+  const SetCalendar = ShowDB => {
+    console.log("SetCalendar 실행됨 #####");
+    SetHolidays(NowDate, LastDate, CCList[0].SSSWGUBUN);
+    //연장가산요일 선택
+    //1일 2월 3화 4수 5목 6금 7토
+    if ((CCList[0].SSHoliWeek = "1")) setMuHueWeek("7");
+    else if ((CCList[0].SSHoliWeek = "2")) setMuHueWeek("1");
+    else if ((CCList[0].SSHoliWeek = "3")) setMuHueWeek("2");
+    else if ((CCList[0].SSHoliWeek = "4")) setMuHueWeek("3");
+    else if ((CCList[0].SSHoliWeek = "5")) setMuHueWeek("4");
+    else if ((CCList[0].SSHoliWeek = "6")) setMuHueWeek("5");
+    else if ((CCList[0].SSHoliWeek = "7")) setMuHueWeek("6");
+    SetCalendarNow(true); //이번달 달력 셋팅//반드시 이번달 먼저 셋팅해야 이전달과 다음달을 이번달에서 필요한 만큼만 조회해서 그리드에 셋팅한다.
+    SetCalendarBef(); //이전달 달력 셋팅
+    SetCalendarAft(); //다음달 달력 셋팅
+
+    SetHuejik(); //휴직 정보를 셋팅
+    // SetInOutDate(); ////입퇴사에 관하여 입사이전과 퇴사이후는 무급휴일로 자동 셋팅하는 함수
+    // SetMuhueOverTime(); //전체라인에 대해서 무휴일(주휴 직전일)에 추가연장을 계산하는 함수
+
+    // ClearJuhueByOut(DetailList); //근무구분중 결근이 있으면 해당 주의 주휴를 제거하는 함수
+  };
   //휴직 정보를 셋팅
   const SetHuejik = () => {
     var HStrDate;
     var HEndDate;
     var Hujik = DetailList;
     var parm = {
+      STCode: CCList[0].STCode,
       StrDate: NowDate,
-      EndDate: LastDate,
-      SWGubun: CCList[0].SWGubun
+      EndDate: LastDate
     };
     var HuejikList = {};
     axios
@@ -256,8 +288,289 @@ const ComeCheckDetail = props => {
       for (let i = 0; i < DetailList.length; i++) {
         //그리드상의 근무 일자가 사업참여 시작 전인 경우.
         if (DetailList[i].CDDate < CCList[0].SSMStrDate) {
-          InOutDate[i].CDGubun = "5";
-          // GongLib.SetCellEditExit;
+          InOutDate[i].CDGubun = "5"; //무급휴무로 설정
+          setDetailList(
+            GongLib.SetCellEditExit(
+              InOutDate,
+              null,
+              null,
+              i,
+              InOutDate[i].SSWTimeOfDayLimit,
+              false,
+              InOutDate[i].SSNightStrWTime,
+              InOutDate[i].SSNightEndWTime,
+              InOutDate[i].SSLTimeGubun1,
+              InOutDate[i].SSLTimeGubun2,
+              InOutDate[i].SSLTimeGubun3,
+              InOutDate[i].SSLTimeGubun4,
+              InOutDate[i].SSLTimeGubun5,
+              InOutDate[i].SSHoliWeek,
+              InOutDate[i].SSHoliPayYN,
+              InOutDate[i].CDDate,
+              InOutDate[i].DateGubun,
+              InOutDate[i].CDDayWeek,
+              InOutDate[i].CDGubun,
+              InOutDate[i].SSWTimeStr,
+              InOutDate[i].SSWTimeEnd,
+              InOutDate[i].CDWStrTime,
+              InOutDate[i].CDWEndTime,
+              InOutDate[i].SSLTimeStr1,
+              InOutDate[i].SSLTimeEnd1,
+              InOutDate[i].SSLTimeStr2,
+              InOutDate[i].SSLTimeEnd2,
+              InOutDate[i].SSLTimeStr3,
+              InOutDate[i].SSLTimeEnd3,
+              InOutDate[i].SSLTimeStr4,
+              InOutDate[i].SSLTimeEnd4,
+              InOutDate[i].SSLTimeStr5,
+              InOutDate[i].SSLTimeEnd5,
+              InOutDate[i].HTime,
+              InOutDate[i].CDHTime,
+              InOutDate[i].TotWorkTime,
+              InOutDate[i].CDSStrTime,
+              InOutDate[i].CDSEndTime,
+              InOutDate[i].CDWTimeNormal,
+              InOutDate[i].CDWTimeHoli,
+              InOutDate[i].CDWTimeOver,
+              InOutDate[i].CDWTimeNight,
+              InOutDate[i].CDWTimeNightOver,
+              InOutDate[i].CDHTimeBase,
+              InOutDate[i].CDHTimeOver,
+              InOutDate[i].CDHTimeNight,
+              InOutDate[i].CDHTimeNightOver,
+              InOutDate[i].CDTkTime, //특근 인덱스
+              InOutDate[i].CDNoComeCNT,
+              InOutDate[i].CDLateTime,
+              InOutDate[i].CDEarlyOutTime,
+              false
+            )
+          );
+        }
+      }
+    }
+    //퇴사일 이후 근무를 무급휴일로 처리
+    if (
+      moment(NowDate, "YYYY-MM-DD").format("YYYY-MM-DD") === //현재 화면상의 년월
+      CCList[0].SSMEndDate //사업참여 시작년월
+    ) {
+      for (let i = 0; i < DetailList.length; i++) {
+        //그리드상의 근무 일자가 사업참여 시작 전인 경우.
+        if (DetailList[i].CDDate > CCList[0].SSMEndDate) {
+          InOutDate[i].CDGubun = "5"; //무급휴무로 설정
+          setDetailList(
+            GongLib.SetCellEditExit(
+              InOutDate,
+              null,
+              null,
+              i,
+              InOutDate[i].SSWTimeOfDayLimit,
+              false,
+              InOutDate[i].SSNightStrWTime,
+              InOutDate[i].SSNightEndWTime,
+              InOutDate[i].SSLTimeGubun1,
+              InOutDate[i].SSLTimeGubun2,
+              InOutDate[i].SSLTimeGubun3,
+              InOutDate[i].SSLTimeGubun4,
+              InOutDate[i].SSLTimeGubun5,
+              InOutDate[i].SSHoliWeek,
+              InOutDate[i].SSHoliPayYN,
+              InOutDate[i].CDDate,
+              InOutDate[i].DateGubun,
+              InOutDate[i].CDDayWeek,
+              InOutDate[i].CDGubun,
+              InOutDate[i].SSWTimeStr,
+              InOutDate[i].SSWTimeEnd,
+              InOutDate[i].CDWStrTime,
+              InOutDate[i].CDWEndTime,
+              InOutDate[i].SSLTimeStr1,
+              InOutDate[i].SSLTimeEnd1,
+              InOutDate[i].SSLTimeStr2,
+              InOutDate[i].SSLTimeEnd2,
+              InOutDate[i].SSLTimeStr3,
+              InOutDate[i].SSLTimeEnd3,
+              InOutDate[i].SSLTimeStr4,
+              InOutDate[i].SSLTimeEnd4,
+              InOutDate[i].SSLTimeStr5,
+              InOutDate[i].SSLTimeEnd5,
+              InOutDate[i].HTime,
+              InOutDate[i].CDHTime,
+              InOutDate[i].TotWorkTime,
+              InOutDate[i].CDSStrTime,
+              InOutDate[i].CDSEndTime,
+              InOutDate[i].CDWTimeNormal,
+              InOutDate[i].CDWTimeHoli,
+              InOutDate[i].CDWTimeOver,
+              InOutDate[i].CDWTimeNight,
+              InOutDate[i].CDWTimeNightOver,
+              InOutDate[i].CDHTimeBase,
+              InOutDate[i].CDHTimeOver,
+              InOutDate[i].CDHTimeNight,
+              InOutDate[i].CDHTimeNightOver,
+              InOutDate[i].CDTkTime, //특근 인덱스
+              InOutDate[i].CDNoComeCNT,
+              InOutDate[i].CDLateTime,
+              InOutDate[i].CDEarlyOutTime,
+              false
+            )
+          );
+        }
+      }
+    }
+  };
+  //전체라인에 대해서 무휴일(주휴 직전일)에 추가연장을 계산하는 함수
+  const SetMuhueOverTime = () => {
+    //연장가산일은 사원 명부에서 설정된 주휴일 직전일로보고 계산한다.
+    for (let i = 0; i < DetailList.length; i++) {
+      if (DetailList[i].CDGubun === "1") continue;
+      if (moment(DetailList[i].CDDate).day() + 1 === MuHueWeek) {
+        //무휴일로 인정
+        //무휴일에 대해 주간 소정근로시간 초과, 또는 법정주간근로시간(40시간)초과시 연장근무로 셋팅하는 함수
+        GongLib.MuhueOverTimeCheck(
+          false,
+          DetailList,
+          DetailList_Bef,
+          DetailList_Aft,
+          DetailList[i].CDDate,
+          DetailList[i].DateGubun,
+          DetailList[i].CDDayWeek,
+          DetailList[i].CDGubun,
+          DetailList[i].SSWTimeStr,
+          DetailList[i].SSWTimeEnd,
+          DetailList[i].CDWStrTime,
+          DetailList[i].CDWEndTime,
+          DetailList[i].SSLTimeStr1,
+          DetailList[i].SSLTimeEnd1,
+          DetailList[i].SSLTimeStr2,
+          DetailList[i].SSLTimeEnd2,
+          DetailList[i].SSLTimeStr3,
+          DetailList[i].SSLTimeEnd3,
+          DetailList[i].SSLTimeStr4,
+          DetailList[i].SSLTimeEnd4,
+          DetailList[i].SSLTimeStr5,
+          DetailList[i].SSLTimeEnd5,
+          DetailList[i].HTime,
+          DetailList[i].CDHTime,
+          DetailList[i].TotWorkTime,
+          DetailList[i].CDSStrTime,
+          DetailList[i].CDSEndTime,
+          DetailList[i].CDWTimeNormal,
+          DetailList[i].CDWTimeHoli,
+          DetailList[i].CDWTimeOver,
+          DetailList[i].CDWTimeNight,
+          DetailList[i].CDWTimeNightOver,
+          DetailList[i].CDHTimeBase,
+          DetailList[i].CDHTimeOver,
+          DetailList[i].CDHTimeNight,
+          DetailList[i].CDHTimeNightOver,
+          DetailList[i].CDTkTime,
+          DetailList[i].SSHoliWeek,
+          DetailList[i].SSNightStrWTime,
+          DetailList[i].SSNightEndWTime,
+          DetailList[i].SSLTimeGubun1,
+          DetailList[i].SSLTimeGubun2,
+          DetailList[i].SSLTimeGubun3,
+          DetailList[i].SSLTimeGubun4,
+          DetailList[i].SSLTimeGubun5,
+          i,
+          false
+        );
+      }
+      if (DetailList[i].SSHoliPayYN) {
+        DetailList[i].CDWTimeHoli = InfraLib.infraRoundUp(
+          DetailList[i].CDWTimeNormal * ValList[1].ValWTimeHoliRate,
+          ValList[1].ValBaseDigit
+        );
+      } else {
+        DetailList[i].CDWTimeHoli = 0;
+      }
+    }
+  };
+  //근무구분중 결근이 있으면 해당 주의 주휴를 제거하는 함수
+  const ClearJuhueByOut = grid => {
+    var isDoubleOut; //한주에 결근이 2번이상인지 검사하는 플래그
+    var isOtherMonthFind; //이전달 마지막주를 검색해야하는 경우인지 확인하는 플래그
+    for (let i = 0; i < grid.length; i++) {
+      isDoubleOut = false;
+      if (grid[i].CDGubun === "3") {
+        isOtherMonthFind = true;
+        grid[i].CDWTimeHoli = 0;
+        for (let j = i; 0; j--) {
+          // j===0 ?
+          //윗방향 주휴제거
+          if (
+            Math.trunc(moment(DetailList[i].CDDate).day() + 1) ===
+            grid[i].SSHoliWeek
+          ) {
+            isOtherMonthFind = false; //이전달 마지막주를 검색하지 않아도됨
+            break; //주휴가 나오면 윗방향으로 주휴제거 중지
+          }
+          if (i === j) continue;
+          if (grid[j].CDWTimeHoli < 0) {
+            grid[i].CDWTimeHoli = 0;
+            isDoubleOut = true;
+            break;
+          } else {
+            grid[i].CDWTimeHoli = grid[i].CDWTimeHoli - grid[j].CDWTimeHoli;
+          }
+        }
+        // 이전달에 마지막주를 검색함
+        if (isOtherMonthFind && !isDoubleOut) {
+          for (let j = DetailList_Bef.length; 0; j--) {
+            if (
+              Math.trunc(moment(DetailList_Bef[i].CDDate).day() + 1) ===
+              grid[i].SSHoliWeek
+            ) {
+              isOtherMonthFind = false; //이전달 마지막주를 검색하지 않아도됨
+              break; //주휴가 나오면 윗방향으로 주휴제거 중지
+            }
+            if (DetailList_Bef[j].CDGubun === "3") {
+              grid[i].CDWTimeHoli = 0;
+              isDoubleOut = true;
+              break;
+            } else {
+              grid[i].CDWTimeHoli =
+                grid[i].CDWTimeHoli - DetailList_Bef[j].CDWTimeHoli;
+            }
+          }
+        }
+        isOtherMonthFind = true; //우선 다음달 첫째주의 주휴시간을 감산할 예정
+        if (!isDoubleOut) {
+          for (let j = i; grid.length; i++) {
+            if (
+              Math.trunc(moment(grid[j].CDDate).day() + 1) ===
+              grid[i].SSHoliWeek
+            ) {
+              isOtherMonthFind = false; //다음달 계산할 필요 없음
+              break; //주휴가 나오면 아래방향으로 주휴제거 중지
+            }
+            if (i === j) continue;
+            if (grid[j].CDWTimeHoli < 0) {
+              grid[i].CDWTimeHoli = 0;
+              isDoubleOut = true;
+              break;
+            } else {
+              grid[i].CDWTimeHoli = grid[i].CDWTimeHoli - grid[j].CDWTimeHoli;
+            }
+          }
+        }
+        // 다음달에 첫주의 주휴를 소정근로 시간으로 게산하여 감산함
+        if (isOtherMonthFind && !isDoubleOut) {
+          for (let j = DetailList_Aft.length; 0; j--) {
+            if (
+              Math.trunc(moment(DetailList_Aft[i].CDDate).day() + 1) ===
+              grid[i].SSHoliWeek
+            ) {
+              break; //주휴가 나오면 윗방향으로 주휴제거 중지
+            }
+            if (DetailList_Aft[j].CDGubun === "3") {
+              grid[i].CDWTimeHoli = 0;
+
+              break;
+            } else {
+              grid[i].CDWTimeHoli =
+                grid[i].CDWTimeHoli - DetailList_Aft[j].CDWTimeHoli;
+            }
+          }
         }
       }
     }
@@ -269,7 +582,7 @@ const ComeCheckDetail = props => {
     var parm = {
       StrDate: NowDate,
       EndDate: LastDate,
-      SWGubun: CCList[0].SWGubun
+      SWGubun: CCList[0].SSSWGUBUN
     };
     var HoliList = {};
     axios
@@ -279,6 +592,7 @@ const ComeCheckDetail = props => {
         if (res.data === "NoData") {
         } else {
           HoliList = res.data.HolidaysList;
+          SetHoli(HoliList);
           for (let i = 0; i < HoliList.length; i++) {}
           WTimes.AddHolidays(
             HoliList.CHCode,
@@ -291,7 +605,7 @@ const ComeCheckDetail = props => {
         }
       })
       .catch(err => {
-        console.log("SaupHeadList 에러", err);
+        console.log("SetHolidays 에러", err);
       });
   };
   const SetCalenderGrid = (TList, StrDate, EndDate) => {

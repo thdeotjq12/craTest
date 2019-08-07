@@ -54,6 +54,14 @@ router.post("/SetPublicInfo", async (req, res) => {
       Result[1].WPMOBILERATETIMEIN = 5;
       Result[1].WPMOBILECCTIMEUPOUT = 15;
       Result[1].WPMOBILERATETIMEOUT = 5;
+      Result[1].ValBaseDigit = 2;
+      Result[1].ValOverDigit = 2;
+      Result[1].ValWTimeLimitOfDay = 8; //일일 기본 근로 시간
+      Result[1].ValWTimeHoliRate = 0.2; //주휴수당 계수
+      Result[1].WTimeOfDayLimit = 8; //법정 하루 최대 근무시간
+      Result[1].WTimeOfDayLimitMinor = 7; //법정 하루 최대 근무시간(미성년자)
+      Result[1].WTimeOfWeekLimit = 40; //법정 주 최대 근무시간
+      Result[1].WTimeOfWeekLimitMinor = 40; //법정 주 최대 근무시간(미성년자: 성인근로자와 같음)=>유영혜20161021: 미성년자도 주당 40시간이후로 연장근로 적용받음
       res.send(Result);
     } else {
       console.log("Query ERR : ", err);

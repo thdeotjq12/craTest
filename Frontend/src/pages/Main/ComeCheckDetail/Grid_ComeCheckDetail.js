@@ -12,7 +12,7 @@ const Grid_ComeCheckDetail = props => {
   var moment = require("moment");
 
   useEffect(() => {
-    console.log("Grid - useEffect 실행됨");
+    console.log("Grid_ComeCheckDetail - useEffect 실행됨", rows);
     // 여기서 dispatch > 리퀘스트 로 물어보고 dispatch > suc or fail(err) 분기
     RowFix();
     setrows(rows);
