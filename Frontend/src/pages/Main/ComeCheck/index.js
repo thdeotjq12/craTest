@@ -52,7 +52,9 @@ const ComeCheck = props => {
   const { ValList } = useSelector(state => state.ValList);
   const [CCList, setCCList] = useState("");
   const [Year, setYear] = useState(today.getFullYear());
-  const [Month, setMonth] = useState(today.getMonth() + 1);
+  const [Month, setMonth] = useState(
+    (today.getMonth() + 1 < 10 ? "0" : "") + (today.getMonth() + 1)
+  );
   const [WPCCEditAbleDate, setWPCCEditAbleDate] = useState(
     ValList && ValList[1].WPCCEDITABLEDATE
   ); //근태수정가능일

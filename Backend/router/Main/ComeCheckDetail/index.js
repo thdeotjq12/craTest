@@ -30,6 +30,7 @@ router.post("/SetHolidays", async (req, res) => {
         ...result,
         HolidaysList: rows
       };
+
       res.send(result);
     } else {
       console.log("Query ERR : ", err);
@@ -50,7 +51,7 @@ router.post("/SetHuejik", async (req, res) => {
   var STCode = req.body.STCode;
   var StrDate = req.body.StrDate;
   var EndDate = req.body.EndDAte;
-
+  console.log("Test 2 ", req.body);
   con.connect();
 
   sql = ` SELECT * FROM STAFFHUEJIK                                   
@@ -65,6 +66,7 @@ router.post("/SetHuejik", async (req, res) => {
         ...result,
         HuejikList: rows
       };
+      console.log("HuejikList", result);
       res.send(result);
     } else {
       console.log("Query ERR : ", err);
