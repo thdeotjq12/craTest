@@ -31,11 +31,18 @@ Func.AddHolidays = (CHCode, CHGubun, CHName, CHDate, CHMemo, CHCCGubun) => {
 };
 //CheckDate가 휴일인 경우 근태처리방법을 불러오는 함수(0:근무일 5:무급휴무 6:유급휴무)
 Func.getHolidayCCGubun = (CheckDate, DefaultValue) => {
-  var Result = "";
+  console.log(
+    "FFFFFFFFFFFFFFFF   :",
+    CheckDate,
+    DefaultValue,
+    CheckDate.length
+  );
+  var Result = DefaultValue;
   if (Holidays.CHCode === "") return;
   for (let i = 0; i < Holidays.length; i++) {
     if (CheckDate === Holidays[i].CHDate) Result = Holidays[i].CHCCGubun;
   }
+  console.log("TEST --------------------", Result);
   return Result;
 };
 export default Func;

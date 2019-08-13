@@ -4,6 +4,8 @@ import PublicValue from "./PublicValue";
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { tr } from "date-fns/esm/locale";
+import Val from "../pages/Main/ComeCheckDetail/index";
+import { addHours } from "date-fns";
 var Func = {};
 const GongLib = porps => {
   const { ValList } = useSelector(state => state.ValList);
@@ -39,7 +41,115 @@ Func.SetSaupHead = function(Select, Year, Mode) {
       console.log("SaupHead 에러", err);
     });
 };
+//적용휴게시간과 총근로시간을 계산
+const calcLTimeNWTime = (
+  CNList,
+  G1_CNWStrTime,
+  G1_CNWEndTime,
+  G1_SWLTimeStr1,
+  G1_SWLTimeEnd1,
+  G1_SWLTimeStr2,
+  G1_SWLTimeEnd2,
+  G1_SWLTimeStr3,
+  G1_SWLTimeEnd3,
+  G1_SWLTimeStr4,
+  G1_SWLTimeEnd4,
+  G1_SWLTimeStr5,
+  G1_SWLTimeEnd5,
+  G1_HTime,
+  G1_CNHTime,
+  G1_TotWorkTime,
+  Row
+) => {
+  var LTimeTot; //적용된 휴게시간
+  var is24Over;
+  var LTimeStr;
+  var LTimeEnd;
+  //휴게시간이 24시간 가산된 근무시간 밖에 있을때
+  //휴휴게시간도 24시간 가산
+  const SetLTime = (WTimeStr, iLTimeStr, iLTimeEnd) => {
+    LTimeStr = iLTimeStr;
+    LTimeEnd = iLTimeEnd;
+    if (WTimeStr === "" || iLTimeStr === "" || iLTimeEnd === "") return;
+    if (WTimeStr > LTimeStr) LTimeStr = addHours(LTimeStr, 24);
+    if (WTimeStr > LTimeEnd) LTimeEnd = addHours(LTimeEnd, 24);
+  };
+  is24Over = false;
+  //해당일의 적용휴게시간과 총근로시간을 계산
+  SetLTime(
+    CNList[Row].G1_CNWStrTime,
+    CNList[Row].G1_SWLTimeStr1,
+    CNList[Row].G1_SWLTimeEnd1
+  );
+  LTimeTot = InfraLib.calcMiute_BaseNObjTime(
+    CNList[Row].G1_CNWStrTime,
+    CNList[Row].G1_CNWEndTime,
+    LTimeStr,
+    LTimeEnd
+  );
+  SetLTime(
+    CNList[Row].G1_CNWStrTime,
+    CNList[Row].G1_SWLTimeStr2,
+    CNList[Row].G1_SWLTimeEnd2
+  );
+  LTimeTot =
+    LTimeTot +
+    InfraLib.calcMiute_BaseNObjTime(
+      CNList[Row].G1_CNWStrTime,
+      CNList[Row].G1_CNWEndTime,
+      LTimeStr,
+      LTimeEnd
+    );
+  SetLTime(
+    CNList[Row].G1_CNWStrTime,
+    CNList[Row].G1_SWLTimeStr3,
+    CNList[Row].G1_SWLTimeEnd3
+  );
+  LTimeTot =
+    LTimeTot +
+    InfraLib.calcMiute_BaseNObjTime(
+      CNList[Row].G1_CNWStrTime,
+      CNList[Row].G1_CNWEndTime,
+      LTimeStr,
+      LTimeEnd
+    );
+  SetLTime(
+    CNList[Row].G1_CNWStrTime,
+    CNList[Row].G1_SWLTimeStr4,
+    CNList[Row].G1_SWLTimeEnd4
+  );
+  LTimeTot =
+    LTimeTot +
+    InfraLib.calcMiute_BaseNObjTime(
+      CNList[Row].G1_CNWStrTime,
+      CNList[Row].G1_CNWEndTime,
+      LTimeStr,
+      LTimeEnd
+    );
+  SetLTime(
+    CNList[Row].G1_CNWStrTime,
+    CNList[Row].G1_SWLTimeStr5,
+    CNList[Row].G1_SWLTimeEnd5
+  );
+  LTimeTot =
+    LTimeTot +
+    InfraLib.calcMiute_BaseNObjTime(
+      CNList[Row].G1_CNWStrTime,
+      CNList[Row].G1_CNWEndTime,
+      LTimeStr,
+      LTimeEnd
+    );
 
+  CNList[Row].G1_HTime = LTimeTot / 60 + CNList[Row].G1_CNHTime; //적용된 휴게시간
+  CNList[Row].G1_TotWorkTime =
+    InfraLib.TimeTermMinuteStr(
+      CNList[Row].G1_CNWStrTime,
+      CNList[Row].G1_CNWEndTime
+    ) /
+      60 -
+    CNList[Row].G1_HTime; //총근로시간
+  return CNList;
+};
 Func.SetSaupDetail = function(Select, Year, SHCode, Mode) {
   var parm = {
     SHCode: SHCode,
@@ -138,12 +248,14 @@ Func.SetCellEditExit = (
   G1_CDNoComeCNT,
   G1_CDLateTime,
   G1_CDEarlyOutTime,
-  isFirst
+  isFirst,
+  ValList
 ) => {
   var moment = require("moment");
   var MuhueWeek;
   //연장가산요일 선택
   //1일 2월 3화 4수 5목 6금 7토
+  console.log("SetCEll@@@@");
   if ((SWHoliWeek = "1")) MuhueWeek = "7";
   else if ((SWHoliWeek = "2")) MuhueWeek = "1";
   else if ((SWHoliWeek = "3")) MuhueWeek = "2";
@@ -200,9 +312,67 @@ Func.SetCellEditExit = (
     G1_CDNoComeCNT,
     G1_CDLateTime,
     G1_CDEarlyOutTime,
-    isFirst
+    isFirst,
+    ValList
   );
-
+  const SetAddHTime = (
+    CNList,
+    Row,
+    SWHoliPayYN,
+    G1_CNHTime,
+    G1_CNGubun,
+    G1_CCWTimeNormal,
+    G1_CCWTimeHoli,
+    G1_CCWTimeOver,
+    G1_CCWTimeNight,
+    G1_CCWTimeNightOver,
+    G1_CCHTimeBase,
+    G1_CCHTimeOver,
+    G1_CCHTimeNight,
+    G1_CCHTimeNightOver,
+    G1_CCTkTime
+  ) => {
+    var AddHTime; //추가휴게시간
+    const SetAddHTime = (TimeIndex, ExtraAddHTime) => {
+      var HTime;
+      HTime = ExtraAddHTime;
+      if (CNList[Row].TimeIndex > 0) {
+        //해당 근로시간이 있는경우
+        if (CNList[Row].TimeIndex >= ExtraAddHTime) {
+          //해당 근로시간이 휴게시간보다 더 크거나 같은경우
+          ExtraAddHTime = ExtraAddHTime - CNList[Row].TimeIndex;
+          CNList[Row].TimeIndex = CNList[Row].TimeIndex - HTime;
+        } else {
+          //해당 근로시간이 휴게시간보다 작은경우
+          ExtraAddHTime = ExtraAddHTime - CNList[Row].TimeIndex;
+          CNList[Row].TimeIndex = 0;
+        }
+      }
+      if (ExtraAddHTime < 0) ExtraAddHTime = 0;
+      return ExtraAddHTime; //남은 추가휴게시간을 리턴
+    };
+    AddHTime = CNList[Row].G1_CNHTime; //추가휴게시간 셋팅
+    AddHTime = SetAddHTime(G1_CCHTimeNightOver, AddHTime); //휴일야간연장에 추가휴게시간 적용
+    AddHTime = SetAddHTime(G1_CCHTimeNight, AddHTime); //휴일야간에 추가휴게시간 적용
+    AddHTime = SetAddHTime(G1_CCHTimeOver, AddHTime); //휴일연장에 추가휴게시간 적용
+    AddHTime = SetAddHTime(G1_CCHTimeBase, AddHTime); //휴일기본에 추가휴게시간 적용
+    AddHTime = SetAddHTime(G1_CCWTimeNightOver, AddHTime); //평일야간연장에 추가휴게시간 적용
+    AddHTime = SetAddHTime(G1_CCWTimeOver, AddHTime); //평일연장에 추가휴게시간 적용
+    AddHTime = SetAddHTime(G1_CCWTimeNormal, AddHTime); //평일기본에 추가휴게시간 적용
+    //주휴 다시 계산(위에서 계산한 주휴를 다시 계산하는 것은 비효율 적이나 추가휴게를 계산한다음 주휴를 재계산하기 위함)
+    //주휴계산
+    if (CNList[Row].G1_CNGubun !== "3") {
+      if (SWHoliPayYN) {
+        CNList[Row].G1_CCWTimeHoli = InfraLib.infraRoundUp(
+          CNList[Row].G1_CCWTimeNormal * PublicValue.ValWTimeHoliRate,
+          PublicValue.ValBaseDigit
+        );
+      } else {
+        CNList[Row].G1_CCWTimeHoli = 0;
+      }
+    }
+    return CNList;
+  };
   if (CNList[Row].G1_CNGubun !== "1") {
     if (CNList[Row].G1_CNGubun !== "6") {
       if (moment(CNList[Row].G1_CNDate).day() + 1 === MuhueWeek) {
@@ -266,54 +436,118 @@ Func.SetCellEditExit = (
             } else {
               CNList[i].G1_CCWTimeHoli = 0;
             }
+            break;
+          }
+          if (String(moment(CNList[i].G1_CNDate).day() + 1) === MuhueWeek) {
+            CNList = Func.MuhueOverTimeCheck(
+              true,
+              CNList,
+              CNList_BefMonth,
+              CNList_AftMonth,
+              G1_CNDate,
+              G1_DateGubun,
+              G1_CNDayWeek,
+              G1_CNGubun,
+              G1_SSWTimeStr,
+              G1_SSWTimeEnd,
+              G1_CNWStrTime,
+              G1_CNWEndTime,
+              G1_SWLTimeStr1,
+              G1_SWLTimeEnd1,
+              G1_SWLTimeStr2,
+              G1_SWLTimeEnd2,
+              G1_SWLTimeStr3,
+              G1_SWLTimeEnd3,
+              G1_SWLTimeStr4,
+              G1_SWLTimeEnd4,
+              G1_SWLTimeStr5,
+              G1_SWLTimeEnd5,
+              G1_HTime,
+              G1_CNHTime,
+              G1_TotWorkTime,
+              G1_CNSStrTime,
+              G1_CNSEndTime,
+              G1_CCWTimeNormal,
+              G1_CCWTimeHoli,
+              G1_CCWTimeOver,
+              G1_CCWTimeNight,
+              G1_CCWTimeNightOver,
+              G1_CCHTimeBase,
+              G1_CCHTimeOver,
+              G1_CCHTimeNight,
+              G1_CCHTimeNightOver,
+              G1_CCTkTime,
+              SWHoliWeek,
+              SWNightStrWTime,
+              SWNightEndWTime,
+              SWLTimeGubun1,
+              SWLTimeGubun2,
+              SWLTimeGubun3,
+              SWLTimeGubun4,
+              SWLTimeGubun5,
+              i,
+              SWMinorYN
+            ); //무휴일에 대해 주간 소정근로시간 초과, 또는 법정주간근로시간(40시간)초과시 연장근무로 셋팅하는 함수
+            break;
+          }
+          //주휴계산
+          if (CNList[i].G1_CNGubun !== "3") {
+            if (SWHoliPayYN) {
+              CNList[i].G1_CCWTimeHoli = InfraLib.infraRoundUp(
+                CNList[i].G1_CCWTimeNormal * PublicValue.ValWTimeHoliRate,
+                PublicValue.ValBaseDigit
+              );
+            } else CNList[i].G1_CCWTimeHoli = 0;
           }
         }
       }
     }
+    //적용휴게시간과 총근로시간을 계산
+    CNList = calcLTimeNWTime(
+      CNList,
+      G1_CNWStrTime,
+      G1_CNWEndTime,
+      G1_SWLTimeStr1,
+      G1_SWLTimeEnd1,
+      G1_SWLTimeStr2,
+      G1_SWLTimeEnd2,
+      G1_SWLTimeStr3,
+      G1_SWLTimeEnd3,
+      G1_SWLTimeStr4,
+      G1_SWLTimeEnd4,
+      G1_SWLTimeStr5,
+      G1_SWLTimeEnd5,
+      G1_HTime,
+      G1_CNHTime,
+      G1_TotWorkTime,
+      Row
+    );
+    CNList = SetAddHTime(
+      CNList,
+      Row,
+      SWHoliPayYN,
+      G1_CNHTime,
+      G1_CNGubun,
+      G1_CCWTimeNormal,
+      G1_CCWTimeHoli,
+      G1_CCWTimeOver,
+      G1_CCWTimeNight,
+      G1_CCWTimeNightOver,
+      G1_CCHTimeBase,
+      G1_CCHTimeOver,
+      G1_CCHTimeNight,
+      G1_CCHTimeNightOver,
+      G1_CCTkTime
+    );
+    CNList[Row].G1_TotWorkTime =
+      InfraLib.TimeTermMinuteStr(
+        CNList[Row].G1_CNWStrTime,
+        CNList[Row].G1_CNWEndTime
+      ) /
+        60 -
+      CNList[Row].G1_HTime; //총근로시간
+    return CNList;
   }
-  Func.calcLTimeNWTime(
-    CNList,
-    G1_CNWStrTime,
-    G1_CNWEndTime,
-    G1_SWLTimeStr1,
-    G1_SWLTimeEnd1,
-    G1_SWLTimeStr2,
-    G1_SWLTimeEnd2,
-    G1_SWLTimeStr3,
-    G1_SWLTimeEnd3,
-    G1_SWLTimeStr4,
-    G1_SWLTimeEnd4,
-    G1_SWLTimeStr5,
-    G1_SWLTimeEnd5,
-    G1_HTime,
-    G1_CNHTime,
-    G1_TotWorkTime,
-    Row
-  );
-  Func.SetAddHTime(
-    CNList,
-    Row,
-    SWHoliPayYN,
-    G1_CNHTime,
-    G1_CNGubun,
-    G1_CCWTimeNormal,
-    G1_CCWTimeHoli,
-    G1_CCWTimeOver,
-    G1_CCWTimeNight,
-    G1_CCWTimeNightOver,
-    G1_CCHTimeBase,
-    G1_CCHTimeOver,
-    G1_CCHTimeNight,
-    G1_CCHTimeNightOver,
-    G1_CCTkTime
-  );
-  CNList[Row].G1_TotWorkTime =
-    InfraLib.TimeTermMinuteStr(
-      CNList[Row].G1_CNWStrTime,
-      CNList[Row].G1_CNWEndTime
-    ) /
-      60 -
-    CNList[Row].G1_HTime;
 };
 //해당그리드의 근무구분에 때라 row행의 시간값을 셋팅하는 함수
 Func.SetTimeForGrid = (
@@ -321,7 +555,7 @@ Func.SetTimeForGrid = (
   row,
   iWTimeOfDayLimit,
   SWMinorYN,
-  _SWHoliWeek,
+  SWHoliWeek,
   SWHoliPayYN,
   SWNightStrWTime,
   SWNightEndWTime,
@@ -364,14 +598,16 @@ Func.SetTimeForGrid = (
   G1_CDNoComeCNT,
   G1_CDLateTime,
   G1_CDEarlyOutTime,
-  isFirst
+  isFirst,
+  ValList
 ) => {
   var isBelowMuhue;
   var doCalcHTimeToHoli;
   var OutTime = "";
   var SSOutTime = "";
+
   if (grid.length === 0) return;
-  ClearTime(
+  grid = ClearTime(
     grid,
     row,
     G1_CCWTimeNormal,
@@ -396,9 +632,603 @@ Func.SetTimeForGrid = (
     grid[row].G1_CNGubun === "7" // 휴직
   ) {
     //정상근무,대근시 시간 계산
+    CalcTimes(
+      grid,
+      row,
+      iWTimeOfDayLimit,
+      SWMinorYN,
+      SWHoliWeek,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      SWLTimeGubun1,
+      SWLTimeGubun2,
+      SWLTimeGubun3,
+      SWLTimeGubun4,
+      SWLTimeGubun5,
+      G1_CNDayWeek,
+      G1_CNGubun,
+      G1_CNWStrTime,
+      G1_CNWEndTime,
+      G1_SWLTimeStr1,
+      G1_SWLTimeEnd1,
+      G1_SWLTimeStr2,
+      G1_SWLTimeEnd2,
+      G1_SWLTimeStr3,
+      G1_SWLTimeEnd3,
+      G1_SWLTimeStr4,
+      G1_SWLTimeEnd4,
+      G1_SWLTimeStr5,
+      G1_SWLTimeEnd5,
+      G1_CNSStrTime,
+      G1_CNSEndTime,
+      G1_CCWTimeNormal,
+      G1_CCWTimeHoli,
+      G1_CCWTimeOver,
+      G1_CCWTimeNight,
+      G1_CCWTimeNightOver,
+      G1_CCHTimeBase,
+      G1_CCHTimeOver,
+      G1_CCHTimeNight,
+      G1_CCHTimeNightOver,
+      G1_CCTkTime
+    ); //근무시간 및 휴게시간으로 각 근무시간을 계산.
+    //지각 계산
+
+    if (grid[row].G1_SSWTimeStr < grid[row].G1_CNWStrTime)
+      grid[row].G1_CDLateTime = InfraLib.infraRoundUp(
+        InfraLib.TimeTermMinuteStr(
+          grid[row].G1_SSWTimeStr,
+          grid[row].G1_CNWStrTime
+        ) / 60,
+        2
+      );
+    //조퇴 계산
+    SSOutTime = grid[row].G1_SSWTimeEnd;
+    OutTime = grid[row].G1_CNWEndTime;
+    if (grid[row].G1_CNWStrTime > OutTime)
+      OutTime = InfraLib.IncMinuteStr(OutTime, 24 * 60); //출근시간이 퇴근시간 보다 더 큰 경우 퇴근 시간에 24시간 가산.
+    if (grid[row].G1_SSWTimeStr > SSOutTime)
+      SSOutTime = InfraLib.IncMinuteStr(SSOutTime, 24 * 60); //출근시간이 퇴근시간 보다 더 큰 경우 퇴근 시간에 24시간 가산.
+
+    if (SSOutTime > OutTime)
+      grid[row].G1_CDEarlyOutTime = InfraLib.infraRoundup(
+        InfraLib.TimeTermMinuteStr(OutTime, SSOutTime) / 60,
+        2
+      );
+  } else if (grid[row].G1_CNGubun === "1") {
+    //특근시 시간 계산
+    grid[row].G1_CCWTimeNormal = 0;
+    grid[row].G1_CCWTimeHoli = 0;
+    grid[row].G1_CCWTimeOver = 0;
+    grid[row].G1_CCWTimeNight = 0;
+    grid[row].G1_CCWTimeNightOver = 0;
+    grid[row].G1_CCHTimeBase = 0;
+    grid[row].G1_CCHTimeOver = 0;
+    grid[row].G1_CCHTimeNight = 0;
+    grid[row].G1_CCHTimeNightOver = 0;
+    grid[row].G1_CCTkTime = InfraLib.infraRoundUp(
+      CalcWTimes(
+        "기본",
+        iWTimeOfDayLimit,
+        SWNightStrWTime,
+        SWNightEndWTime,
+        grid[row].G1_CNWStrTime,
+        grid[row].G1_CNWEndTime,
+        grid[row].G1_SWLTimeStr1,
+        grid[row].G1_SWLTimeEnd1,
+        SWLTimeGubun1,
+        grid[row].G1_SWLTimeStr2,
+        grid[row].G1_SWLTimeEnd2,
+        SWLTimeGubun2,
+        grid[row].G1_SWLTimeStr3,
+        grid[row].G1_SWLTimeEnd3,
+        SWLTimeGubun3,
+        grid[row].G1_SWLTimeStr4,
+        grid[row].G1_SWLTimeEnd4,
+        SWLTimeGubun4,
+        grid[row].G1_SWLTimeStr5,
+        grid[row].G1_SWLTimeEnd5,
+        SWLTimeGubun5
+      ) +
+        CalcWTimes(
+          "연장",
+          iWTimeOfDayLimit,
+          SWNightStrWTime,
+          SWNightEndWTime,
+          grid[row].G1_CNWStrTime,
+          grid[row].G1_CNWEndTime,
+          grid[row].G1_SWLTimeStr1,
+          grid[row].G1_SWLTimeEnd1,
+          SWLTimeGubun1,
+          grid[row].G1_SWLTimeStr2,
+          grid[row].G1_SWLTimeEnd2,
+          SWLTimeGubun2,
+          grid[row].G1_SWLTimeStr3,
+          grid[row].G1_SWLTimeEnd3,
+          SWLTimeGubun3,
+          grid[row].G1_SWLTimeStr4,
+          grid[row].G1_SWLTimeEnd4,
+          SWLTimeGubun4,
+          grid[row].G1_SWLTimeStr5,
+          grid[row].G1_SWLTimeEnd5,
+          SWLTimeGubun5
+        ) +
+        CalcWTimes(
+          "연장야간",
+          iWTimeOfDayLimit,
+          SWNightStrWTime,
+          SWNightEndWTime,
+          grid[row].G1_CNWStrTime,
+          grid[row].G1_CNWEndTime,
+          grid[row].G1_SWLTimeStr1,
+          grid[row].G1_SWLTimeEnd1,
+          SWLTimeGubun1,
+          grid[row].G1_SWLTimeStr2,
+          grid[row].G1_SWLTimeEnd2,
+          SWLTimeGubun2,
+          grid[row].G1_SWLTimeStr3,
+          grid[row].G1_SWLTimeEnd3,
+          SWLTimeGubun3,
+          grid[row].G1_SWLTimeStr4,
+          grid[row].G1_SWLTimeEnd4,
+          SWLTimeGubun4,
+          grid[row].G1_SWLTimeStr5,
+          grid[row].G1_SWLTimeEnd5,
+          SWLTimeGubun5
+        ) -
+        grid[row].G1_CNHTime,
+      ValList[1].ValOverDigit
+    );
+  } else if (grid[row].G1_CNGubun === "3") {
+    //결근시 시간 계산
+    grid[row].G1_CDNoComeCNT = CalcWTimes(
+      "기본",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].G1_SSWTimeStr,
+      grid[row].G1_SSWTimeEnd,
+      grid[row].G1_SWLTimeStr1,
+      grid[row].G1_SWLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].G1_SWLTimeStr2,
+      grid[row].G1_SWLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].G1_SWLTimeStr3,
+      grid[row].G1_SWLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].G1_SWLTimeStr4,
+      grid[row].G1_SWLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].G1_SWLTimeStr5,
+      grid[row].G1_SWLTimeEnd5,
+      SWLTimeGubun5
+    ); //결근 계산
+  } else if (grid[row].G1_CNGubun === "4" || grid[row].G1_CNGubun === "6") {
+    //연차,유급휴일,휴직 시간 계산.
+    grid = CalcPayHoliTimes(
+      grid,
+      row,
+      SWMinorYN,
+      SWHoliWeek,
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      SWLTimeGubun1,
+      SWLTimeGubun2,
+      SWLTimeGubun3,
+      SWLTimeGubun4,
+      SWLTimeGubun5,
+      G1_DateGubun,
+      G1_SSWTimeStr,
+      G1_SSWTimeEnd,
+      G1_CNWStrTime,
+      G1_CNWEndTime,
+      G1_SWLTimeStr1,
+      G1_SWLTimeEnd1,
+      G1_SWLTimeStr2,
+      G1_SWLTimeEnd2,
+      G1_SWLTimeStr3,
+      G1_SWLTimeEnd3,
+      G1_SWLTimeStr4,
+      G1_SWLTimeEnd4,
+      G1_SWLTimeStr5,
+      G1_SWLTimeEnd5,
+      G1_CNSStrTime,
+      G1_CNSEndTime,
+      G1_CCWTimeNormal,
+      G1_CCWTimeHoli,
+      G1_CCWTimeOver,
+      G1_CCWTimeNight,
+      G1_CCWTimeNightOver,
+      G1_CCHTimeBase,
+      G1_CCHTimeOver,
+      G1_CCHTimeNight,
+      G1_CCHTimeNightOver,
+      G1_CCTkTime,
+      ValList
+    ); //유급휴일,연차처리,휴직일때 각 근무시간을 계산
+    if (grid[row].G1_CCHTimeBase > 0) doCalcHTimeToHoli = true;
+  } else if (grid[row].G1_CNGubun === "8") {
+    //휴일근무시 시간 계산
+    grid[row].G1_CCHTimeBase = CalcWTimes(
+      "기본",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].G1_CNWStrTime,
+      grid[row].G1_CNWEndTime,
+      grid[row].G1_SWLTimeStr1,
+      grid[row].G1_SWLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].G1_SWLTimeStr2,
+      grid[row].G1_SWLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].G1_SWLTimeStr3,
+      grid[row].G1_SWLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].G1_SWLTimeStr4,
+      grid[row].G1_SWLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].G1_SWLTimeStr5,
+      grid[row].G1_SWLTimeEnd5,
+      SWLTimeGubun5
+    );
+
+    grid[row].G1_CCHTimeOver = CalcWTimes(
+      "연장",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].G1_CNWStrTime,
+      grid[row].G1_CNWEndTime,
+      grid[row].G1_SWLTimeStr1,
+      grid[row].G1_SWLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].G1_SWLTimeStr2,
+      grid[row].G1_SWLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].G1_SWLTimeStr3,
+      grid[row].G1_SWLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].G1_SWLTimeStr4,
+      grid[row].G1_SWLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].G1_SWLTimeStr5,
+      grid[row].G1_SWLTimeEnd5,
+      SWLTimeGubun5
+    );
+
+    grid[row].G1_CCHTimeNight = CalcWTimes(
+      "야간",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].G1_CNWStrTime,
+      grid[row].G1_CNWEndTime,
+      grid[row].G1_SWLTimeStr1,
+      grid[row].G1_SWLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].G1_SWLTimeStr2,
+      grid[row].G1_SWLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].G1_SWLTimeStr3,
+      grid[row].G1_SWLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].G1_SWLTimeStr4,
+      grid[row].G1_SWLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].G1_SWLTimeStr5,
+      grid[row].G1_SWLTimeEnd5,
+      SWLTimeGubun5
+    );
+    grid[row].G1_CCHTimeNightOver = CalcWTimes(
+      "야간연장",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].G1_CNWStrTime,
+      grid[row].G1_CNWEndTime,
+      grid[row].G1_SWLTimeStr1,
+      grid[row].G1_SWLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].G1_SWLTimeStr2,
+      grid[row].G1_SWLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].G1_SWLTimeStr3,
+      grid[row].G1_SWLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].G1_SWLTimeStr4,
+      grid[row].G1_SWLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].G1_SWLTimeStr5,
+      grid[row].G1_SWLTimeEnd5,
+      SWLTimeGubun5
+    );
+  }
+  //주휴계산
+  if (SWHoliPayYN) {
+    var moment = require("moment");
+    if (
+      String(Math.trunc(moment(grid[row].G1_CNDate).day() + 1) !== SWHoliWeek)
+    ) {
+      //주휴,무휴날은 주휴계산하지 않음
+      //무휴일 검사. 무휴일이 아닌 셩우 주휴시간 계산
+      if (grid[row].G1_DateGubun !== "2") {
+        if (doCalcHTimeToHoli) {
+          grid[row].G1_CCWTimeHoli = InfraLib.infraRoundUp(
+            grid[row].G1_CCHTimeBase * ValList[1].ValWTimeHoliRate,
+            ValList[1].ValBaseDigit
+          );
+        } else {
+          grid[row].G1_CCWTimeHoli = InfraLib.infraRoundUp(
+            grid[row].G1_CCWTimeNormal * ValList[1].ValWTimeHoliRate,
+            ValList[1].ValBaseDigit
+          );
+        }
+      }
+    }
+  } else {
+    grid[row].G1_CCWTimeHoli = 0;
   }
 };
+//유급휴일,연차처리,휴직일때 각 근무시간을 계산
 //해당행의 계산된 각종 시간을 0으로 클리어하는 함수
+const CalcPayHoliTimes = (
+  grid,
+  row,
+  SWMinorYN,
+  SWHoliWeek,
+  iWTimeOfDayLimit,
+  SWNightStrWTime,
+  SWNightEndWTime,
+  SWLTimeGubun1,
+  SWLTimeGubun2,
+  SWLTimeGubun3,
+  SWLTimeGubun4,
+  SWLTimeGubun5,
+  G1_DateGubun,
+  G1_SWTimeStr,
+  G1_SWTimeEnd,
+  G1_CNWStrTime,
+  G1_CNWEndTime,
+  G1_SWLTimeStr1,
+  G1_SWLTimeEnd1,
+  G1_SWLTimeStr2,
+  G1_SWLTimeEnd2,
+  G1_SWLTimeStr3,
+  G1_SWLTimeEnd3,
+  G1_SWLTimeStr4,
+  G1_SWLTimeEnd4,
+  G1_SWLTimeStr5,
+  G1_SWLTimeEnd5,
+  G1_CNSStrTime,
+  G1_CNSEndTime,
+  G1_CCWTimeNormal,
+  G1_CCWTimeHoli,
+  G1_CCWTimeOver,
+  G1_CCWTimeNight,
+  G1_CCWTimeNightOver,
+  G1_CCHTimeBase,
+  G1_CCHTimeOver,
+  G1_CCHTimeNight,
+  G1_CCHTimeNightOver,
+  G1_CCTkTime,
+  ValList
+) => {
+  const CalcTimeByReal = () => {
+    grid[row].G1_CCHTimeBase = CalcWTimes(
+      "휴일기본",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].G1_CNWStrTime,
+      grid[row].G1_CNWEndTime,
+      grid[row].G1_SWLTimeStr1,
+      grid[row].G1_SWLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].G1_SWLTimeStr2,
+      grid[row].G1_SWLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].G1_SWLTimeStr3,
+      grid[row].G1_SWLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].G1_SWLTimeStr4,
+      grid[row].G1_SWLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].G1_SWLTimeStr5,
+      grid[row].G1_SWLTimeEnd5,
+      SWLTimeGubun5
+    );
+
+    grid[row].G1_CCHTimeOver = CalcWTimes(
+      "연장",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].G1_CNWStrTime,
+      grid[row].G1_CNWEndTime,
+      grid[row].G1_SWLTimeStr1,
+      grid[row].G1_SWLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].G1_SWLTimeStr2,
+      grid[row].G1_SWLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].G1_SWLTimeStr3,
+      grid[row].G1_SWLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].G1_SWLTimeStr4,
+      grid[row].G1_SWLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].G1_SWLTimeStr5,
+      grid[row].G1_SWLTimeEnd5,
+      SWLTimeGubun5
+    );
+    grid[row].G1_CCHTimeNight = CalcWTimes(
+      "야간",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].G1_CNWStrTime,
+      grid[row].G1_CNWEndTime,
+      grid[row].G1_SWLTimeStr1,
+      grid[row].G1_SWLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].G1_SWLTimeStr2,
+      grid[row].G1_SWLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].G1_SWLTimeStr3,
+      grid[row].G1_SWLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].G1_SWLTimeStr4,
+      grid[row].G1_SWLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].G1_SWLTimeStr5,
+      grid[row].G1_SWLTimeEnd5,
+      SWLTimeGubun5
+    );
+    grid[row].G1_CCHTimeNightOver = CalcWTimes(
+      "야간연장",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].G1_CNWStrTime,
+      grid[row].G1_CNWEndTime,
+      grid[row].G1_SWLTimeStr1,
+      grid[row].G1_SWLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].G1_SWLTimeStr2,
+      grid[row].G1_SWLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].G1_SWLTimeStr3,
+      grid[row].G1_SWLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].G1_SWLTimeStr4,
+      grid[row].G1_SWLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].G1_SWLTimeStr5,
+      grid[row].G1_SWLTimeEnd5,
+      SWLTimeGubun5
+    );
+    grid[row].G1_CCTkTime = CalcWTimes(
+      "특근",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].G1_CNWStrTime,
+      grid[row].G1_CNWEndTime,
+      grid[row].G1_SWLTimeStr1,
+      grid[row].G1_SWLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].G1_SWLTimeStr2,
+      grid[row].G1_SWLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].G1_SWLTimeStr3,
+      grid[row].G1_SWLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].G1_SWLTimeStr4,
+      grid[row].G1_SWLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].G1_SWLTimeStr5,
+      grid[row].G1_SWLTimeEnd5,
+      SWLTimeGubun5
+    );
+    if (grid[row].G1_CCHTimeBase > iWTimeOfDayLimit) {
+      //기본 근로시간이 법정 일일최대 근로시간을 초과했음. 연장근무로 가산
+      grid[row].G1_CCHTimeBase = iWTimeOfDayLimit;
+    }
+
+    grid[row].G1_CCWTimeHoli = InfraLib.infraRoundUp(
+      grid[row].G1_CCHTimeBase * ValList[1].ValWTimeHoliRate,
+      ValList[1].ValBaseDigit
+    );
+  };
+  const CalcTimeByJoin = () => {
+    grid[row].G1_CCWTimeNormal = CalcWTimes(
+      "기본",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].G1_CNWStrTime,
+      grid[row].G1_CNWEndTime,
+      grid[row].G1_SWLTimeStr1,
+      grid[row].G1_SWLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].G1_SWLTimeStr2,
+      grid[row].G1_SWLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].G1_SWLTimeStr3,
+      grid[row].G1_SWLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].G1_SWLTimeStr4,
+      grid[row].G1_SWLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].G1_SWLTimeStr5,
+      grid[row].G1_SWLTimeEnd5,
+      SWLTimeGubun5
+    );
+    if (grid[row].G1_CCWTimeNormal > iWTimeOfDayLimit)
+      //기본 근로시간이 법정 일일최대 근로시간을 초과했음. 연장근무로 가산
+      grid[row].G1_CCWTimeNormal = iWTimeOfDayLimit;
+
+    grid[row].G1_CCWTimeHoli = InfraLib.infraRoundUp(
+      grid[row].G1_CCWTimeNormal * ValList[1].ValWTimeHoliRate,
+      ValList[1].ValBaseDigit
+    );
+  };
+
+  //주휴일인 경우
+  //시업,종업시간 없음: 시간계산하지 않음
+  //시업,종업시간 있음: 시업과 종업시간으로 휴일 시간 계산
+  //주휴일이 아닌 경우
+  //시업,종업시간 없음: 기준시업과 기준종업으로 평일 시간 계산
+  //시업,종업시간 있음: 시업과 종업시간으로 휴일 시간 계산
+  if ((grid[row].G1_DateGubun = "1")) {
+    //주휴일인 경우
+    if (grid[row].G1_CNWStrTime !== "" && grid[row].G1_CNWEndTime !== "") {
+      //시업시간과 종업시간이 있는경우
+      CalcTimeByReal();
+      grid[row].G1_CCWTimeHoli = 0;
+    }
+  } else {
+    //주휴일이 아닌 경우
+    //시업,종업시간 있음: 시업과 종업시간으로 휴일 시간 계산
+    //시업,종업시간 없음: 기준시업과 기준종업으로 평일 시간 계산
+    if (grid[row].G1_CNWStrTime !== "" && grid[row].G1_CNWEndTime !== "") {
+      //시업시간과 종업시간이 있는경우
+      CalcTimeByReal();
+      //주휴일이 아닌 경우 평일 근무도 찍어준다. 주휴시간은 마지막에 계산하므로 지금 계산하지 않는다.
+      grid[row].G1_CCWTimeNormal = CalcWTimes(
+        "기본",
+        iWTimeOfDayLimit,
+        SWNightStrWTime,
+        SWNightEndWTime,
+        grid[row].G1_CNWStrTime,
+        grid[row].G1_CNWEndTime,
+        grid[row].G1_SWLTimeStr1,
+        grid[row].G1_SWLTimeEnd1,
+        SWLTimeGubun1,
+        grid[row].G1_SWLTimeStr2,
+        grid[row].G1_SWLTimeEnd2,
+        SWLTimeGubun2,
+        grid[row].G1_SWLTimeStr3,
+        grid[row].G1_SWLTimeEnd3,
+        SWLTimeGubun3,
+        grid[row].G1_SWLTimeStr4,
+        grid[row].G1_SWLTimeEnd4,
+        SWLTimeGubun4,
+        grid[row].G1_SWLTimeStr5,
+        grid[row].G1_SWLTimeEnd5,
+        SWLTimeGubun5
+      );
+    } else {
+      //시업시간과 종업시간이 없는 경우
+      CalcTimeByJoin();
+    }
+  }
+  return grid;
+};
+
 const ClearTime = (
   grid,
   row,
@@ -430,6 +1260,7 @@ const ClearTime = (
   if (G1_CDNoComeCNT !== -1) grid[row].G1_CDNoComeCNT = 0;
   if (G1_CDLateTime !== -1) grid[row].G1_CDLateTime = 0;
   if (G1_CDEarlyOutTime !== -1) grid[row].G1_CDEarlyOutTime = 0;
+  return grid;
 };
 //근무시간 및 휴게시간으로 각 근무시간을 계산.
 const CalcTimes = (
@@ -590,9 +1421,10 @@ const CalcTimes = (
       SWLTimeGubun5
     );
   }
+  return grid;
 };
 //포괄근로시간 계산하는 함수
-export const CalcWTimes = (
+const CalcWTimes = (
   KindOfTime, //계산할 시간의 종류
   DayWTimeLimit, //일일 근무 최대시간(기본은 8시간이지만 소정 근로 시간에 따라 줄어들 수 있다. 소정근로가 6시간인데 근무시간이 8시간이면 6시간=기본근로시간  2시간=연장근로시간)
   NightStr,
@@ -734,8 +1566,7 @@ export const CalcWTimes = (
   const calcTkTime = (SWLTimeGubun, StrTime, EndTime) => {
     var LTimeMinute;
 
-    if (Math.trim(StrTime) === "" || Math.trim(EndTime) === "")
-      return (Result = 0);
+    if (StrTime.trim() === "" || EndTime.trim() === "") return (Result = 0);
     if (SWLTimeGubun !== "0" && SWLTimeGubun !== "9") {
       if (StrTime >= EndTime) EndTime = InfraLib.IncMinuteStr(EndTime, 24 * 60);
       if (WTimeStr > StrTime && WTimeStr >= EndTime) {
@@ -777,7 +1608,7 @@ export const CalcWTimes = (
   }
 
   if (KindOfTime === "특근") {
-    if (Math.trim(WTimeStr) === "" || Math.trim(WTimeEnd) === "") {
+    if (WTimeStr.trim() === "" || WTimeEnd.trim() === "") {
       return (Result = 0);
     }
     is24Add = false;
@@ -794,23 +1625,23 @@ export const CalcWTimes = (
     }
   }
   //매개변수에 공백 제거
-  WTimeStr = Math.trim(WTimeStr);
-  WTimeEnd = Math.trim(WTimeEnd);
-  LTimeStr1 = Math.trim(LTimeStr1);
-  LTimeEnd1 = Math.trim(LTimeEnd1);
-  LTimeGubun1 = Math.trim(LTimeGubun1);
-  LTimeStr2 = Math.trim(LTimeStr2);
-  LTimeEnd2 = Math.trim(LTimeEnd2);
-  LTimeGubun2 = Math.trim(LTimeGubun2);
-  LTimeStr3 = Math.trim(LTimeStr3);
-  LTimeEnd3 = Math.trim(LTimeEnd3);
-  LTimeGubun3 = Math.trim(LTimeGubun3);
-  LTimeStr4 = Math.trim(LTimeStr4);
-  LTimeEnd4 = Math.trim(LTimeEnd4);
-  LTimeGubun4 = Math.trim(LTimeGubun4);
-  LTimeStr5 = Math.trim(LTimeStr5);
-  LTimeEnd5 = Math.trim(LTimeEnd5);
-  LTimeGubun5 = Math.trim(LTimeGubun5);
+  WTimeStr = WTimeStr.trim();
+  WTimeEnd = WTimeEnd.trim();
+  LTimeStr1 = LTimeStr1.trim();
+  LTimeEnd1 = LTimeEnd1.trim();
+  LTimeGubun1 = LTimeGubun1.trim();
+  LTimeStr2 = LTimeStr2.trim();
+  LTimeEnd2 = LTimeEnd2.trim();
+  LTimeGubun2 = LTimeGubun2.trim();
+  LTimeStr3 = LTimeStr3.trim();
+  LTimeEnd3 = LTimeEnd3.trim();
+  LTimeGubun3 = LTimeGubun3.trim();
+  LTimeStr4 = LTimeStr4.trim();
+  LTimeEnd4 = LTimeEnd4.trim();
+  LTimeGubun4 = LTimeGubun4.trim();
+  LTimeStr5 = LTimeStr5.trim();
+  LTimeEnd5 = LTimeEnd5.trim();
+  LTimeGubun5 = LTimeGubun5.trim();
   if (WTimeStr === WTimeEnd || WTimeStr === "" || WTimeEnd === "") {
     return (Result = 0);
   }
@@ -844,38 +1675,38 @@ export const CalcWTimes = (
 
   //휴게 종료 시간이 휴게 시작시간보다 작은 경우는 방 12시를 넘긴 것이므로 종료시간에 24시간을 더하여 계산
   if (
-    Math.trim(LTimeStr1) !== "" &&
-    Math.trim(LTimeEnd1) !== "" &&
+    LTimeStr1.trim() !== "" &&
+    LTimeEnd1.trim() !== "" &&
     LTimeStr1 >= LTimeEnd1
   )
     LTimeEnd1 = InfraLib.IncMinuteStr(LTimeEnd1, 24 * 60);
   if (
-    Math.trim(LTimeStr2) !== "" &&
-    Math.trim(LTimeEnd2) !== "" &&
+    LTimeStr2.trim() !== "" &&
+    LTimeEnd2.trim() !== "" &&
     LTimeStr2 >= LTimeEnd2
   )
     LTimeEnd2 = InfraLib.IncMinuteStr(LTimeEnd2, 24 * 60);
   if (
-    Math.trim(LTimeStr3) !== "" &&
-    Math.trim(LTimeEnd3) !== "" &&
+    LTimeStr3.trim() !== "" &&
+    LTimeEnd3.trim() !== "" &&
     LTimeStr3 >= LTimeEnd3
   )
     LTimeEnd3 = InfraLib.IncMinuteStr(LTimeEnd3, 24 * 60);
   if (
-    Math.trim(LTimeStr4) !== "" &&
-    Math.trim(LTimeEnd4) !== "" &&
+    LTimeStr4.trim() !== "" &&
+    LTimeEnd4.trim() !== "" &&
     LTimeStr4 >= LTimeEnd4
   )
     LTimeEnd4 = InfraLib.IncMinuteStr(LTimeEnd4, 24 * 60);
   if (
-    Math.trim(LTimeStr5) !== "" &&
-    Math.trim(LTimeEnd5) !== "" &&
+    LTimeStr5.trim() !== "" &&
+    LTimeEnd5.trim() !== "" &&
     LTimeStr5 >= LTimeEnd5
   )
     LTimeEnd5 = InfraLib.IncMinuteStr(LTimeEnd5, 24 * 60);
 
   //휴게시간이 근무시간에 포함되어 있지 않다면 휴게시간도 24시간을 가산해서 계산
-  if (Math.trim(LTimeStr1) !== "" && Math.trim(LTimeEnd1) !== "") {
+  if (LTimeStr1.trim() !== "" && LTimeEnd1.trim() !== "") {
     if (
       (LTimeStr1 < WTimeStr && LTimeEnd1 < WTimeEnd) ||
       (LTimeStr1 > WTimeStr && LTimeEnd1 > WTimeEnd)
@@ -884,7 +1715,7 @@ export const CalcWTimes = (
       LTimeEnd1 = InfraLib.IncMinuteStr(LTimeEnd1, 24 * 60);
     }
   }
-  if (Math.trim(LTimeStr2) !== "" && Math.trim(LTimeEnd2) !== "") {
+  if (LTimeStr2.trim() !== "" && LTimeEnd2.trim() !== "") {
     if (
       (LTimeStr2 < WTimeStr && LTimeEnd2 < WTimeEnd) ||
       (LTimeStr2 > WTimeStr && LTimeEnd2 > WTimeEnd)
@@ -893,7 +1724,7 @@ export const CalcWTimes = (
       LTimeEnd2 = InfraLib.IncMinuteStr(LTimeEnd2, 24 * 60);
     }
   }
-  if (Math.trim(LTimeStr3) !== "" && Math.trim(LTimeEnd3) !== "") {
+  if (LTimeStr3.trim() !== "" && LTimeEnd3.trim() !== "") {
     if (
       (LTimeStr3 < WTimeStr && LTimeEnd3 < WTimeEnd) ||
       (LTimeStr3 > WTimeStr && LTimeEnd3 > WTimeEnd)
@@ -902,7 +1733,7 @@ export const CalcWTimes = (
       LTimeEnd3 = InfraLib.IncMinuteStr(LTimeEnd3, 24 * 60);
     }
   }
-  if (Math.trim(LTimeStr4) !== "" && Math.trim(LTimeEnd4) !== "") {
+  if (LTimeStr4.trim() !== "" && LTimeEnd4.trim() !== "") {
     if (
       (LTimeStr4 < WTimeStr && LTimeEnd4 < WTimeEnd) ||
       (LTimeStr4 > WTimeStr && LTimeEnd4 > WTimeEnd)
@@ -911,7 +1742,7 @@ export const CalcWTimes = (
       LTimeEnd4 = InfraLib.IncMinuteStr(LTimeEnd4, 24 * 60);
     }
   }
-  if (Math.trim(LTimeStr5) !== "" && Math.trim(LTimeEnd5) !== "") {
+  if (LTimeStr5.trim() !== "" && LTimeEnd5.trim() !== "") {
     if (
       (LTimeStr5 < WTimeStr && LTimeEnd5 < WTimeEnd) ||
       (LTimeStr5 > WTimeStr && LTimeEnd5 > WTimeEnd)
@@ -931,15 +1762,15 @@ export const CalcWTimes = (
   DayWTimeEnds.push(WTimeEnd);
 
   //주간 근로시간중 휴게시간은 제외0
-  if (Math.trim(LTimeStr1) !== "" && Math.trim(LTimeEnd1) !== "")
+  if (LTimeStr1.trim() !== "" && LTimeEnd1.trim() !== "")
     WTimeMinusLTime(DayWTimeStrs, DayWTimeEnds, LTimeStr1, LTimeEnd1);
-  if (Math.trim(LTimeStr2) !== "" && Math.trim(LTimeEnd2) !== "")
+  if (LTimeStr2.trim() !== "" && LTimeEnd2.trim() !== "")
     WTimeMinusLTime(DayWTimeStrs, DayWTimeEnds, LTimeStr2, LTimeEnd2);
-  if (Math.trim(LTimeStr3) !== "" && Math.trim(LTimeEnd3) !== "")
+  if (LTimeStr3.trim() !== "" && LTimeEnd3.trim() !== "")
     WTimeMinusLTime(DayWTimeStrs, DayWTimeEnds, LTimeStr3, LTimeEnd3);
-  if (Math.trim(LTimeStr4) !== "" && Math.trim(LTimeEnd4) !== "")
+  if (LTimeStr4.trim() !== "" && LTimeEnd4.trim() !== "")
     WTimeMinusLTime(DayWTimeStrs, DayWTimeEnds, LTimeStr4, LTimeEnd4);
-  if (Math.trim(LTimeStr5) !== "" && Math.trim(LTimeEnd5) !== "")
+  if (LTimeStr5.trim() !== "" && LTimeEnd5.trim() !== "")
     WTimeMinusLTime(DayWTimeStrs, DayWTimeEnds, LTimeStr5, LTimeEnd5);
 
   BaseTime = 0;
@@ -1003,6 +1834,7 @@ export const CalcWTimes = (
       GongLib.ValList[1].VALOVERDIGIT
     );
   else Result = -1;
+  return Result;
 };
 //무휴일에 대해 주간 소정근로시간 초과, 또는 법정주간근로시간(40시간)초과시 연장근무로 셋팅하는 함수
 Func.MuhueOverTimeCheck = (
@@ -1052,7 +1884,8 @@ Func.MuhueOverTimeCheck = (
   SWLTimeGubun4,
   SWLTimeGubun5,
   iRow,
-  SWMinorYN
+  SWMinorYN,
+  ValList
 ) => {
   var q;
   var isMuhue;
@@ -1065,17 +1898,20 @@ Func.MuhueOverTimeCheck = (
   var MuhueNight; //무휴일때 해당일의 야간근로시간
   var MuhueNightOver; //당일 연장야간기산
   var iWTimeOfWeekLimit;
+  console.log("Tes~~~~~~t1111", GongLib.Test);
+
   if (CDList[iRow].G1_CNGubun === "8") return;
   //미성년 여부에 따라 주당 법정 근로시간 셋팅
   if (SWMinorYN) {
-    iWTimeOfWeekLimit = GongLib.ValList[1].WTIMEOFWEEKLIMITMINOR;
+    iWTimeOfWeekLimit = ValList[1].WTIMEOFWEEKLIMITMINOR;
   } else {
-    iWTimeOfWeekLimit = GongLib.ValList[1].WTIMEOFWEEKLIMIT;
+    iWTimeOfWeekLimit = ValList[1].WTIMEOFWEEKLIMIT;
   }
+
   //우선 기본,야간근로시간 계산
   MuhueBase = CalcWTimes(
     "기본",
-    GongLib.ValList[1].WTIMEOFDAYLIMIT,
+    ValList[1].WTIMEOFDAYLIMIT,
     SWNightStrWTime,
     SWNightEndWTime,
     CDList[iRow].G1_CNWStrTime,
@@ -1099,7 +1935,7 @@ Func.MuhueOverTimeCheck = (
 
   MuhueNight = CalcWTimes(
     "야간",
-    GongLib.ValList[1].WTIMEOFDAYLIMIT,
+    ValList[1].WTIMEOFDAYLIMIT,
     SWNightStrWTime,
     SWNightEndWTime,
     CDList[iRow].G1_CNWStrTime,
@@ -1122,7 +1958,7 @@ Func.MuhueOverTimeCheck = (
   );
   MuhueNightOver = CalcWTimes(
     "연장야간",
-    GongLib.ValList[1].WTIMEOFDAYLIMIT,
+    ValList[1].WTIMEOFDAYLIMIT,
     SWNightStrWTime,
     SWNightEndWTime,
     CDList[iRow].G1_CNWStrTime,
@@ -1154,7 +1990,7 @@ Func.MuhueOverTimeCheck = (
       BaseTotOfWeek_Join +
       CalcWTimes(
         "기본",
-        GongLib.ValList[1].WTIMEOFDAYLIMIT,
+        ValList[1].WTIMEOFDAYLIMIT,
         SWNightStrWTime,
         SWNightEndWTime,
         CDList[q].G1_CNWStrTime,
@@ -1187,7 +2023,7 @@ Func.MuhueOverTimeCheck = (
           BaseTotOfWeek_Join +
           CalcWTimes(
             "기본",
-            GongLib.ValList[1].WTIMEOFDAYLIMIT,
+            ValList[1].WTIMEOFDAYLIMIT,
             SWNightStrWTime,
             SWNightEndWTime,
             CDList[q].G1_CNWStrTime,
@@ -1218,7 +2054,7 @@ Func.MuhueOverTimeCheck = (
       BaseTotOfWeek_Join +
       CalcWTimes(
         "기본",
-        GongLib.ValList[1].WTIMEOFDAYLIMIT,
+        ValList[1].WTIMEOFDAYLIMIT,
         SWNightStrWTime,
         SWNightEndWTime,
         CDList[i].G1_CNWStrTime,
@@ -1270,7 +2106,7 @@ Func.MuhueOverTimeCheck = (
       CDList[iRow].G1_CCWTimeOver +
       CalcWTimes(
         "연장",
-        GongLib.ValList[1].WTIMEOFDAYLIMIT,
+        ValList[1].WTIMEOFDAYLIMIT,
         SWNightStrWTime,
         SWNightEndWTime,
         CDList[iRow].G1_CNWStrTime,
@@ -1295,7 +2131,7 @@ Func.MuhueOverTimeCheck = (
       CDList[iRow].G1_CCWTimeNightOver +
       CalcWTimes(
         "야간연장",
-        GongLib.ValList[1].WTIMEOFDAYLIMIT,
+        ValList[1].WTIMEOFDAYLIMIT,
         SWNightStrWTime,
         SWNightEndWTime,
         CDList[iRow].G1_CNWStrTime,
@@ -1325,7 +2161,7 @@ Func.MuhueOverTimeCheck = (
     CDList[iRow].G1_CCWTimeNight = MuhueNight;
     CDList[iRow].G1_CCWTimeOver = CalcWTimes(
       "연장",
-      GongLib.ValList[1].WTIMEOFDAYLIMIT,
+      ValList[1].WTIMEOFDAYLIMIT,
       SWNightStrWTime,
       SWNightEndWTime,
       CDList[iRow].G1_CNWStrTime,
@@ -1348,7 +2184,7 @@ Func.MuhueOverTimeCheck = (
     );
     CDList[iRow].G1_CCWTimeNightOver = CalcWTimes(
       "야간연장",
-      GongLib.ValList[1].WTIMEOFDAYLIMIT,
+      ValList[1].WTIMEOFDAYLIMIT,
       SWNightStrWTime,
       SWNightEndWTime,
       CDList[iRow].G1_CNWStrTime,
@@ -1370,92 +2206,8 @@ Func.MuhueOverTimeCheck = (
       SWLTimeGubun5
     );
   }
+  console.log("Tes~~~~~~t", CDList);
+  return CDList;
 };
-Func.MuhueOverTimeCheck = (
-  WTimeReCalc,
-  CDList,
-  CDList_BefMonth,
-  CDList_AftMonth,
-  G1_CDate,
-  G1_DateGubun,
-  G1_CNDayWeek,
-  G1_CNGubun,
-  G1_SWTimeStr,
-  G1_SWTimeEnd,
-  G1_CNWStrTime,
-  G1_CNWEndTime,
-  G1_SWLTimeStr1,
-  G1_SWLTimeEnd1,
-  G1_SWLTimeStr2,
-  G1_SWLTimeEnd2,
-  G1_SWLTimeStr3,
-  G1_SWLTimeEnd3,
-  G1_SWLTimeStr4,
-  G1_SWLTimeEnd4,
-  G1_SWLTimeStr5,
-  G1_SWLTimeEnd5,
-  G1_HTime,
-  G1_CNHTime,
-  G1_TotWorkTime,
-  G1_CNSStrTime,
-  G1_CNSEndTime,
-  G1_CCWTimeNormal,
-  G1_CCWTimeHoli, //매개변수중 G1_CCWTime가 삭제됨//, G1_CCWTime, G1_CCWTimeNormal, G1_CCWTimeHoli
-  G1_CCWTimeOver,
-  G1_CCWTimeNight,
-  G1_CCWTimeNightOver,
-  G1_CCHTimeBase,
-  G1_CCHTimeOver,
-  G1_CCHTimeNight,
-  G1_CCHTimeNightOver,
-  G1_CCTkTime,
-  SWHoliWeek,
-  SWNightStrWTime,
-  SWNightEndWTime,
-  SWLTimeGubun1,
-  SWLTimeGubun2,
-  SWLTimeGubun3,
-  SWLTimeGubun4,
-  SWLTimeGubun5,
-  iRow,
-  SWMinorYN
-) => {};
-//적용휴게시간과 총근로시간을 계산
-Func.calcLTimeNWTime = (
-  CNList,
-  G1_CNWStrTime,
-  G1_CNWEndTime,
-  G1_SWLTimeStr1,
-  G1_SWLTimeEnd1,
-  G1_SWLTimeStr2,
-  G1_SWLTimeEnd2,
-  G1_SWLTimeStr3,
-  G1_SWLTimeEnd3,
-  G1_SWLTimeStr4,
-  G1_SWLTimeEnd4,
-  G1_SWLTimeStr5,
-  G1_SWLTimeEnd5,
-  G1_HTime,
-  G1_CNHTime,
-  G1_TotWorkTime,
-  Row
-) => {};
 
-Func.SetAddHTime = (
-  CNList,
-  Row,
-  SWHoliPayYN,
-  G1_CNHTime,
-  G1_CNGubun,
-  G1_CCWTimeNormal,
-  G1_CCWTimeHoli,
-  G1_CCWTimeOver,
-  G1_CCWTimeNight,
-  G1_CCWTimeNightOver, //매개변수 G1_CCWTime 삭제됨 //, G1_CCWTime, G1_CCWTimeNormal, G1_CCWTimeHoli, G1_CCWTimeOver, G1_CCWTimeNight, G1_CCWTimeNightOver
-  G1_CCHTimeBase,
-  G1_CCHTimeOver,
-  G1_CCHTimeNight,
-  G1_CCHTimeNightOver,
-  G1_CCTkTime
-) => {};
 export default Func;

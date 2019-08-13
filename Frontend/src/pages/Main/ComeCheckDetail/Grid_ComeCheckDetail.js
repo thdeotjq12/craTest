@@ -45,16 +45,18 @@ const Grid_ComeCheckDetail = props => {
   // sdname  세부사업명 shname 추진 사업명
   const RowFix = () => {
     for (let i = 0; i < rows.length; i++) {
-      if (rows[i].CDDayWeek === 1) rows[i].CDDayWeek = "일요일";
-      if (rows[i].CDDayWeek === 2) rows[i].CDDayWeek = "월요일";
-      if (rows[i].CDDayWeek === 3) rows[i].CDDayWeek = "화요일";
-      if (rows[i].CDDayWeek === 4) rows[i].CDDayWeek = "수요일";
-      if (rows[i].CDDayWeek === 5) rows[i].CDDayWeek = "목요일";
-      if (rows[i].CDDayWeek === 6) rows[i].CDDayWeek = "금요일";
-      if (rows[i].CDDayWeek === 7) rows[i].CDDayWeek = "토요일";
+      if (rows[i].CDDayWeek === "1") rows[i].CDDayWeek = "일요일";
+      if (rows[i].CDDayWeek === "2") rows[i].CDDayWeek = "월요일";
+      if (rows[i].CDDayWeek === "3") rows[i].CDDayWeek = "화요일";
+      if (rows[i].CDDayWeek === "4") rows[i].CDDayWeek = "수요일";
+      if (rows[i].CDDayWeek === "5") rows[i].CDDayWeek = "목요일";
+      if (rows[i].CDDayWeek === "6") rows[i].CDDayWeek = "금요일";
+      if (rows[i].CDDayWeek === "7") rows[i].CDDayWeek = "토요일";
       if (rows[i].DateGubun === "0") rows[i].DateGubun = "주간";
       if (rows[i].DateGubun === "1") rows[i].DateGubun = "주휴";
       if (rows[i].DateGubun === "2") rows[i].DateGubun = "무휴";
+      if (rows[i].CDGubun === "6") rows[i].CDGubun = "유급휴일";
+      if (rows[i].CDGubun === "5") rows[i].CDGubun = "무급휴일";
     }
   };
 

@@ -89,8 +89,8 @@ const ComeCheck = props => {
   const ChangeYear = () => {
     var SaupHead = document.getElementById("SaupHead");
     var SaupDetail = document.getElementById("SaupDetail");
-    GongLib.SetSaupHead(SaupHead, Year, "전체");
-    GongLib.SetSaupDetail(SaupDetail, Year, SaupHead.value, "전체");
+    GongLib.GongLib.SetSaupHead(SaupHead, Year, "전체");
+    GongLib.GongLib.SetSaupDetail(SaupDetail, Year, SaupHead.value, "전체");
   };
 
   // 참여사업 변경 -> 세부사업 리스트 조회
@@ -131,6 +131,7 @@ const ComeCheck = props => {
     var SHKeyWord = document.getElementById("SaupHead").value;
     var SDKeyWord = document.getElementById("SaupDetail").value;
     var Codes = [];
+
     CleanComeCheckTot(Year, Month); // 쿼리 충돌?? 여러번 클릭 시 db 멈춤
     Codes = GongLib.GetSDCode(
       SaupDetail.options[SaupDetail.selectedIndex].value
