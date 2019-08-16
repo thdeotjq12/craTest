@@ -38,7 +38,7 @@ Func.getHolidayCCGubun = (CheckDate, DefaultValue) => {
     CheckDate.length
   );
   var Result = DefaultValue;
-  if (Holidays.CHCode === "") return;
+  if (Holidays.CHCode === "") return Result;
   for (let i = 0; i < Holidays.length; i++) {
     if (CheckDate === Holidays[i].CHDate) Result = Holidays[i].CHCCGubun;
   }

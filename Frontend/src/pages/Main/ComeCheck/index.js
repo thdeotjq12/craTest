@@ -59,6 +59,14 @@ const ComeCheck = props => {
     ValList && ValList[1].WPCCEDITABLEDATE
   ); //근태수정가능일
 
+  // const openButton = document.getElementById("open");
+  // const modal = document.querySelector(".modal");
+  // const openModal = () => {
+  //   modal.classList.remove("hidden");
+  // };
+  // if (openButton) {
+  //   openButton.addEventListener("click", openModal);
+  // }
   // 상세근태 모달
   const [Modals, setModals] = useState(false); // 근로정보 모달 상태
   useEffect(() => {
@@ -187,6 +195,18 @@ const ComeCheck = props => {
             Month={Month}
           />
         )}
+        {/* <div class="modal hidden">
+          <div class="modal_overlay" />
+          <div class="modal_content">
+            <h1>im a modal</h1>
+            <Grid_ComeCheck
+              columns={Grid_ComeChecCol}
+              rows={CCList && CCList}
+              getCellValue={getCellValue}
+            />
+            <button>close</button>
+          </div>
+        </div> */}
         <table className="table table-bordered">
           <tbody>
             <tr>
@@ -223,6 +243,7 @@ const ComeCheck = props => {
               </td>
               <td rowSpan="2" style={{ padding: "0", height: "100%" }}>
                 <button
+                  id="open"
                   type="button"
                   class="btn btn-primary"
                   style={{ width: "100%", height: "80px", padding: "0" }}

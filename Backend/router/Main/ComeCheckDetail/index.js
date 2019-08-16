@@ -88,7 +88,7 @@ router.post("/SetComeCheckDate", async (req, res) => {
   var SHCode = req.body.SHCode;
   var SDCode = req.body.SDCode;
   var StrDate = req.body.StrDate;
-  var EndDate = req.body.EndDAte;
+  var EndDate = req.body.EndDate;
   console.log("Test 2 ", req.body);
   con.connect();
 
@@ -107,7 +107,8 @@ router.post("/SetComeCheckDate", async (req, res) => {
         ...result,
         ComeCheckDateList: rows
       };
-      console.log("ComeCheckDateList", result);
+      console.log("ComeChec Parm", parm);
+      // console.log("ComeCheckDateList", result);
       res.send(result);
     } else {
       console.log("Query ERR : ", err);

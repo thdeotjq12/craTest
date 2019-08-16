@@ -57,6 +57,7 @@ const Grid_ComeCheckDetail = props => {
       if (rows[i].DateGubun === "2") rows[i].DateGubun = "무휴";
       if (rows[i].CDGubun === "6") rows[i].CDGubun = "유급휴일";
       if (rows[i].CDGubun === "5") rows[i].CDGubun = "무급휴일";
+      if (rows[i].CDGubun === "0") rows[i].CDGubun = "정상근무";
     }
   };
 
@@ -83,13 +84,13 @@ const Grid_ComeCheckDetail = props => {
         </span>
       </div>
       <ReactDataGrid
-        columns={columns}
+        columns={columns.length > 0 ? columns : null}
         rowGetter={i => reRows[i]} //(필수) 일반 키 / 값 쌍 객체를 반환해야하는 각 렌더링 된 행에 대해 호출되는 함수
         rowsCount={reRows.length} // (필수) 렌더링 될 행의 수
-        onCellSelected={getCellActions}
+        // onCellSelected={getCellActions}
         // rowRenderer
         enableCellSelect={true}
-        onRowDoubleClick={Saup_Save}
+        // onRowDoubleClick={Saup_Save}
         onGridRowsUpdated={onGridRowsUpdated}
         minWidth={1100}
       />
