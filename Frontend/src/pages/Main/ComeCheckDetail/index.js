@@ -17,11 +17,17 @@ import Grid_ComeCheckDetail from "./Grid_ComeCheckDetail";
 import { formatRelative } from "date-fns/esm";
 import { Editors, Formatters } from "react-data-grid-addons";
 import WTimes from "../../../function/WTimes";
-
+import {
+  ComeCheckDetail_REQUEST,
+  ComeCheckDetail_SUCCESS,
+  ComeCheckDetail_AFT_REQUEST,
+  ComeCheckDetail_BFR_REQUEST
+} from "../../../modules/Main/ComeCheckDetail/ComeCheckDetailReducer";
 import GongLib from "../../../function/GongLib";
 import InfraLib from "../../../function/InfraLib";
 import axios from "axios";
 import { watchFile } from "fs";
+import { promises } from "dns";
 const issueTypes = [
   { id: "bug", value: "Bug" },
   { id: "epic", value: "Epic" },
@@ -63,6 +69,12 @@ const Grid_ComeCheckDetailCol = [
 
 const ComeCheckDetail = props => {
   const { handleClose, Modals, CCList, Year, Month } = props;
+  const {
+    CCDetailLoading,
+    CCDetail_AFTLoading,
+    CCDetail_BFRLoading
+  } = useSelector(state => state.ComeCheckDetail);
+  const dispatch = useDispatch();
   var moment = require("moment");
   var CDDate = 0;
   var DateGubun = 1;
@@ -294,10 +306,11 @@ const ComeCheckDetail = props => {
   };
 
   //이번달 달력에 일자별 근태를 조회하는 함수
-  const ShowComeCheckDate = grid => {
+  async function ShowComeCheckDate(grid) {
     if (grid.length === 0) {
       return;
     }
+    console.log(" ### @@@  ### @@@ ShowComeCheckDate 실행됨");
     var parm = {
       StrDate: grid[0].CDDate,
       EndDate: grid[grid.length - 1].CDDate,
@@ -305,170 +318,188 @@ const ComeCheckDetail = props => {
       SHCode: CCList[0].SDSHCODE,
       SDCode: CCList[0].SDCODE
     };
-    console.log("ComeCheckDateList parm", parm);
+
     var ComeCheckDateList = {};
     var ComeCheckList;
     grid && (ComeCheckList = grid);
+    dispatch({
+      type: ComeCheckDetail_REQUEST
+    });
+    if (CCDetailLoading) {
+      console.log(" # ComeCheckDateList[i] parm", parm);
+      // dispatch({
+      //   type: ComeCheckDetail_SUCCESS
+      // });
 
-    axios
-      .post("http://localhost:5000/ComeCheckDetail/SetComeCheckDate", parm)
-      .then(res => {
-        console.log(res);
-        if (res.data === "NoData") {
-        } else {
-          if (!ComeCheckList) return;
-          ComeCheckDateList = res.data.ComeCheckDateList;
-          console.log("ComeCheckDateList 1", ComeCheckDateList);
-          for (let i = 0; i < ComeCheckDateList.length; i++) {
-            if (ComeCheckList[i].CDDate === ComeCheckDateList.CDDATE) {
-              // ComeCheckList = ComeCheckDateList.CHCODE;
+      axios
+        .post("http://localhost:5000/ComeCheckDetail/SetComeCheckDate", parm)
+        .then(res => {
+          console.log(res);
+          if (res.data === "NoData") {
+          } else {
+            if (!ComeCheckList && CCDetailLoading) return;
+            ComeCheckDateList = res.data.ComeCheckDateList;
+            console.log(" ###  ComeCheckDateList", ComeCheckDateList);
+            for (let i = 0; i < ComeCheckDateList.length; i++) {
+              if (ComeCheckList[i].CDDate === ComeCheckDateList[i].CDDATE) {
+                // ComeCheckList = ComeCheckDateList[i].CHCODE;
+                console.log("#### #### #### ####", ComeCheckList[i].CDDate);
 
-              ComeCheckList[i].CDWEndTime = ComeCheckDateList.CDWENDTIME;
-              ComeCheckList[i].CDSStrTime = ComeCheckDateList.CDSSTRTIME;
-              ComeCheckList[i].CDSEndTime = ComeCheckDateList.CDSENDTIME;
-              ComeCheckList[i].CDGubun = ComeCheckDateList.CDGUBUN;
-              ComeCheckList[i].CDHTime = ComeCheckDateList.CDHTIME;
-              ComeCheckList[i].CDWTimeNormal = ComeCheckDateList.CDWTIMENORMAL;
-              ComeCheckList[i].CDWTimeHoli = ComeCheckDateList.CDWTIMEHOLI;
-              ComeCheckList[i].CDWTimeOver = ComeCheckDateList.CDWTIMEOVER;
-              ComeCheckList[i].CDWTimeNight = ComeCheckDateList.CDWTIMENIGHT;
-              ComeCheckList[i].CDWTimeNightOver =
-                ComeCheckDateList.CDWTIMENIGHTOVER;
-              ComeCheckList[i].CDHTimeBase = ComeCheckDateList.CDHTIMEBASE;
-              ComeCheckList[i].CDHTimeOver = ComeCheckDateList.CDHTIMEOVER;
-              ComeCheckList[i].CDHTimeNight = ComeCheckDateList.CDHTIMENIGHT;
-              ComeCheckList[i].CDHTimeNightOver =
-                ComeCheckDateList.CDHTIMENIGHTOVER;
-              ComeCheckList[i].CDTkTime = ComeCheckDateList.CDTKTIME;
-              ComeCheckList[i].CDNoComeCNT = ComeCheckDateList.CDNOCOMECNT;
-              ComeCheckList[i].CDLateTime = ComeCheckDateList.CDLATETIME;
-              ComeCheckList[i].CDEarlyOutTime =
-                ComeCheckDateList.CDEARLYOUTTIME;
-              ComeCheckList[i].CDMemo = ComeCheckDateList.CDMEMO;
-              ComeCheckList[i].ChangeGubun = ""; //DB에서 불러온 근태이므로 변경구분을 N에서 공백으로 변경해 준다.
-              console.log("TTTTTTTTFFFFFFFFF 1", ComeCheckList);
-              break;
+                ComeCheckList[i].CDWEndTime = ComeCheckDateList[i].CDWENDTIME;
+                ComeCheckList[i].CDSStrTime = ComeCheckDateList[i].CDSSTRTIME;
+                ComeCheckList[i].CDSEndTime = ComeCheckDateList[i].CDSENDTIME;
+                ComeCheckList[i].CDGubun = ComeCheckDateList[i].CDGUBUN;
+                ComeCheckList[i].CDHTime = ComeCheckDateList[i].CDHTIME;
+                ComeCheckList[i].CDWTimeNormal =
+                  ComeCheckDateList[i].CDWTIMENORMAL;
+                ComeCheckList[i].CDWTimeHoli = ComeCheckDateList[i].CDWTIMEHOLI;
+                ComeCheckList[i].CDWTimeOver = ComeCheckDateList[i].CDWTIMEOVER;
+                ComeCheckList[i].CDWTimeNight =
+                  ComeCheckDateList[i].CDWTIMENIGHT;
+                ComeCheckList[i].CDWTimeNightOver =
+                  ComeCheckDateList[i].CDWTIMENIGHTOVER;
+                ComeCheckList[i].CDHTimeBase = ComeCheckDateList[i].CDHTIMEBASE;
+                ComeCheckList[i].CDHTimeOver = ComeCheckDateList[i].CDHTIMEOVER;
+                ComeCheckList[i].CDHTimeNight =
+                  ComeCheckDateList[i].CDHTIMENIGHT;
+                ComeCheckList[i].CDHTimeNightOver =
+                  ComeCheckDateList[i].CDHTIMENIGHTOVER;
+                ComeCheckList[i].CDTkTime = ComeCheckDateList[i].CDTKTIME;
+                ComeCheckList[i].CDNoComeCNT = ComeCheckDateList[i].CDNOCOMECNT;
+                ComeCheckList[i].CDLateTime = ComeCheckDateList[i].CDLATETIME;
+                ComeCheckList[i].CDEarlyOutTime =
+                  ComeCheckDateList[i].CDEARLYOUTTIME;
+                ComeCheckList[i].CDMemo = ComeCheckDateList[i].CDMEMO;
+                ComeCheckList[i].ChangeGubun = ""; //DB에서 불러온 근태이므로 변경구분을 N에서 공백으로 변경해 준다.
+                console.log("TTTTTTTTFFFFFFFFF 1", ComeCheckList);
+                break;
+              }
             }
+            // dispatch({
+            //   type: ComeCheckDetail_SUCCESS
+            // });
           }
-        }
-      })
+        })
 
-      .catch(err => {
-        console.log("SetHolidays 에러", err);
-      });
-    for (let i = 0; i < ComeCheckList.length; i++) {
-      //휴게시간 계산
-      ComeCheckList[i].SSLTime =
-        InfraLib.CalcTimeTermFloat(
-          ComeCheckList[i].SSLTimeStr1,
-          ComeCheckList[i].SSLTimeEnd1
-        ) +
-        InfraLib.CalcTimeTermFloat(
-          ComeCheckList[i].SSLTimeStr2,
-          ComeCheckList[i].SSLTimeEnd2
-        ) +
-        InfraLib.CalcTimeTermFloat(
-          ComeCheckList[i].SSLTimeStr3,
-          ComeCheckList[i].SSLTimeEnd3
-        ) +
-        InfraLib.CalcTimeTermFloat(
-          ComeCheckList[i].SSLTimeStr4,
-          ComeCheckList[i].SSLTimeEnd4
-        ) +
-        InfraLib.CalcTimeTermFloat(
-          ComeCheckList[i].SSLTimeStr5,
-          ComeCheckList[i].SSLTimeEnd5
+        .catch(err => {
+          console.log("ComeCheckList 에러", err);
+        });
+      for (let i = 0; i < ComeCheckList.length; i++) {
+        //휴게시간 계산
+        ComeCheckList[i].SSLTime =
+          InfraLib.CalcTimeTermFloat(
+            ComeCheckList[i].SSLTimeStr1,
+            ComeCheckList[i].SSLTimeEnd1
+          ) +
+          InfraLib.CalcTimeTermFloat(
+            ComeCheckList[i].SSLTimeStr2,
+            ComeCheckList[i].SSLTimeEnd2
+          ) +
+          InfraLib.CalcTimeTermFloat(
+            ComeCheckList[i].SSLTimeStr3,
+            ComeCheckList[i].SSLTimeEnd3
+          ) +
+          InfraLib.CalcTimeTermFloat(
+            ComeCheckList[i].SSLTimeStr4,
+            ComeCheckList[i].SSLTimeEnd4
+          ) +
+          InfraLib.CalcTimeTermFloat(
+            ComeCheckList[i].SSLTimeStr5,
+            ComeCheckList[i].SSLTimeEnd5
+          );
+        //소정근로 총근로시간
+
+        ComeCheckList[i].TotOriWorkTime =
+          ComeCheckList[i].SSWTimeStr &&
+          ComeCheckList[i].SSWTimeEnd &&
+          InfraLib.TimeTermMinuteStr(
+            ComeCheckList[i].SSWTimeStr,
+            ComeCheckList[i].SSWTimeEnd
+          ) /
+            60 -
+            ComeCheckList[i].SSLTime;
+
+        grid = GongLib.SetCellEditExit(
+          ComeCheckList,
+          null,
+          null,
+          i,
+          CCList[0].SSWTIMEOFDAYLIMIT,
+          false,
+          CCList[0].SSNIGHTSTRWTIME,
+          CCList[0].SSNIGHTENDWTIME,
+          CCList[0].SSLTIMEGUBUN1,
+          CCList[0].SSLTIMEGUBUN2,
+          CCList[0].SSLTIMEGUBUN3,
+          CCList[0].SSLTIMEGUBUN4,
+          CCList[0].SSLTIMEGUBUN5,
+          CCList[0].SSHOLIWEEK,
+          CCList[0].SSHOLIPAYYN,
+          CDDate,
+          DateGubun,
+          CDDayWeek,
+          CDGubun,
+          SSWTimeStr,
+          SSWTimeEnd,
+          CDWStrTime,
+          CDWEndTime,
+          SSLTimeStr1,
+          SSLTimeEnd1,
+          SSLTimeStr2,
+          SSLTimeEnd2,
+          SSLTimeStr3,
+          SSLTimeEnd3,
+          SSLTimeStr4,
+          SSLTimeEnd4,
+          SSLTimeStr5,
+          SSLTimeEnd5,
+          HTime,
+          CDHTime,
+          TotWorkTime,
+          CDSStrTime,
+          CDSEndTime,
+          CDWTimeNormal,
+          CDWTimeHoli,
+          CDWTimeOver,
+          CDWTimeNight,
+          CDWTimeNightOver,
+          CDHTimeBase,
+          CDHTimeOver,
+          CDHTimeNight,
+          CDHTimeNightOver,
+          CDTkTime, //특근 인덱스
+          CDNoComeCNT,
+          CDLateTime,
+          CDEarlyOutTime,
+          false,
+          ValList
         );
-      //소정근로 총근로시간
-
-      ComeCheckList[i].TotOriWorkTime =
-        ComeCheckList[i].SSWTimeStr &&
-        ComeCheckList[i].SSWTimeEnd &&
-        InfraLib.TimeTermMinuteStr(
-          ComeCheckList[i].SSWTimeStr,
-          ComeCheckList[i].SSWTimeEnd
-        ) /
-          60 -
-          ComeCheckList[i].SSLTime;
-      console.log("@@##");
-      grid = GongLib.SetCellEditExit(
-        ComeCheckList,
-        null,
-        null,
-        i,
-        CCList[0].SSWTIMEOFDAYLIMIT,
-        false,
-        CCList[0].SSNIGHTSTRWTIME,
-        CCList[0].SSNIGHTENDWTIME,
-        CCList[0].SSLTIMEGUBUN1,
-        CCList[0].SSLTIMEGUBUN2,
-        CCList[0].SSLTIMEGUBUN3,
-        CCList[0].SSLTIMEGUBUN4,
-        CCList[0].SSLTIMEGUBUN5,
-        CCList[0].SSHOLIWEEK,
-        CCList[0].SSHOLIPAYYN,
-        CDDate,
-        DateGubun,
-        CDDayWeek,
-        CDGubun,
-        SSWTimeStr,
-        SSWTimeEnd,
-        CDWStrTime,
-        CDWEndTime,
-        SSLTimeStr1,
-        SSLTimeEnd1,
-        SSLTimeStr2,
-        SSLTimeEnd2,
-        SSLTimeStr3,
-        SSLTimeEnd3,
-        SSLTimeStr4,
-        SSLTimeEnd4,
-        SSLTimeStr5,
-        SSLTimeEnd5,
-        HTime,
-        CDHTime,
-        TotWorkTime,
-        CDSStrTime,
-        CDSEndTime,
-        CDWTimeNormal,
-        CDWTimeHoli,
-        CDWTimeOver,
-        CDWTimeNight,
-        CDWTimeNightOver,
-        CDHTimeBase,
-        CDHTimeOver,
-        CDHTimeNight,
-        CDHTimeNightOver,
-        CDTkTime, //특근 인덱스
-        CDNoComeCNT,
-        CDLateTime,
-        CDEarlyOutTime,
-        false
-      );
+      }
+      if (grid === DetailList) {
+        setDetailList(grid);
+      } else if (grid === DetailList_Bef) {
+        setDetailList_Bef(grid);
+      } else {
+        setDetailList_Aft(grid);
+      }
+      ClearJuhueByOut(grid);
     }
-    if (grid === DetailList) {
-      setDetailList(grid);
-    } else if (grid === DetailList_Bef) {
-      setDetailList_Bef(grid);
-    } else {
-      setDetailList_Aft(grid);
-    }
-    ClearJuhueByOut(ComeCheckList);
-  };
+  }
   const CDListValueChanged = () => {
     if (DetailList.length === 0) return;
   };
 
   //현재달 달력 셋팅
-  const SetCalendarNow = ShowDB => {
+  function SetCalendarNow(ShowDB) {
     var WeekDayIndex = moment(NowDate).day() + 1;
     //시작일부터 말일까지 grid에 달력을 셋팅하는 함수
     SetCalenderGrid(DetailList, NowDate, LastDate);
     //이번달 달력에 일자별 근태를 조회하는 함수
-    if (ShowDB) ShowComeCheckDate(DetailList);
-  };
+
+    ShowComeCheckDate(DetailList);
+  }
   //다음달 달력셋팅
-  const SetCalendarAft = () => {
+  function SetCalendarAft() {
     var moment = require("moment");
     var WeekDayIndex; //셋팅되는 요일
     var iSSHoliWeek; //주휴요일
@@ -490,11 +521,12 @@ const ComeCheckDetail = props => {
       .format("YYYY-MM-DD"); //- iSSHoliWeek * -1, "days");
     console.log("AFT nowDate ", nowDate, "AFT LastDate ", LastDate);
     SetCalenderGrid(DetailList_Aft, nowDate, LastDate);
+
     DetailList_Aft && ShowComeCheckDate(DetailList_Aft);
-  };
+  }
 
   //이전달 달력 셋팅
-  const SetCalendarBef = () => {
+  function SetCalendarBef() {
     var moment = require("moment");
     var WeekDayIndex; //셋팅되는 요일
     var iSSHoliWeek; //주휴요일
@@ -512,11 +544,12 @@ const ComeCheckDetail = props => {
       .format("YYYY-MM-DD");
     console.log("Bef NowDate", nowDate, "Bef LastDat ", LastDate);
     SetCalenderGrid(DetailList_Bef, nowDate, LastDate);
+
     DetailList_Bef && ShowComeCheckDate(DetailList_Bef);
-  };
+  }
   //달력을 셋팅하는 함수
 
-  const SetCalendar = ShowDB => {
+  async function SetCalendar(ShowDB) {
     console.log("SetCalendar 실행됨 #####");
 
     SetHolidays(NowDate, LastDate, CCList[0].SSSWGUBUN);
@@ -529,18 +562,21 @@ const ComeCheckDetail = props => {
     else if ((CCList[0].SSHOLIWEEK = "5")) setMuHueWeek("4");
     else if ((CCList[0].SSHOLIWEEK = "6")) setMuHueWeek("5");
     else if ((CCList[0].SSHOLIWEEK = "7")) setMuHueWeek("6");
-    SetCalendarNow(true); //이번달 달력 셋팅//반드시 이번달 먼저 셋팅해야 이전달과 다음달을 이번달에서 필요한 만큼만 조회해서 그리드에 셋팅한다.
 
-    SetCalendarBef(); //이전달 달력 셋팅
+    SetCalendarNow(true);
+    SetCalendarBef();
+    SetCalendarAft(); //이번달 달력 셋팅//반드시 이번달 먼저 셋팅해야 이전달과 다음달을 이번달에서 필요한 만큼만 조회해서 그리드에 셋팅한다.
 
-    SetCalendarAft(); //다음달 달력 셋팅
+    // await ; //이전달 달력 셋팅
+
+    // await ; //다음달 달력 셋팅
 
     SetHuejik(); //휴직 정보를 셋팅
     SetInOutDate(); ////입퇴사에 관하여 입사이전과 퇴사이후는 무급휴일로 자동 셋팅하는 함수
     SetMuhueOverTime(); //전체라인에 대해서 무휴일(주휴 직전일)에 추가연장을 계산하는 함수
 
     ClearJuhueByOut(DetailList); //근무구분중 결근이 있으면 해당 주의 주휴를 제거하는 함수
-  };
+  }
   //휴직 정보를 셋팅
   const SetHuejik = () => {
     var HStrDate;

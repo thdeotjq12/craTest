@@ -4,7 +4,7 @@ var globalValue = require("../../../globalValue");
 const passport = require("passport");
 
 router.post("/SetHolidays", async (req, res) => {
-  console.log("SetHolidays");
+  // console.log("SetHolidays");
   var con = await globalValue.connectDB("g00001");
   var result = {};
   var sql = "";
@@ -42,7 +42,6 @@ router.post("/SetHolidays", async (req, res) => {
 });
 
 router.post("/SetHuejik", async (req, res) => {
-  console.log("SetHuejik");
   var con = await globalValue.connectDB("g00001");
   var result = {};
   var sql = "";
@@ -51,7 +50,7 @@ router.post("/SetHuejik", async (req, res) => {
   var STCode = req.body.STCode;
   var StrDate = req.body.StrDate;
   var EndDate = req.body.EndDAte;
-  console.log("Test 2 ", req.body);
+
   con.connect();
 
   sql = ` SELECT * FROM STAFFHUEJIK                                   
@@ -66,7 +65,7 @@ router.post("/SetHuejik", async (req, res) => {
         ...result,
         HuejikList: rows
       };
-      console.log("HuejikList", result);
+      // console.log("HuejikList", result);
       res.send(result);
     } else {
       console.log("Query ERR : ", err);
@@ -108,7 +107,8 @@ router.post("/SetComeCheckDate", async (req, res) => {
         ComeCheckDateList: rows
       };
       console.log("ComeChec Parm", parm);
-      // console.log("ComeCheckDateList", result);
+
+      console.log("ComeCheckDateList", result);
       res.send(result);
     } else {
       console.log("Query ERR : ", err);

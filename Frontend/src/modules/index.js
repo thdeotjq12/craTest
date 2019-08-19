@@ -5,6 +5,7 @@ import SaupGwanRi from "./Main/CompanyInfo/SaupGwanRi/SaupGwanRiReducer";
 import CommonInfo from "./Main/CompanyInfo/CommonInfo/CommonInfoReducer";
 import ValList from "./Func/ValListReducer";
 import ComeCheck from "./Main/ComeCheck/ComeCheckReducer";
+import ComeCheckDetail from "./Main/ComeCheckDetail/ComeCheckDetailReducer";
 // 스토어 등록
 const rootReducer = combineReducers({
   Loginpage,
@@ -12,7 +13,8 @@ const rootReducer = combineReducers({
   SaupGwanRi,
   CommonInfo,
   ValList,
-  ComeCheck
+  ComeCheck,
+  ComeCheckDetail
 });
 
 export default rootReducer;

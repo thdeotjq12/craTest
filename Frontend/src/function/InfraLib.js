@@ -43,6 +43,7 @@ Func.IncMinuteStr = (iTime, incValue) => {
     SumMinute = 24 * 60 + SumMinute;
   }
   Result = Math.trunc(SumMinute / 60) + (SumMinute % 60); // mod 함수
+  return Result;
 };
 //Base시간을 기준으로 Obj시간이 겹치는 부분에대한 시간값(분)을 계산
 Func.calcMiute_BaseNObjTime = (
@@ -176,5 +177,6 @@ Func.TimeTermMinuteStr = (befTime, aftTime) => {
 
     return aftMinute - befMinute;
   }
+  return 0;
 };
 export default Func;
