@@ -123,6 +123,9 @@ const ComeCheckDetail = props => {
   const { ValList } = useSelector(state => state.ValList);
   const [HoliDays, SetHoli] = useState(""); // 휴일 리스트
   const [Flag, setFlag] = useState(true);
+  const [flagNow, setFN] = useState(true);
+  const [flagBef, setFB] = useState(true);
+  const [flagAft, setFA] = useState(true);
   const [DetailList, setDetailList] = useState(""); // 현재달력 리스트
   const [DetailList_Bef, setDetailList_Bef] = useState(""); //지난달 리스트
   const [DetailList_Aft, setDetailList_Aft] = useState(""); //다음달 리스트
@@ -141,14 +144,15 @@ const ComeCheckDetail = props => {
   const [Mode, setMode] = useState("일반"); // 만근/일반
 
   //빈 배열을 useEffect의 두 번째 인수로 전달하면 마운트 및 마운트 해제시에만 실행되므로 무한 루프가 중지됩니다.
+  //useEffect 는 리액트 컴포넌트가 렌더링 될 때마다 특정 작업을 수행하도록 설정
   useEffect(() => {
     SetCalendar(true);
     // SetCalenderGrid(DetailList, NowDate, LastDate);
-    var Test = "  123  ";
+    console.log("ComeCheckDetail USEEFEECT 실행됨");
 
     console.log("NowDate", NowDate, "LastDate", LastDate);
     console.log("CCList", CCList);
-  }, [DetailList, DetailList_Aft, DetailList_Bef]);
+  }, [DetailList, DetailList_Aft, DetailList_Bef]); //[DetailList, DetailList_Aft, DetailList_Bef]
   const getCellValue = value => {};
 
   const Close = handleCloser => {
@@ -306,7 +310,7 @@ const ComeCheckDetail = props => {
   };
 
   //이번달 달력에 일자별 근태를 조회하는 함수
-  async function ShowComeCheckDate(grid) {
+  function ShowComeCheckDate(grid) {
     if (grid.length === 0) {
       return;
     }
@@ -323,13 +327,10 @@ const ComeCheckDetail = props => {
     var ComeCheckList;
     grid && (ComeCheckList = grid);
     dispatch({
-      type: ComeCheckDetail_REQUEST
+      type: ComeCheckDetail_REQUEST // true
     });
     if (CCDetailLoading) {
       console.log(" # ComeCheckDateList[i] parm", parm);
-      // dispatch({
-      //   type: ComeCheckDetail_SUCCESS
-      // });
 
       axios
         .post("http://localhost:5000/ComeCheckDetail/SetComeCheckDate", parm)
@@ -337,7 +338,7 @@ const ComeCheckDetail = props => {
           console.log(res);
           if (res.data === "NoData") {
           } else {
-            if (!ComeCheckList && CCDetailLoading) return;
+            // if (!ComeCheckList && CCDetailLoading) return;
             ComeCheckDateList = res.data.ComeCheckDateList;
             console.log(" ###  ComeCheckDateList", ComeCheckDateList);
             for (let i = 0; i < ComeCheckDateList.length; i++) {
@@ -372,7 +373,7 @@ const ComeCheckDetail = props => {
                 ComeCheckList[i].CDMemo = ComeCheckDateList[i].CDMEMO;
                 ComeCheckList[i].ChangeGubun = ""; //DB에서 불러온 근태이므로 변경구분을 N에서 공백으로 변경해 준다.
                 console.log("TTTTTTTTFFFFFFFFF 1", ComeCheckList);
-                break;
+                // break;
               }
             }
             // dispatch({
@@ -475,12 +476,26 @@ const ComeCheckDetail = props => {
           ValList
         );
       }
+      setTimeout(() => {}, 5000);
       if (grid === DetailList) {
+        // 스스로를 결정하는 thenable 에서 Promise.resolve 를 호출하면 안됩니다. 이는 무한히 중첩된 프로미스를 펼치려고하므로 무한 재귀를 유발할 것입니다.
         setDetailList(grid);
+        dispatch({
+          type: ComeCheckDetail_SUCCESS
+        });
+        console.log("★★ (1) 종료됨");
       } else if (grid === DetailList_Bef) {
         setDetailList_Bef(grid);
+        dispatch({
+          type: ComeCheckDetail_SUCCESS
+        });
+        console.log("★★ (2) 종료됨");
       } else {
         setDetailList_Aft(grid);
+        dispatch({
+          type: ComeCheckDetail_SUCCESS
+        });
+        console.log("★★ (3) 종료됨");
       }
       ClearJuhueByOut(grid);
     }
@@ -491,15 +506,25 @@ const ComeCheckDetail = props => {
 
   //현재달 달력 셋팅
   function SetCalendarNow(ShowDB) {
-    var WeekDayIndex = moment(NowDate).day() + 1;
+    setFN(false);
+    console.log("★★ Now 실행됨");
     //시작일부터 말일까지 grid에 달력을 셋팅하는 함수
     SetCalenderGrid(DetailList, NowDate, LastDate);
     //이번달 달력에 일자별 근태를 조회하는 함수
-
     ShowComeCheckDate(DetailList);
+
+    return;
+    // return new Promise(function(resolve) {
+    //   setTimeout(async () => {
+    //     await ShowComeCheckDate(DetailList);
+    //   }, 3000);
+    // });
   }
+
   //다음달 달력셋팅
   function SetCalendarAft() {
+    setFB(false);
+    console.log("★★ AFT 실행됨");
     var moment = require("moment");
     var WeekDayIndex; //셋팅되는 요일
     var iSSHoliWeek; //주휴요일
@@ -521,12 +546,19 @@ const ComeCheckDetail = props => {
       .format("YYYY-MM-DD"); //- iSSHoliWeek * -1, "days");
     console.log("AFT nowDate ", nowDate, "AFT LastDate ", LastDate);
     SetCalenderGrid(DetailList_Aft, nowDate, LastDate);
-
     DetailList_Aft && ShowComeCheckDate(DetailList_Aft);
+    return;
+    // return new Promise(function(resolve) {
+    //   setTimeout(() => {
+    //     ShowComeCheckDate(DetailList_Aft);
+    //   }, 3000);
+    // });
   }
 
   //이전달 달력 셋팅
   function SetCalendarBef() {
+    setFA(false);
+    console.log("★★ Bef 실행됨");
     var moment = require("moment");
     var WeekDayIndex; //셋팅되는 요일
     var iSSHoliWeek; //주휴요일
@@ -544,12 +576,17 @@ const ComeCheckDetail = props => {
       .format("YYYY-MM-DD");
     console.log("Bef NowDate", nowDate, "Bef LastDat ", LastDate);
     SetCalenderGrid(DetailList_Bef, nowDate, LastDate);
-
     DetailList_Bef && ShowComeCheckDate(DetailList_Bef);
+    return;
+    // return new Promise(function(resolve) {
+    //   setTimeout(() => {
+    //     DetailList_Bef && ShowComeCheckDate(DetailList_Bef);
+    //   }, 3000);
+    // });
   }
   //달력을 셋팅하는 함수
 
-  async function SetCalendar(ShowDB) {
+  function SetCalendar(ShowDB) {
     console.log("SetCalendar 실행됨 #####");
 
     SetHolidays(NowDate, LastDate, CCList[0].SSSWGUBUN);
@@ -563,14 +600,10 @@ const ComeCheckDetail = props => {
     else if ((CCList[0].SSHOLIWEEK = "6")) setMuHueWeek("5");
     else if ((CCList[0].SSHOLIWEEK = "7")) setMuHueWeek("6");
 
-    SetCalendarNow(true);
-    SetCalendarBef();
-    SetCalendarAft(); //이번달 달력 셋팅//반드시 이번달 먼저 셋팅해야 이전달과 다음달을 이번달에서 필요한 만큼만 조회해서 그리드에 셋팅한다.
-
-    // await ; //이전달 달력 셋팅
-
-    // await ; //다음달 달력 셋팅
-
+    SetCalendarNow(true); //이번달 달력 셋팅//반드시 이번달 먼저 셋팅해야 이전달과 다음달을 이번달에서 필요한 만큼만 조회해서 그리드에 셋팅한다.
+    SetCalendarBef(); //이전달 달력 셋팅
+    SetCalendarAft(); //다음달 달력 셋팅
+    //await은 내 메소드의 실행을 일시중지시킵니다. promise의 값이 사용가능할 때까지요.
     SetHuejik(); //휴직 정보를 셋팅
     SetInOutDate(); ////입퇴사에 관하여 입사이전과 퇴사이후는 무급휴일로 자동 셋팅하는 함수
     SetMuhueOverTime(); //전체라인에 대해서 무휴일(주휴 직전일)에 추가연장을 계산하는 함수
@@ -1113,22 +1146,18 @@ const ComeCheckDetail = props => {
       // return List;
       if (TList === DetailList) {
         !DetailList && setDetailList(Object.values(List));
-        console.log("TList === DetailList", Object.values(List));
-        console.log("DetailList Done", DetailList);
-        return;
-        setFlag(true);
-      } else if (TList === DetailList_Bef) {
-        console.log("TList === DetailList_Bef");
 
+        console.log("DetailList Done", DetailList);
+
+        return;
+      } else if (TList === DetailList_Bef) {
         setDetailList_Bef(Object.values(List));
-        setFlag(true);
+
         console.log("DetailList_Bef Done", DetailList_Bef);
         return;
       } else {
-        console.log("TList === setDetailList_Aft");
-
         setDetailList_Aft(Object.values(List));
-        setFlag(true);
+
         console.log("DetailList_Aft Done", DetailList_Aft);
         return;
       }
