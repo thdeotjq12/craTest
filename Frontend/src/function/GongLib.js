@@ -6,7 +6,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { tr } from "date-fns/esm/locale";
 import Val from "../pages/Main/ComeCheckDetail/index";
 import { addHours } from "date-fns";
+import { getTime } from "date-fns/esm";
+import moment from "moment";
 var Func = {};
+
 const GongLib = porps => {
   const { ValList } = useSelector(state => state.ValList);
 };
@@ -184,6 +187,7 @@ const SetAddHTime = (
     if (ExtraAddHTime < 0) ExtraAddHTime = 0;
     return [ExtraAddHTime, TimeIndex]; //남은 추가휴게시간을 리턴
   };
+
   AddHTime = CNList[Row].CDHTime; //추가휴게시간 셋팅
   AddHTime = SetAddHTime(CNList[Row].CDHTimeNightOver, AddHTime); //휴일야간연장에 추가휴게시간 적용
   CNList[Row].CDHTimeNightOver = AddHTime[1];
@@ -211,7 +215,7 @@ const SetAddHTime = (
       CNList[Row].CDWTimeHoli = 0;
     }
   }
-  // console.log("TTOTOTOTOTOT : ", CNList);
+
   return CNList;
 };
 
@@ -380,23 +384,23 @@ Func.SetCellEditExit = (
       isFirst,
       ValList
     ));
-  SetAddHTime(
-    CNList,
-    Row,
-    SWHoliPayYN,
-    CDHTime,
-    CDGubun,
-    CDWTimeNormal,
-    CDWTimeHoli,
-    CDWTimeOver,
-    CDWTimeNight,
-    CDWTimeNightOver,
-    CDHTimeBase,
-    CDHTimeOver,
-    CDHTimeNight,
-    CDHTimeNightOver,
-    CDTkTime
-  );
+  // SetAddHTime(
+  //   CNList,
+  //   Row,
+  //   SWHoliPayYN,
+  //   CDHTime,
+  //   CDGubun,
+  //   CDWTimeNormal,
+  //   CDWTimeHoli,
+  //   CDWTimeOver,
+  //   CDWTimeNight,
+  //   CDWTimeNightOver,
+  //   CDHTimeBase,
+  //   CDHTimeOver,
+  //   CDHTimeNight,
+  //   CDHTimeNightOver,
+  //   CDTkTime
+  // );
 
   if (CNList[Row].CDGubun !== "1") {
     if (CNList[Row].CDGubun !== "6") {
@@ -571,6 +575,7 @@ Func.SetCellEditExit = (
       ) /
         60 -
       CNList[Row].HTime; //총근로시간
+    console.log(" ^^^ Test", CNList);
     return CNList;
   }
 };
@@ -630,7 +635,7 @@ const SetTimeForGrid = (
   var doCalcHTimeToHoli;
   var OutTime = "";
   var SSOutTime = "";
-
+  var moment = require("moment");
   if (grid.length === 0) return;
   grid = ClearTime(
     grid,
@@ -699,7 +704,10 @@ const SetTimeForGrid = (
     ); //근무시간 및 휴게시간으로 각 근무시간을 계산.
     //지각 계산
 
-    if (grid[row].SSWTimeStr < grid[row].CDWStrTime)
+    if (
+      moment(grid[row].SSWTimeStr, "HH:mm") <
+      moment(grid[row].CDWStrTime, "HH:mm")
+    )
       grid[row].CDLateTime = InfraLib.infraRoundUp(
         InfraLib.TimeTermMinuteStr(
           grid[row].SSWTimeStr,
@@ -710,12 +718,22 @@ const SetTimeForGrid = (
     //조퇴 계산
     SSOutTime = grid[row].SSWTimeEnd;
     OutTime = grid[row].CDWEndTime;
-    if (grid[row].CDWStrTime > OutTime)
+    if (
+      moment(grid[row].CDWStrTime, "HH:mm").valueOf() >
+      moment(OutTime, "HH:mm").valueOf()
+    )
       OutTime = InfraLib.IncMinuteStr(OutTime, 24 * 60); //출근시간이 퇴근시간 보다 더 큰 경우 퇴근 시간에 24시간 가산.
-    if (grid[row].SSWTimeStr > SSOutTime)
+    if (
+      moment(grid[row].SSWTimeStr, "HH:mm").valueOf() >
+      moment(SSOutTime, "HH:mm").valueOf()
+    ) {
       SSOutTime = InfraLib.IncMinuteStr(SSOutTime, 24 * 60); //출근시간이 퇴근시간 보다 더 큰 경우 퇴근 시간에 24시간 가산.
+      console.log("&&& SSOutTime", SSOutTime);
+    }
 
-    if (SSOutTime > OutTime)
+    if (
+      moment(SSOutTime, "HH:mm").valueOf() > moment(OutTime, "HH:mm").valueOf()
+    )
       grid[row].CDEarlyOutTime = InfraLib.infraRoundUp(
         InfraLib.TimeTermMinuteStr(OutTime, SSOutTime) / 60,
         2
@@ -1447,7 +1465,139 @@ const CalcTimes = (
       grid[row].SSLTimeEnd5,
       SWLTimeGubun5
     );
+    if (grid[row].CDHTimeBase > iWTimeOfDayLimit) {
+      //기본 근로시간이 법정 일일최대 근로시간을 초과했음. 연장근무로 가산
+      grid[row].CDHTimeOver =
+        grid[row].CDHTimeOver + (grid[row].CDHTimeBase - iWTimeOfDayLimit);
+      grid[row].CDHTimeBase = iWTimeOfDayLimit;
+    }
+  } else {
+    //기타 근무일인 경우
+    //무휴일인지 체크하여 무휴일인경우 연장근무로 적용(주당 근로시간이 소정 근로시간을 초과한 경우)
+    //무휴가 아닐때: 일반적 시간 계산
+    grid[row].CDWTimeNormal = CalcWTimes(
+      "기본",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].CDWStrTime,
+      grid[row].CDWEndTime,
+      grid[row].SSLTimeStr1,
+      grid[row].SSLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].SSLTimeStr2,
+      grid[row].SSLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].SSLTimeStr3,
+      grid[row].SSLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].SSLTimeStr4,
+      grid[row].SSLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].SSLTimeStr5,
+      grid[row].SSLTimeEnd5,
+      SWLTimeGubun5
+    );
+    grid[row].CDWTimeNight = CalcWTimes(
+      "야간",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].CDWStrTime,
+      grid[row].CDWEndTime,
+      grid[row].SWLTimeStr1,
+      grid[row].SWLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].SSLTimeStr2,
+      grid[row].SSLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].SSLTimeStr3,
+      grid[row].SSLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].SSLTimeStr4,
+      grid[row].SSLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].SSLTimeStr5,
+      grid[row].SSLTimeEnd5,
+      SWLTimeGubun5
+    );
+    grid[row].CDWTimeOver = CalcWTimes(
+      "연장",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].CDWStrTime,
+      grid[row].CDWEndTime,
+      grid[row].SWLTimeStr1,
+      grid[row].SWLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].SSLTimeStr2,
+      grid[row].SSLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].SSLTimeStr3,
+      grid[row].SSLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].SSLTimeStr4,
+      grid[row].SSLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].SSLTimeStr5,
+      grid[row].SSLTimeEnd5,
+      SWLTimeGubun5
+    );
+    grid[row].CDWTimeNightOver = CalcWTimes(
+      "야간연장",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].CDWStrTime,
+      grid[row].CDWEndTime,
+      grid[row].SWLTimeStr1,
+      grid[row].SWLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].SSLTimeStr2,
+      grid[row].SSLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].SSLTimeStr3,
+      grid[row].SSLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].SSLTimeStr4,
+      grid[row].SSLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].SSLTimeStr5,
+      grid[row].SSLTimeEnd5,
+      SWLTimeGubun5
+    );
+    grid[row].CDTkTime = CalcWTimes(
+      "특근",
+      iWTimeOfDayLimit,
+      SWNightStrWTime,
+      SWNightEndWTime,
+      grid[row].CDWStrTime,
+      grid[row].CDWEndTime,
+      grid[row].SWLTimeStr1,
+      grid[row].SWLTimeEnd1,
+      SWLTimeGubun1,
+      grid[row].SSLTimeStr2,
+      grid[row].SSLTimeEnd2,
+      SWLTimeGubun2,
+      grid[row].SSLTimeStr3,
+      grid[row].SSLTimeEnd3,
+      SWLTimeGubun3,
+      grid[row].SSLTimeStr4,
+      grid[row].SSLTimeEnd4,
+      SWLTimeGubun4,
+      grid[row].SSLTimeStr5,
+      grid[row].SSLTimeEnd5,
+      SWLTimeGubun5
+    );
+    if (grid[row].CDWTimeNormal > iWTimeOfDayLimit) {
+      //기본 근로시간이 법정 일일최대 근로시간을 초과했음. 연장근무로 가산
+      grid[row].CDWTimeOver =
+        grid[row].CDWTimeOver + (grid[row].CDWTimeNormal - iWTimeOfDayLimit);
+      grid[row].CDWTimeNormal = iWTimeOfDayLimit;
+    }
   }
+  console.log("◈◈◈◈◈◈◈◈ ", grid);
   return grid;
 };
 //포괄근로시간 계산하는 함수
@@ -1485,6 +1635,7 @@ const CalcWTimes = (
   var TkTime; //특근시간
   var tempTime;
   var Result;
+  console.log("CalcWTimes", WTimeStr, WTimeEnd);
   //근로시간 리스트중 휴게시간이 걸려있으면 휴게시간만큼을 빼는 함수(근로시간이 분할된다)
   const WTimeMinusLTime = (WTimeStrList, WTimeEndList, LTimeStr, LTimeEnd) => {
     var WTimeStr;
@@ -1496,27 +1647,46 @@ const CalcWTimes = (
 
     is24AddStr = false;
     is24AddEnd = false;
-    oriLTimeStr = LTimeStr;
-    oriLTimeEnd = LTimeEnd;
+    oriLTimeStr = LTimeStr; // "12:00"
+    oriLTimeEnd = LTimeEnd; // "13:00"
+    console.log("WTimeMinusLTime");
     for (let i = 0; i < WTimeStrList.length; i++) {
       LTimeStr = oriLTimeStr;
       LTimeEnd = oriLTimeEnd;
+
       if (
         is24Add && //근무시간에 24시간을 가산했음.휴게 시작시간과 종료시간이 근무시간 안쪽인지 판단하여 근무시간 바깥쪽인경우(시작과 종료둘다) 24시간을 가산한다.
-        LTimeStr < WTimeStrList[i] &&
-        LTimeStr > WTimeEndList[i] &&
-        LTimeEnd < WTimeStrList[i] &&
-        LTimeEnd > WTimeEndList[i]
+        moment(LTimeStr, "HH:mm").valueOf() <
+          moment(WTimeStrList[i], "HH:mm").valueOf() &&
+        moment(LTimeStr, "HH:mm").valueOf() >
+          moment(WTimeEndList[i], "HH:mm").valueOf() &&
+        moment(LTimeEnd, "HH:mm").valueOf() <
+          moment(WTimeStrList[i], "HH:mm").valueOf() &&
+        moment(LTimeEnd, "HH:mm").valueOf() >
+          moment(WTimeEndList[i], "HH:mm").valueOf()
       ) {
         LTimeStr = InfraLib.IncMinuteStr(LTimeStr, 24 * 60); //휴게 시작시간이 근무시간 범위밖에 있음
         LTimeEnd = InfraLib.IncMinuteStr(LTimeEnd, 24 * 60); //휴게 종료시간이 근무시간 범위밖에 있음
       }
       WTimeStr = WTimeStrList[i];
       WTimeEnd = WTimeEndList[i];
-      if (LTimeStr <= WTimeStr && LTimeEnd > WTimeStr && LTimeEnd < WTimeEnd) {
+      console.log(" ZZZ ", WTimeStr, WTimeEnd);
+      if (
+        moment(LTimeStr, "HH:mm").valueOf() <=
+          moment(WTimeStr, "HH:mm").valueOf() &&
+        moment(LTimeEnd, "HH:mm").valueOf() >
+          moment(WTimeStr, "HH:mm").valueOf() &&
+        moment(LTimeEnd, "HH:mm").valueOf() <
+          moment(WTimeEnd, "HH:mm").valueOf()
+      ) {
         //1. 휴게시간이 근로시작시간전에 시작하여 근무시간중에 끝나는 경우
         WTimeStrList[i] = LTimeEnd;
-      } else if (LTimeStr > WTimeStr && LTimeEnd < WTimeEnd) {
+      } else if (
+        moment(LTimeStr, "HH:mm").valueOf() >
+          moment(WTimeStr, "HH:mm").valueOf() &&
+        moment(LTimeEnd, "HH:mm").valueOf() <
+          moment(WTimeEnd, "HH:mm").valueOf()
+      ) {
         //2. 근로시간중에 휴게시간이 시작되어서 근로시간 내에 끝나는 경우
         //휴게시간 이후로 근로시간 만듬
         WTimeStrList.push(LTimeEnd);
@@ -1524,9 +1694,12 @@ const CalcWTimes = (
         //휴게시간 이전의 근로시간은 종료시간만 휴게시작시간으로 바꿈
         WTimeEndList[i] = LTimeStr;
       } else if (
-        LTimeStr > WTimeStr &&
-        LTimeStr < WTimeEnd &&
-        LTimeEnd >= WTimeEnd
+        moment(LTimeStr, "HH:mm").valueOf() >
+          moment(WTimeStr, "HH:mm").valueOf() &&
+        moment(LTimeStr, "HH:mm").valueOf() <
+          moment(WTimeEnd, "HH:mm").valueOf() &&
+        moment(LTimeEnd, "HH:mm").valueOf() >=
+          moment(WTimeEnd, "HH:mm").valueOf()
       ) {
         WTimeEndList[i] = LTimeStr;
       }
@@ -1535,30 +1708,51 @@ const CalcWTimes = (
   //시작시간으로 부터 종료시간까지의 연장, 야간연장시간을 가산
   const CalcOverTimes = (StrTime, EndTime) => {
     var i = 0;
-    if (StrTime < NightStr) {
-      if (EndTime <= NightStr) {
+    if (
+      moment(StrTime, "HH:mm").valueOf() < moment(NightStr, "HH:mm").valueOf()
+    ) {
+      if (
+        moment(EndTime, "HH:mm").valueOf() <=
+        moment(NightStr, "HH:mm").valueOf()
+      ) {
         //근로시작시간이 야간근로시작시간 전인 경우
         OverTime =
           OverTime + InfraLib.TimeTermMinuteStr(StrTime, DayWTimeEnds[i]);
-      } else if (EndTime <= NightEnd) {
+      } else if (
+        moment(EndTime, "HH:mm").valueOf() <=
+        moment(NightEnd, "HH:mm").valueOf()
+      ) {
         //근로종료시간이 야간근로시작 전인 경우
         OverTime = OverTime + InfraLib.TimeTermMinuteStr(StrTime, NightStr);
         ONTime = ONTime + InfraLib.TimeTermMinuteStr(NightStr, EndTime);
-      } else if (EndTime > NightEnd) {
+      } else if (
+        moment(EndTime, "HH:mm").valueOf() > moment(NightEnd, "HH:mm").valueOf()
+      ) {
         //근로종료시간이 야간 근로종료 전인 경우
         OverTime = OverTime + InfraLib.TimeTermMinuteStr(StrTime, NightStr);
         ONTime = ONTime + InfraLib.TimeTermMinuteStr(NightStr, NightEnd);
         OverTime = OverTime + InfraLib.TimeTermMinuteStr(NightEnd, EndTime);
-      } else if (StrTime < NightEnd) {
+      } else if (
+        moment(StrTime, "HH:mm").valueOf() < moment(NightEnd, "HH:mm").valueOf()
+      ) {
         //근로시작시간이 야간근로시간 안쪽에 있는 경우
-        if (EndTime <= NightEnd) {
+        if (
+          moment(EndTime, "HH:mm").valueOf() <=
+          moment(NightEnd, "HH:mm").valueOf()
+        ) {
           //근로종료시간이 야간 근로종료 전인 경우
           ONTime = ONTime + InfraLib.TimeTermMinuteStr(StrTime, EndTime);
-        } else if (EndTime > NightEnd) {
+        } else if (
+          moment(EndTime, "HH:mm").valueOf() >
+          moment(NightEnd, "HH:mm").valueOf()
+        ) {
           ONTime = ONTime + InfraLib.TimeTermMinuteStr(StrTime, NightEnd);
           OverTime = OverTime + InfraLib.TimeTermMinuteStr(NightEnd, EndTime);
         }
-      } else if (StrTime >= NightEnd) {
+      } else if (
+        moment(StrTime, "HH:mm").valueOf() >=
+        moment(NightEnd, "HH:mm").valueOf()
+      ) {
         //근로시작시간이 야간근로시간 이후인경우.
         OverTime = OverTime + InfraLib.TimeTermMinuteStr(StrTime, EndTime);
       }
@@ -1566,22 +1760,39 @@ const CalcWTimes = (
   };
   //시작시간으로부터 종료시간까지 야간근로시간을 계산
   const CalcNightTime = (StrTime, EndTime) => {
-    if (StrTime > EndTime) EndTime = InfraLib.IncMinuteStr(EndTime, 24 * 60);
-    if (EndTime < NightStr) {
+    if (moment(StrTime, "HH:mm").valueOf() > moment(EndTime, "HH:mm").valueOf())
+      EndTime = InfraLib.IncMinuteStr(EndTime, 24 * 60);
+    if (
+      moment(EndTime, "HH:mm").valueOf() < moment(NightStr, "HH:mm").valueOf()
+    ) {
       StrTime = InfraLib.IncMinuteStr(EndTime, 24 * 60);
       EndTime = InfraLib.IncMinuteStr(EndTime, 24 * 60);
     }
     //근로시작시간이 야간근로시간 이전에 시작된 경우
-    if (StrTime < NightStr) {
+    if (
+      moment(StrTime, "HH:mm").valueOf() < moment(NightStr, "HH:mm").valueOf()
+    ) {
       //근로종료시간이 야간근로시간 안에 있는 경우
-      if (EndTime > NightStr && EndTime <= NightEnd) {
+      if (
+        moment(EndTime, "HH:mm").valueOf() >
+          moment(NightStr, "HH:mm").valueOf() &&
+        moment(EndTime, "HH:mm").valueOf() <=
+          moment(NightEnd, "HH:mm").valueOf()
+      ) {
         NightTime = NightTime + InfraLib.TimeTermMinuteStr(NightStr, EndTime);
-      } else if (EndTime > NightEnd) {
+      } else if (
+        moment(EndTime, "HH:mm").valueOf() > moment(NightEnd, "HH:mm").valueOf()
+      ) {
         NightTime = NightTime + InfraLib.TimeTermMinuteStr(NightStr, NightEnd);
       }
-    } else if (StrTime < NightEnd) {
+    } else if (
+      moment(StrTime, "HH:mm").valueOf() < moment(NightEnd, "HH:mm").valueOf()
+    ) {
       //근로시작시간이 야간근로시간 안쪽인 경우
-      if (EndTime <= NightEnd) {
+      if (
+        moment(EndTime, "HH:mm").valueOf() <=
+        moment(NightEnd, "HH:mm").valueOf()
+      ) {
         //근로종료시간도 야간근로시간 안쪽인 경우
         NightTime = NightTime + InfraLib.TimeTermMinuteStr(StrTime, EndTime);
       } else {
@@ -1595,20 +1806,41 @@ const CalcWTimes = (
 
     if (StrTime.trim() === "" || EndTime.trim() === "") return (Result = 0);
     if (SWLTimeGubun !== "0" && SWLTimeGubun !== "9") {
-      if (StrTime >= EndTime) EndTime = InfraLib.IncMinuteStr(EndTime, 24 * 60);
-      if (WTimeStr > StrTime && WTimeStr >= EndTime) {
+      if (
+        moment(StrTime, "HH:mm").valueOf() >= moment(EndTime, "HH:mm").valueOf()
+      )
+        EndTime = InfraLib.IncMinuteStr(EndTime, 24 * 60);
+      if (
+        moment(WTimeStr, "HH:mm").valueOf() >
+          moment(StrTime, "HH:mm").valueOf() &&
+        moment(WTimeStr, "HH:mm").valueOf() >=
+          moment(EndTime, "HH:mm").valueOf()
+      ) {
         StrTime = InfraLib.IncMinuteStr(StrTime, 24 * 60);
         EndTime = InfraLib.IncMinuteStr(EndTime, 24 * 60);
       }
 
-      if (StrTime < WTimeStr && EndTime > WTimeStr) StrTime = WTimeStr;
-      if (StrTime < WTimeEnd && EndTime > WTimeEnd) EndTime = WTimeEnd;
+      if (
+        moment(StrTime, "HH:mm").valueOf() <
+          moment(WTimeStr, "HH:mm").valueOf() &&
+        moment(EndTime, "HH:mm").valueOf() > moment(WTimeStr, "HH:mm").valueOf()
+      )
+        StrTime = WTimeStr;
+      if (
+        moment(StrTime, "HH:mm").valueOf() <
+          moment(WTimeEnd, "HH:mm").valueOf() &&
+        moment(EndTime, "HH:mm").valueOf() > moment(WTimeEnd, "HH:mm").valueOf()
+      )
+        EndTime = WTimeEnd;
 
       if (
-        WTimeStr <= StrTime &&
-        WTimeEnd > StrTime &&
-        WTimeStr < EndTime &&
-        WTimeEnd > EndTime
+        moment(WTimeStr, "HH:mm").valueOf() <=
+          moment(StrTime, "HH:mm").valueOf() &&
+        moment(WTimeEnd, "HH:mm").valueOf() >
+          moment(StrTime, "HH:mm").valueOf() &&
+        moment(WTimeStr, "HH:mm").valueOf() <
+          moment(EndTime, "HH:mm").valueOf() &&
+        moment(WTimeEnd, "HH:mm").valueOf() > moment(EndTime, "HH:mm").valueOf()
       ) {
         LTimeMinute = InfraLib.TimeTermMinuteStr(StrTime, EndTime);
         LTimeMinute =
@@ -1630,17 +1862,21 @@ const CalcWTimes = (
       }
     }
   };
-
+  console.log("1 TTRREE", LTimeStr1);
   if (WTimeStr === WTimeEnd) {
+    console.log("2 TTRREE", LTimeStr1);
     return (Result = 0);
   }
 
   if (KindOfTime === "특근") {
     if (WTimeStr.trim() === "" || WTimeEnd.trim() === "") {
+      console.log("3 TTRREE", LTimeStr1);
       return (Result = 0);
     }
     is24Add = false;
-    if (WTimeEnd < WTimeStr) {
+    if (
+      moment(WTimeEnd, "HH:mm").valueOf() < moment(WTimeStr, "HH:mm").valueOf()
+    ) {
       WTimeEnd = InfraLib.IncMinuteStr(WTimeEnd, 24 * 60);
       is24Add = true;
       TkTime = calcTkTime(LTimeGubun1, LTimeStr1, LTimeEnd1);
@@ -1649,10 +1885,12 @@ const CalcWTimes = (
       TkTime = TkTime + calcTkTime(LTimeGubun4, LTimeStr4, LTimeEnd4);
       TkTime = TkTime + calcTkTime(LTimeGubun5, LTimeStr5, LTimeEnd5);
       Result = TkTime;
+      console.log("4 TTRREE", LTimeStr1);
       return Result;
     }
   }
   //매개변수에 공백 제거
+  console.log("1 LTimeStr1", LTimeStr1);
   WTimeStr = WTimeStr.trim();
   WTimeEnd = WTimeEnd.trim();
   LTimeStr1 = LTimeStr1.trim();
@@ -1670,6 +1908,7 @@ const CalcWTimes = (
   LTimeStr5 = LTimeStr5.trim();
   LTimeEnd5 = LTimeEnd5.trim();
   LTimeGubun5 = LTimeGubun5.trim();
+  console.log("2 LTimeStr1", LTimeStr1);
   if (WTimeStr === WTimeEnd || WTimeStr === "" || WTimeEnd === "") {
     return (Result = 0);
   }
@@ -1696,7 +1935,9 @@ const CalcWTimes = (
   }
   is24Add = false; //근무시간에 24시간을 가산한 것인지 체크하는 변수
   //근로 종료 시간이 근로 시작시간보다 작은 경우는 방 12시를 넘긴 것이므로 종료시간에 24시간을 더하여 계산
-  if (WTimeStr >= WTimeEnd) {
+  if (
+    moment(WTimeStr, "HH:mm").valueOf() >= moment(WTimeEnd, "HH:mm").valueOf()
+  ) {
     WTimeEnd = InfraLib.IncMinuteStr(WTimeEnd, 24 * 60);
     is24Add = true;
   }
@@ -1705,39 +1946,45 @@ const CalcWTimes = (
   if (
     LTimeStr1.trim() !== "" &&
     LTimeEnd1.trim() !== "" &&
-    LTimeStr1 >= LTimeEnd1
+    moment(LTimeStr1, "HH:mm").valueOf() >= moment(LTimeEnd1, "HH:mm").valueOf()
   )
     LTimeEnd1 = InfraLib.IncMinuteStr(LTimeEnd1, 24 * 60);
   if (
     LTimeStr2.trim() !== "" &&
     LTimeEnd2.trim() !== "" &&
-    LTimeStr2 >= LTimeEnd2
+    moment(LTimeStr2, "HH:mm").valueOf() >= moment(LTimeEnd2, "HH:mm").valueOf()
   )
     LTimeEnd2 = InfraLib.IncMinuteStr(LTimeEnd2, 24 * 60);
   if (
     LTimeStr3.trim() !== "" &&
     LTimeEnd3.trim() !== "" &&
-    LTimeStr3 >= LTimeEnd3
+    moment(LTimeStr3, "HH:mm").valueOf() >= moment(LTimeEnd3, "HH:mm").valueOf()
   )
     LTimeEnd3 = InfraLib.IncMinuteStr(LTimeEnd3, 24 * 60);
   if (
     LTimeStr4.trim() !== "" &&
     LTimeEnd4.trim() !== "" &&
-    LTimeStr4 >= LTimeEnd4
+    moment(LTimeStr4, "HH:mm").valueOf() >= moment(LTimeEnd4, "HH:mm").valueOf()
   )
     LTimeEnd4 = InfraLib.IncMinuteStr(LTimeEnd4, 24 * 60);
   if (
     LTimeStr5.trim() !== "" &&
     LTimeEnd5.trim() !== "" &&
-    LTimeStr5 >= LTimeEnd5
+    moment(LTimeStr5, "HH:mm").valueOf() >= moment(LTimeEnd5, "HH:mm").valueOf()
   )
     LTimeEnd5 = InfraLib.IncMinuteStr(LTimeEnd5, 24 * 60);
 
   //휴게시간이 근무시간에 포함되어 있지 않다면 휴게시간도 24시간을 가산해서 계산
   if (LTimeStr1.trim() !== "" && LTimeEnd1.trim() !== "") {
     if (
-      (LTimeStr1 < WTimeStr && LTimeEnd1 < WTimeEnd) ||
-      (LTimeStr1 > WTimeStr && LTimeEnd1 > WTimeEnd)
+      (moment(LTimeStr1, "HH:mm").valueOf() <
+        moment(WTimeStr, "HH:mm").valueOf() &&
+        moment(LTimeEnd1, "HH:mm").valueOf() <
+          moment(WTimeEnd, "HH:mm").valueOf()) ||
+      (moment(LTimeStr1, "HH:mm").valueOf() >
+        moment(WTimeStr, "HH:mm").valueOf() &&
+        moment(LTimeEnd1, "HH:mm").valueOf() >
+          moment(WTimeEnd, "HH:mm").valueOf())
     ) {
       LTimeStr1 = InfraLib.IncMinuteStr(LTimeStr1, 24 * 60);
       LTimeEnd1 = InfraLib.IncMinuteStr(LTimeEnd1, 24 * 60);
@@ -1745,8 +1992,14 @@ const CalcWTimes = (
   }
   if (LTimeStr2.trim() !== "" && LTimeEnd2.trim() !== "") {
     if (
-      (LTimeStr2 < WTimeStr && LTimeEnd2 < WTimeEnd) ||
-      (LTimeStr2 > WTimeStr && LTimeEnd2 > WTimeEnd)
+      (moment(LTimeStr2, "HH:mm").valueOf() <
+        moment(WTimeStr, "HH:mm").valueOf() &&
+        moment(LTimeEnd2, "HH:mm").valueOf() <
+          moment(WTimeEnd, "HH:mm").valueOf()) ||
+      (moment(LTimeStr2, "HH:mm").valueOf() >
+        moment(WTimeStr, "HH:mm").valueOf() &&
+        moment(LTimeEnd2, "HH:mm").valueOf() >
+          moment(WTimeEnd, "HH:mm").valueOf())
     ) {
       LTimeStr2 = InfraLib.IncMinuteStr(LTimeStr2, 24 * 60);
       LTimeEnd2 = InfraLib.IncMinuteStr(LTimeEnd2, 24 * 60);
@@ -1754,8 +2007,14 @@ const CalcWTimes = (
   }
   if (LTimeStr3.trim() !== "" && LTimeEnd3.trim() !== "") {
     if (
-      (LTimeStr3 < WTimeStr && LTimeEnd3 < WTimeEnd) ||
-      (LTimeStr3 > WTimeStr && LTimeEnd3 > WTimeEnd)
+      (moment(LTimeStr3, "HH:mm").valueOf() <
+        moment(WTimeStr, "HH:mm").valueOf() &&
+        moment(LTimeEnd3, "HH:mm").valueOf() <
+          moment(WTimeEnd, "HH:mm").valueOf()) ||
+      (moment(LTimeStr3, "HH:mm").valueOf() >
+        moment(WTimeStr, "HH:mm").valueOf() &&
+        moment(LTimeEnd3, "HH:mm").valueOf() >
+          moment(WTimeEnd, "HH:mm").valueOf())
     ) {
       LTimeStr3 = InfraLib.IncMinuteStr(LTimeStr3, 24 * 60);
       LTimeEnd3 = InfraLib.IncMinuteStr(LTimeEnd3, 24 * 60);
@@ -1763,8 +2022,14 @@ const CalcWTimes = (
   }
   if (LTimeStr4.trim() !== "" && LTimeEnd4.trim() !== "") {
     if (
-      (LTimeStr4 < WTimeStr && LTimeEnd4 < WTimeEnd) ||
-      (LTimeStr4 > WTimeStr && LTimeEnd4 > WTimeEnd)
+      (moment(LTimeStr4, "HH:mm").valueOf() <
+        moment(WTimeStr, "HH:mm").valueOf() &&
+        moment(LTimeEnd4, "HH:mm").valueOf() <
+          moment(WTimeEnd, "HH:mm").valueOf()) ||
+      (moment(LTimeStr4, "HH:mm").valueOf() >
+        moment(WTimeStr, "HH:mm").valueOf() &&
+        moment(LTimeEnd4, "HH:mm").valueOf() >
+          moment(WTimeEnd, "HH:mm").valueOf())
     ) {
       LTimeStr4 = InfraLib.IncMinuteStr(LTimeStr4, 24 * 60);
       LTimeEnd4 = InfraLib.IncMinuteStr(LTimeEnd4, 24 * 60);
@@ -1772,8 +2037,14 @@ const CalcWTimes = (
   }
   if (LTimeStr5.trim() !== "" && LTimeEnd5.trim() !== "") {
     if (
-      (LTimeStr5 < WTimeStr && LTimeEnd5 < WTimeEnd) ||
-      (LTimeStr5 > WTimeStr && LTimeEnd5 > WTimeEnd)
+      (moment(LTimeStr5, "HH:mm").valueOf() <
+        moment(WTimeStr, "HH:mm").valueOf() &&
+        moment(LTimeEnd5, "HH:mm").valueOf() <
+          moment(WTimeEnd, "HH:mm").valueOf()) ||
+      (moment(LTimeStr5, "HH:mm").valueOf() >
+        moment(WTimeStr, "HH:mm").valueOf() &&
+        moment(LTimeEnd5, "HH:mm").valueOf() >
+          moment(WTimeEnd, "HH:mm").valueOf())
     ) {
       LTimeStr5 = InfraLib.IncMinuteStr(LTimeStr5, 24 * 60);
       LTimeEnd5 = InfraLib.IncMinuteStr(LTimeEnd5, 24 * 60);
@@ -1781,17 +2052,21 @@ const CalcWTimes = (
   }
 
   //법정야간근로시간을 재계산(종료시간이 시작시간보다 작은경우 24시간을 더함)
-  if (NightStr >= NightEnd) NightEnd = InfraLib.IncMinuteStr(NightEnd, 24 * 60);
+  if (
+    moment(NightStr, "HH:mm").valueOf() >= moment(NightEnd, "HH:mm").valueOf()
+  )
+    NightEnd = InfraLib.IncMinuteStr(NightEnd, 24 * 60);
 
   //근로시간을 주간 근로 시간과 야간 근로시간으로 나눔
   //  DayWTimeStrs   := TStringList.Create;
   //  DayWTimeEnds   := TStringList.Create;
   DayWTimeStrs.push(WTimeStr);
   DayWTimeEnds.push(WTimeEnd);
-
+  console.log("      여길 타야함 DDD ", LTimeStr1.trim(), LTimeEnd1.trim());
   //주간 근로시간중 휴게시간은 제외0
   if (LTimeStr1.trim() !== "" && LTimeEnd1.trim() !== "")
     WTimeMinusLTime(DayWTimeStrs, DayWTimeEnds, LTimeStr1, LTimeEnd1);
+  console.log("      여길 타야함 DDD ", DayWTimeStrs.length);
   if (LTimeStr2.trim() !== "" && LTimeEnd2.trim() !== "")
     WTimeMinusLTime(DayWTimeStrs, DayWTimeEnds, LTimeStr2, LTimeEnd2);
   if (LTimeStr3.trim() !== "" && LTimeEnd3.trim() !== "")
@@ -1815,6 +2090,7 @@ const CalcWTimes = (
       //기본근로시간중 야간타임에 걸렸으면 해당시간만큼 야간기간 가산.
       BaseTime =
         BaseTime + InfraLib.TimeTermMinuteStr(DayWTimeStrs[i], DayWTimeEnds[i]);
+      console.log("      BaseTime 180", BaseTime);
       //법정일당기본근로시간을 초과한 순간. 해당 구획의 근로시간의 자투리시간을 가지고 연장과 연장여간을 계산
       if (BaseTime > DayWTimeLimit * 60) {
         //기본근로시간이 법정일당근로시간 초과. 초과분이 야간타임인지에 따라 연장, 또는 연장야간에 가산
@@ -1862,6 +2138,7 @@ const CalcWTimes = (
       GongLib.ValList[1].VALOVERDIGIT
     );
   else Result = -1;
+  console.log("◈◈◈◈◈◈ RESULT", Result);
   return Result;
 };
 //무휴일에 대해 주간 소정근로시간 초과, 또는 법정주간근로시간(40시간)초과시 연장근무로 셋팅하는 함수

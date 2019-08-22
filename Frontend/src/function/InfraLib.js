@@ -2,21 +2,25 @@ import axios from "axios";
 import { addHours } from "date-fns";
 import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from "constants";
 var Func = {};
-Func.infraRoundUp = (Number, disit) => {
+Func.infraRoundUp = (number, disit) => {
   var disit10;
   disit10 = 1;
+  console.log("Number0", number, disit);
   for (let i = 1; i < Math.abs(disit); i++) {
     disit10 = disit10 * 10;
   }
-  if (disit10 >= 0) Number = Number * disit10;
-  else Number = Number / disit10;
-  if (disit10 === 0) Number = Math.trunc(Number * 10) / 10;
-
-  Number = Math.ceil(Math.trunc(Number * 10) / 10);
+  if (disit >= 0) number = number * disit10;
+  else number = number / disit10;
+  console.log("Number1", number);
+  if (disit === 0) number = Math.trunc(number * 10) / 10;
+  console.log("Number2", number);
+  number = Math.ceil(Math.trunc(number * 10) / 10);
+  console.log("Number3", number);
   disit10 = Math.trunc(disit10);
-  if (disit >= 0) Number = Number / disit10;
-  else Number = Number * disit10;
-  return Number;
+  if (disit >= 0) number = number / disit10;
+  else number = number * disit10;
+  console.log("Number4", number);
+  return number;
 };
 
 //문자열형 시간을 넘겨주면 incValue만큼 분이 가산되어 문자열로 리턴

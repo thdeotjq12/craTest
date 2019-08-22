@@ -28,6 +28,8 @@ import InfraLib from "../../../function/InfraLib";
 import axios from "axios";
 import { watchFile } from "fs";
 import { promises } from "dns";
+import { now } from "moment";
+import { getTime } from "date-fns";
 const issueTypes = [
   { id: "bug", value: "Bug" },
   { id: "epic", value: "Epic" },
@@ -149,10 +151,30 @@ const ComeCheckDetail = props => {
     SetCalendar(true);
     // SetCalenderGrid(DetailList, NowDate, LastDate);
     console.log("ComeCheckDetail USEEFEECT 실행됨");
+    var TestDate = "09:00";
+    var TestDate2 = "17:00";
+    if (getTime("09:00") > getTime("17:00")) {
+      console.log("?????????????????");
+    } else {
+      console.log(
+        "!!!!!!!!!!!!!!!!!!!!!",
+        getTime(Date(NowDate)),
+        moment(TestDate) < moment(TestDate2),
+        moment(TestDate).format("HH:MM") > moment(TestDate2).format("HH:MM"),
+        new Date(LastDate).getTime(),
+        getTime(new Date()),
+        moment(TestDate, "HH:mm").diff(moment(TestDate2, "HH:mm"), "hours"),
+        moment(TestDate, "HH:mm").valueOf() >
+          moment(TestDate2, "HH:mm").valueOf(),
+        moment(TestDate, "HH:mm").valueOf() <
+          moment(TestDate2, "HH:mm").valueOf()
+        // moment.duration(TestDate.diff(TestDate2)).hours()
+      );
+    }
 
     console.log("NowDate", NowDate, "LastDate", LastDate);
     console.log("CCList", CCList);
-  }, [DetailList, DetailList_Aft, DetailList_Bef]); //[DetailList, DetailList_Aft, DetailList_Bef]
+  }, []); //[DetailList, DetailList_Aft, DetailList_Bef]
   const getCellValue = value => {};
 
   const Close = handleCloser => {
@@ -310,7 +332,7 @@ const ComeCheckDetail = props => {
   };
 
   //이번달 달력에 일자별 근태를 조회하는 함수
-  function ShowComeCheckDate(grid) {
+  function ShowComeCheckDate(grid, CalCount) {
     if (grid.length === 0) {
       return;
     }
@@ -326,10 +348,11 @@ const ComeCheckDetail = props => {
     var ComeCheckDateList = {};
     var ComeCheckList;
     grid && (ComeCheckList = grid);
-    dispatch({
-      type: ComeCheckDetail_REQUEST // true
-    });
-    if (CCDetailLoading) {
+    // dispatch({
+    //   type: ComeCheckDetail_REQUEST // true
+    // });
+
+    if (!CCDetailLoading) {
       console.log(" # ComeCheckDateList[i] parm", parm);
 
       axios
@@ -476,26 +499,28 @@ const ComeCheckDetail = props => {
           ValList
         );
       }
+
       setTimeout(() => {}, 5000);
-      if (grid === DetailList) {
+      if (CalCount === 0) {
         // 스스로를 결정하는 thenable 에서 Promise.resolve 를 호출하면 안됩니다. 이는 무한히 중첩된 프로미스를 펼치려고하므로 무한 재귀를 유발할 것입니다.
+
         setDetailList(grid);
         dispatch({
           type: ComeCheckDetail_SUCCESS
         });
-        console.log("★★ (1) 종료됨");
-      } else if (grid === DetailList_Bef) {
+        console.log("★★ (1) 종료됨", grid);
+      } else if (CalCount === 1) {
         setDetailList_Bef(grid);
         dispatch({
           type: ComeCheckDetail_SUCCESS
         });
-        console.log("★★ (2) 종료됨");
-      } else {
+        console.log("★★ (2) 종료됨", grid);
+      } else if (CalCount === 2) {
         setDetailList_Aft(grid);
         dispatch({
           type: ComeCheckDetail_SUCCESS
         });
-        console.log("★★ (3) 종료됨");
+        console.log("★★ (3) 종료됨", grid);
       }
       ClearJuhueByOut(grid);
     }
@@ -508,6 +533,7 @@ const ComeCheckDetail = props => {
   function SetCalendarNow(ShowDB) {
     setFN(false);
     console.log("★★ Now 실행됨");
+    var WeekDayIndex = moment(NowDate).day() + 1;
     //시작일부터 말일까지 grid에 달력을 셋팅하는 함수
     SetCalenderGrid(DetailList, NowDate, LastDate);
     //이번달 달력에 일자별 근태를 조회하는 함수
@@ -526,7 +552,6 @@ const ComeCheckDetail = props => {
     setFB(false);
     console.log("★★ AFT 실행됨");
     var moment = require("moment");
-    var WeekDayIndex; //셋팅되는 요일
     var iSSHoliWeek; //주휴요일
     var nowDate;
     var LastDate;
@@ -560,7 +585,6 @@ const ComeCheckDetail = props => {
     setFA(false);
     console.log("★★ Bef 실행됨");
     var moment = require("moment");
-    var WeekDayIndex; //셋팅되는 요일
     var iSSHoliWeek; //주휴요일
     var nowDate;
     var LastDate;
@@ -600,13 +624,14 @@ const ComeCheckDetail = props => {
     else if ((CCList[0].SSHOLIWEEK = "6")) setMuHueWeek("5");
     else if ((CCList[0].SSHOLIWEEK = "7")) setMuHueWeek("6");
 
-    SetCalendarNow(true); //이번달 달력 셋팅//반드시 이번달 먼저 셋팅해야 이전달과 다음달을 이번달에서 필요한 만큼만 조회해서 그리드에 셋팅한다.
-    SetCalendarBef(); //이전달 달력 셋팅
-    SetCalendarAft(); //다음달 달력 셋팅
+    SetCalenderGrid(DetailList, DetailList_Bef, DetailList_Aft);
+    // SetCalendarNow(true); //이번달 달력 셋팅//반드시 이번달 먼저 셋팅해야 이전달과 다음달을 이번달에서 필요한 만큼만 조회해서 그리드에 셋팅한다.
+    // SetCalendarBef(); //이전달 달력 셋팅
+    // SetCalendarAft(); //다음달 달력 셋팅
     //await은 내 메소드의 실행을 일시중지시킵니다. promise의 값이 사용가능할 때까지요.
-    SetHuejik(); //휴직 정보를 셋팅
-    SetInOutDate(); ////입퇴사에 관하여 입사이전과 퇴사이후는 무급휴일로 자동 셋팅하는 함수
-    SetMuhueOverTime(); //전체라인에 대해서 무휴일(주휴 직전일)에 추가연장을 계산하는 함수
+    // SetHuejik(); //휴직 정보를 셋팅
+    // SetInOutDate(); ////입퇴사에 관하여 입사이전과 퇴사이후는 무급휴일로 자동 셋팅하는 함수
+    // SetMuhueOverTime(); //전체라인에 대해서 무휴일(주휴 직전일)에 추가연장을 계산하는 함수
 
     ClearJuhueByOut(DetailList); //근무구분중 결근이 있으면 해당 주의 주휴를 제거하는 함수
   }
@@ -1060,15 +1085,47 @@ const ComeCheckDetail = props => {
       });
   };
   //그리드 기본값 세팅
-  const SetCalenderGrid = (TList, StrDate, EndDate) => {
+  const SetCalenderGrid = (Now, Bef, Aft) => {
     console.log("SetCalenderGrid 실행됨");
-    if (Flag) {
-      var moment = require("moment");
-      var WeekDayIndex = moment(StrDate).day() + 1; // 2
-      var RowCount = moment(EndDate).diff(moment(StrDate), "days") + 1; //31
-      var List = {};
-      console.log("RowCount", RowCount);
-      StrDate = moment(StrDate).format("YYYY-MM-DD");
+
+    var moment = require("moment");
+    var WeekDayIndex;
+    var RowCount;
+    var StrDate;
+    var EndDate;
+    var iSSHoliWeek; //주휴요일
+    var List = {};
+    console.log("RowCount", RowCount);
+    for (let CalList = 0; CalList < 3; CalList++) {
+      if (CalList === 0) {
+        StrDate = moment(NowDate).format("YYYY-MM-DD");
+        WeekDayIndex = moment(StrDate).day() + 1; // 2
+        RowCount = moment(LastDate).diff(moment(StrDate), "days") + 1; //31
+      } else if (CalList === 1) {
+        iSSHoliWeek = CCList[0].SSHOLIWEEK;
+        if (moment(Now[0].CDDate).day() + 1 === iSSHoliWeek) return;
+        StrDate = moment(NowDate, "YYYY-MM-DD")
+          .add("days", (moment(NowDate).day() + 1 - iSSHoliWeek) * -1)
+          .format("YYYY-MM-DD"); //- iSSHoliWeek * -1, "days");
+        EndDate = moment(StrDate)
+          .endOf("month")
+          .format("YYYY-MM-DD");
+        console.log("Befor Date", StrDate, EndDate);
+        RowCount = moment(EndDate).diff(moment(StrDate), "days") + 1; //31
+      } else if (CalList === 2) {
+        iSSHoliWeek = CCList[0].SSHOLIWEEK;
+        if (moment(Now[Now.length - 1].CDDate).day() + 1 === iSSHoliWeek)
+          return;
+        StrDate = moment(Now[Now.length - 1].CDDate, "YYYY-MM-DD")
+          .add("days", 1)
+          .format("YYYY-MM-DD"); //- iSSHoliWeek * -1, "days");
+        EndDate = moment(StrDate, "YYYY-MM-DD")
+          .add("days", 7 - moment(StrDate).day())
+          .format("YYYY-MM-DD"); //- iSSHoliWeek * -1, "days");
+        console.log("After Date", StrDate, EndDate);
+        RowCount = moment(EndDate).diff(moment(StrDate), "days") + 1; //31
+      }
+      List = {};
       for (let i = 0; i < RowCount; i++) {
         List[i] = { Test: "123" };
         List[i].CDDate = StrDate;
@@ -1144,24 +1201,35 @@ const ComeCheckDetail = props => {
 
       console.log("SetCalenderGrid List  :", List);
       // return List;
-      if (TList === DetailList) {
-        !DetailList && setDetailList(Object.values(List));
-
+      if (CalList === 0) {
+        // !DetailList && setDetailList(Object.values(List));
+        Now = Object.values(List);
+        dispatch({
+          type: ComeCheckDetail_REQUEST // true
+        });
+        ShowComeCheckDate(Now, 0);
         console.log("DetailList Done", DetailList);
-
-        return;
-      } else if (TList === DetailList_Bef) {
-        setDetailList_Bef(Object.values(List));
-
+      } else if (CalList === 1) {
+        // setDetailList_Bef(Object.values(List));
+        Bef = Object.values(List);
+        dispatch({
+          type: ComeCheckDetail_REQUEST // true
+        });
+        ShowComeCheckDate(Bef, 1);
         console.log("DetailList_Bef Done", DetailList_Bef);
-        return;
       } else {
-        setDetailList_Aft(Object.values(List));
-
+        // setDetailList_Aft(Object.values(List));
+        Aft = Object.values(List);
+        dispatch({
+          type: ComeCheckDetail_REQUEST // true
+        });
+        ShowComeCheckDate(Aft, 2);
         console.log("DetailList_Aft Done", DetailList_Aft);
-        return;
       }
     }
+    SetHuejik();
+    SetInOutDate();
+    SetMuhueOverTime();
   };
   //근무구분중 결근이 있으면 해당 주의 주휴를 제거하는 함수
   // const ClearJuhueByOut = grid => {
