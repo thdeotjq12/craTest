@@ -58,7 +58,7 @@ const Grid_ComeCheckDetailCol = [
     formatter: TitleTypesFormatter,
     editor: IssueTypeEditor
   },
-  { key: "HTime", name: "기준적용", width: 80, editable: true },
+  { key: "btnBaseWTime", name: "기준적용", width: 80, editable: true },
   { key: "CDWTimeNormal", name: "기본", width: 50, editable: true },
   { key: "CDWTimeHoli", name: "주휴", width: 50, editable: true },
   { key: "CDWTimeOver", name: "연장", width: 50, editable: true },
@@ -153,6 +153,7 @@ const ComeCheckDetail = props => {
     console.log("ComeCheckDetail USEEFEECT 실행됨");
     var TestDate = "09:00";
     var TestDate2 = "17:00";
+    var TESSTT = "    123   ";
     if (getTime("09:00") > getTime("17:00")) {
       console.log("?????????????????");
     } else {
@@ -167,7 +168,8 @@ const ComeCheckDetail = props => {
         moment(TestDate, "HH:mm").valueOf() >
           moment(TestDate2, "HH:mm").valueOf(),
         moment(TestDate, "HH:mm").valueOf() <
-          moment(TestDate2, "HH:mm").valueOf()
+          moment(TestDate2, "HH:mm").valueOf(),
+        TESSTT.trim()
         // moment.duration(TestDate.diff(TestDate2)).hours()
       );
     }
@@ -224,6 +226,12 @@ const ComeCheckDetail = props => {
         //이번달이 사업 종료일이 있는 경우. 사업 종료일 이후면 근무 구분 없음 처리
         AllComeOkList[i].CDGubun = "";
       }
+      if (AllComeOkList[i].CDGubun === "유급휴일")
+        AllComeOkList[i].CDGubun = "6";
+      if (AllComeOkList[i].CDGubun === "무급휴일")
+        AllComeOkList[i].CDGubun = "5";
+      if (AllComeOkList[i].CDGubun === "정상근무")
+        AllComeOkList[i].CDGubun = "0";
       if (AllComeOkList[i].CDGubun === "0") {
         //정상근무일때
         AllComeOkList[i].CDWStrTime = AllComeOkList[i].SSWTimeStr;

@@ -44,6 +44,7 @@ const Grid_ComeCheckDetail = props => {
   };
   // sdname  세부사업명 shname 추진 사업명
   const RowFix = () => {
+    console.log("RowFix 실행됨");
     for (let i = 0; i < rows.length; i++) {
       if (rows[i].CDDayWeek === "1") rows[i].CDDayWeek = "일요일";
       if (rows[i].CDDayWeek === "2") rows[i].CDDayWeek = "월요일";
@@ -59,6 +60,7 @@ const Grid_ComeCheckDetail = props => {
       if (rows[i].CDGubun === "5") rows[i].CDGubun = "무급휴일";
       if (rows[i].CDGubun === "0") rows[i].CDGubun = "정상근무";
     }
+    console.log("RowFix 종료됨");
   };
 
   const onGridRowsUpdated = ({ fromRow, toRow, updated }) => {

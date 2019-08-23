@@ -108,8 +108,8 @@ Func.CalcTimeTermFloat = (StrTime, EndTime) => {
   var resMinute;
 
   if (
-    StrTime.trim() === "" ||
-    EndTime.trim() === "" ||
+    String(StrTime).trim() === "" ||
+    String(EndTime).trim() === "" ||
     StrTime.length !== 5 ||
     EndTime.length !== 5
   )
