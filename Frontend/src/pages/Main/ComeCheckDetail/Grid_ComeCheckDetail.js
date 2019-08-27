@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal } from "react-bootstrap";
 import ReactDOM from "react-dom";
 import ReactDataGrid from "react-data-grid";
+
 import "./index.css";
 const Grid_ComeCheckDetail = props => {
   const { columns, rows, btnRowAdd } = props;

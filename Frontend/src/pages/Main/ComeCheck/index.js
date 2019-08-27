@@ -2,11 +2,14 @@ import React, { useState, useEffect } from "react";
 import ING_N from "../../../Images/ING_N.bmp";
 import ING_Y from "../../../Images/ING_Y.bmp";
 import Grid_ComeCheck from "./Grid_ComeCheck";
+import ReactDataGrid from "react-data-grid";
 import { useSelector, useDispatch } from "react-redux";
-import "./index.css";
+// import "./index.css";
 import GongLib from "../../../function/GongLib";
 import axios from "axios";
 import ComeCheckDetail from "../ComeCheckDetail";
+import "bootstrap/dist/css/bootstrap.css";
+import CCDetail from "../ComeCheckDetail/Grid_ComeCheckDetail";
 const checkBoxFormatter = () => {
   return (
     <div>
@@ -14,9 +17,22 @@ const checkBoxFormatter = () => {
     </div>
   );
 };
+
+const columns = [
+  { key: "id", name: "ID", editable: true },
+  { key: "title", name: "Title", editable: true },
+  { key: "complete", name: "Complete", editable: true }
+];
+
+const rows = [
+  { id: 0, title: "Task 1", complete: 20 },
+  { id: 1, title: "Task 2", complete: 40 },
+  { id: 2, title: "Task 3", complete: 60 }
+];
+
 const Grid_ComeChecCol = [
   { key: "DDD0", name: "구분", width: 120, editable: true },
-  { key: "SHNAMESHORT", name: "사업명", width: 120, editable: true },
+  { key: "SHNAMESHORT", name: "사업명", width: 120, editable: false },
   { key: "SDNAME", name: "세부사업명", width: 120, editable: true },
   { key: "STNAMEKOR", name: "근로자명", width: 120, editable: true },
   { key: "DDD2", name: "생년월일", width: 120, editable: true },
@@ -58,15 +74,30 @@ const ComeCheck = props => {
   const [WPCCEditAbleDate, setWPCCEditAbleDate] = useState(
     ValList && ValList[1].WPCCEDITABLEDATE
   ); //근태수정가능일
+  // 모달 - 그리드 테스트용  ------------------------
+  const onGridRowsUpdated = ({ fromRow, toRow, updated }) => {
+    const Update_rows = rows.slice();
 
-  // const openButton = document.getElementById("open");
-  // const modal = document.querySelector(".modal");
-  // const openModal = () => {
-  //   modal.classList.remove("hidden");
-  // };
-  // if (openButton) {
-  //   openButton.addEventListener("click", openModal);
-  // }
+    for (let i = fromRow; i <= toRow; i++) {
+      rows[i] = { ...rows[i], ...updated };
+    }
+    setMT(ModalTest ? false : true);
+    console.log("updated", updated);
+    return { Update_rows };
+  };
+  const [ModalTest, setMT] = useState(false);
+  const openButton = document.getElementById("open");
+  const modal = document.querySelector(".modal");
+  const openModal = () => {
+    modal.classList.remove("hidden");
+  };
+  const closeModal = () => {
+    modal.classList.add("hidden");
+  };
+  if (openButton) {
+    openButton.addEventListener("click", openModal);
+  }
+  // ------------------------------------------------
   // 상세근태 모달
   const [Modals, setModals] = useState(false); // 근로정보 모달 상태
   useEffect(() => {
@@ -182,6 +213,24 @@ const ComeCheck = props => {
       Combo.options[Combo.options.length] = new Option("Text", "value");
     }
   };
+  // 상세근태 팝업 띄우는 함수
+
+  const ComeDetailPop = () => {
+    var Test;
+    var url = "Test";
+    // var url = "/Main/ComeCheck/ComeCheckDetail?CCList=" + CCList && CCList;
+    var name = "newWindow";
+    var specs =
+      "width=900, height=900,right=300, toolbar=no, menubar=no,scrollbars=no, resizable=yes";
+    Test = window.open(url, name, specs);
+  };
+  // 창 크기 조정 이벤트를 두 번 호출하는 것
+  const resizeEvent = document.createEvent("HTMLEvents");
+  resizeEvent.initEvent("resize", true, false);
+  window.dispatchEvent(resizeEvent);
+  setTimeout(() => {
+    window.dispatchEvent(resizeEvent);
+  }, 0);
 
   return (
     <div className="MainDivContainer">
@@ -195,18 +244,7 @@ const ComeCheck = props => {
             Month={Month}
           />
         )}
-        {/* <div class="modal hidden">
-          <div class="modal_overlay" />
-          <div class="modal_content">
-            <h1>im a modal</h1>
-            <Grid_ComeCheck
-              columns={Grid_ComeChecCol}
-              rows={CCList && CCList}
-              getCellValue={getCellValue}
-            />
-            <button>close</button>
-          </div>
-        </div> */}
+
         <table className="table table-bordered">
           <tbody>
             <tr>
@@ -248,6 +286,8 @@ const ComeCheck = props => {
                   class="btn btn-primary"
                   style={{ width: "100%", height: "80px", padding: "0" }}
                   onClick={() => setModals(true)}
+                  // onClick={() => openModal()}
+                  // onClick={() => ComeDetailPop()}
                 >
                   상세 설정
                 </button>
@@ -398,6 +438,30 @@ const ComeCheck = props => {
             </tr>
           </tbody>
         </table>
+        <Grid_ComeCheck
+          columns={Grid_ComeChecCol}
+          rows={CCList && CCList}
+          getCellValue={getCellValue}
+        />
+      </div>
+      <div className="modal hidden">
+        <div className="modal_overlay" />
+        <div className="modal_content">
+          <h1>im a modal</h1>
+          <Grid_ComeCheck
+            columns={Grid_ComeChecCol}
+            rows={CCList && CCList}
+            getCellValue={getCellValue}
+          />
+          <ReactDataGrid
+            columns={columns}
+            rowGetter={i => rows[i]}
+            rowsCount={3}
+            onGridRowsUpdated={onGridRowsUpdated}
+            enableCellSelect={true}
+          />
+          <button onClick={() => closeModal()}>close</button>
+        </div>
       </div>
     </div>
   );

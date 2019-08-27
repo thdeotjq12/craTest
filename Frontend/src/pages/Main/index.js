@@ -50,9 +50,7 @@ const Main = ({ createBasicInfo, BaicInfo_Data }) => {
       </div>
       <div>
         {selectedMenu === 1}
-        {selectedMenu === 2 && (
-          <CompanyInfo createBasicInfo={createBasicInfo} />
-        )}
+        {selectedMenu === 2 && <CompanyInfo />}
         {selectedMenu === 3 && <Staff />}
         {selectedMenu === 4 && <Insa />}
         {selectedMenu === 5 && <ComeCheckDate />}

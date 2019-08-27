@@ -28,7 +28,7 @@ import DatetimePicker, {
   setLocale,
   parseDate
 } from "../../../../components/DatePicker/DatetimePicker";
-import "bootstrap/dist/css/bootstrap.css";
+
 import "font-awesome/css/font-awesome.css";
 // react-datepicker 관련 https://reactdatepicker.com/
 import { registerLocale, setDefaultLocale } from "react-datepicker";

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import ReactDataGrid from "react-data-grid";
 import {
   Button,
   Modal,
@@ -77,6 +78,24 @@ const ComeCheckDetail = props => {
     CCDetail_BFRLoading
   } = useSelector(state => state.ComeCheckDetail);
   const dispatch = useDispatch();
+  const _GET = search => {
+    var uri = decodeURI(search);
+    uri = uri.slice(1, uri.length);
+
+    var param = uri.split("&");
+
+    for (var i = 0; i < param.length; i++) {
+      var devide = param[i].split("=");
+      CCList = devide;
+    }
+  };
+
+  window.onload = () => {
+    console.log("^^^^^^");
+    var search = window.location.search;
+    var getData = _GET(search);
+  };
+
   var moment = require("moment");
   var CDDate = 0;
   var DateGubun = 1;
@@ -175,7 +194,7 @@ const ComeCheckDetail = props => {
     }
 
     console.log("NowDate", NowDate, "LastDate", LastDate);
-    console.log("CCList", CCList);
+    console.log("Detail_CCList", CCList);
   }, []); //[DetailList, DetailList_Aft, DetailList_Bef]
   const getCellValue = value => {};
 
@@ -621,7 +640,7 @@ const ComeCheckDetail = props => {
   function SetCalendar(ShowDB) {
     console.log("SetCalendar 실행됨 #####");
 
-    SetHolidays(NowDate, LastDate, CCList[0].SSSWGUBUN);
+    SetHolidays(NowDate, LastDate, CCList && CCList[0].SSSWGUBUN);
     //연장가산요일 선택
     //1일 2월 3화 4수 5목 6금 7토
     if ((CCList[0].SSHOLIWEEK = "1")) setMuHueWeek("7");
@@ -1066,7 +1085,7 @@ const ComeCheckDetail = props => {
     var parm = {
       StrDate: NowDate,
       EndDate: LastDate,
-      SWGubun: CCList[0].SSSWGUBUN
+      SWGubun: CCList && CCList[0].SSSWGUBUN
     };
     var HoliList = {};
     axios
@@ -1328,7 +1347,7 @@ const ComeCheckDetail = props => {
   //   }
   // };
 
-  return (
+  return CCList ? (
     <div>
       <Modal
         show={Modals}
@@ -1360,14 +1379,14 @@ const ComeCheckDetail = props => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        value={CCList[0].SHNAMESHORT}
+                        value={CCList && CCList[0].SHNAMESHORT}
                       />
                     </td>
                     <td className="ColGubun">사원명</td>
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        value={CCList[0].STNAMEKOR}
+                        value={CCList && CCList[0].STNAMEKOR}
                       />
                     </td>
                     <button
@@ -1414,14 +1433,14 @@ const ComeCheckDetail = props => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        value={CCList[0].SDNAME}
+                        value={CCList && CCList[0].SDNAME}
                       />
                     </td>
                     <td className="ColGubun">근로구분</td>
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        value={CCList[0].SSMGUBUN}
+                        value={CCList && CCList[0].SSMGUBUN}
                       />
                     </td>
                   </tr>
@@ -1434,6 +1453,29 @@ const ComeCheckDetail = props => {
                   getCellValue={getCellValue}
                 />
               </div>
+
+              {/* <div>
+                <div>
+                  <span
+                    className="input-group-text"
+                    id="basic-addon1"
+                    // style={{ width: "120px" }}
+                  >
+                    일반수당
+                  </span>
+                </div>
+                <ReactDataGrid
+                  columns={Grid_ComeCheckDetailCol}
+                  rowGetter={i => DetailList[i]} //(필수) 일반 키 / 값 쌍 객체를 반환해야하는 각 렌더링 된 행에 대해 호출되는 함수
+                  rowsCount={DetailList.length} // (필수) 렌더링 될 행의 수
+                  // onCellSelected={getCellActions}
+                  // rowRenderer
+                  enableCellSelect={true}
+                  // onRowDoubleClick={Saup_Save}
+                  // onGridRowsUpdated={onGridRowsUpdated}
+                  minWidth={1100}
+                />
+              </div> */}
             </div>
           </div>
         </Modal.Body>
@@ -1445,6 +1487,8 @@ const ComeCheckDetail = props => {
         </Modal.Footer>
       </Modal>
     </div>
+  ) : (
+    <div>로딩중 입니다.</div>
   );
 };
 

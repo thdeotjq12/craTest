@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal } from "react-bootstrap";
 import ReactDOM from "react-dom";
 import ReactDataGrid from "react-data-grid";
+import "bootstrap/dist/css/bootstrap.css";
 import "./index.css";
 const Grid_ComeCheck = props => {
   const { columns, rows, btnRowAdd } = props;
@@ -67,7 +68,6 @@ const Grid_ComeCheck = props => {
       rowGetter={i => reRows[i]} //(필수) 일반 키 / 값 쌍 객체를 반환해야하는 각 렌더링 된 행에 대해 호출되는 함수
       rowsCount={reRows.length} // (필수) 렌더링 될 행의 수
       onCellSelected={getCellActions}
-      // rowRenderer
       enableCellSelect={true}
       onRowDoubleClick={Saup_Save}
       onGridRowsUpdated={onGridRowsUpdated}

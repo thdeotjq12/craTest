@@ -10,7 +10,7 @@ import DatetimePicker, {
   setLocale,
   parseDate
 } from "../../../../components/DatePicker/DatetimePicker";
-import "bootstrap/dist/css/bootstrap.css";
+// import "bootstrap/dist/css/bootstrap.css";
 import "font-awesome/css/font-awesome.css";
 
 // 출처 : https://www.youtube.com/watch?v=xGZD4L0ne_E     ,
