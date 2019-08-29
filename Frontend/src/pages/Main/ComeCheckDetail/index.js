@@ -32,9 +32,15 @@ import { promises } from "dns";
 import { now } from "moment";
 import { getTime } from "date-fns";
 const issueTypes = [
-  { id: "bug", value: "Bug" },
-  { id: "epic", value: "Epic" },
-  { id: "CDGubun", value: "CDGubun" }
+  { id: "0", value: "정상근무" },
+  { id: "1", value: "특근" },
+  { id: "2", value: "대체근무" },
+  { id: "3", value: "결근" },
+  { id: "4", value: "연차처리" },
+  { id: "5", value: "무급휴일" },
+  { id: "6", value: "유급휴일" },
+  { id: "7", value: "휴직" },
+  { id: "8", value: "휴일근무" }
 ];
 const { DropDownEditor } = Editors;
 const { DropDownFormatter } = Formatters;
@@ -78,23 +84,6 @@ const ComeCheckDetail = props => {
     CCDetail_BFRLoading
   } = useSelector(state => state.ComeCheckDetail);
   const dispatch = useDispatch();
-  const _GET = search => {
-    var uri = decodeURI(search);
-    uri = uri.slice(1, uri.length);
-
-    var param = uri.split("&");
-
-    for (var i = 0; i < param.length; i++) {
-      var devide = param[i].split("=");
-      CCList = devide;
-    }
-  };
-
-  window.onload = () => {
-    console.log("^^^^^^");
-    var search = window.location.search;
-    var getData = _GET(search);
-  };
 
   var moment = require("moment");
   var CDDate = 0;
@@ -195,11 +184,13 @@ const ComeCheckDetail = props => {
 
     console.log("NowDate", NowDate, "LastDate", LastDate);
     console.log("Detail_CCList", CCList);
-  }, []); //[DetailList, DetailList_Aft, DetailList_Bef]
+  }, [DetailList]); //[DetailList, DetailList_Aft, DetailList_Bef]
   const getCellValue = value => {};
 
   const Close = handleCloser => {
+    console.log("Close");
     props.handleClose(handleCloser);
+    setDetailList("");
   };
   // 스크롤 포지션 0으로 맞추기 위함 .. 나중에 구현
   const scrollBack = () => {
@@ -552,8 +543,108 @@ const ComeCheckDetail = props => {
       ClearJuhueByOut(grid);
     }
   }
-  const CDListValueChanged = () => {
+  //상세근태 내용수정
+  const CDListValueChanged = (Updated_List, Column, Row) => {
+    console.log("CDListValueChanged ~~~~~~ ", Updated_List, Column, Row);
+    var VCList = Updated_List;
     if (DetailList.length === 0) return;
+    if (
+      Column === "CDWStrTime" ||
+      Column === "CDWEndTime" ||
+      Column === "CDSStrTime" ||
+      Column === "CDSEndTime"
+    ) {
+      //시간값이 수정된 경우
+      if (Column === "CDWStrTime") {
+        console.log("CDWStrTime #_#");
+        VCList[Row].CDWStrTime = InfraLib.CompleteTimeString30(
+          VCList[Row].CDWStrTime
+        );
+      }
+      if (Column === "CDWEndTime")
+        VCList[Row].CDWEndTime = InfraLib.CompleteTimeString30(
+          VCList[Row].CDWEndTime
+        );
+      if (Column === "CDSStrTime")
+        VCList[Row].CDSStrTime = InfraLib.CompleteTimeString30(
+          VCList[Row].CDSStrTime
+        );
+      if (Column === "CDSEndTime")
+        VCList[Row].CDSEndTime = InfraLib.CompleteTimeString30(
+          VCList[Row].CDSEndTime
+        );
+    } else if (Column === "CDGubun") {
+      //근무처리가 수정된 경우
+      if (VCList[Row].CDGubun === "3" || VCList[Row].CDGubun === "5") {
+        VCList[Row].CDWStrTime = "";
+        VCList[Row].CDWEndTime = "";
+      } else if (VCList[Row].CDGubun === "4" || VCList[Row].CDGubun === "7") {
+        VCList[Row].CDGubun = DetailList[Row].CDGubun; //befCDGubun
+      }
+    }
+
+    VCList = GongLib.SetCellEditExit(
+      VCList,
+      null,
+      null,
+      Row,
+      CCList[0].SSWTIMEOFDAYLIMIT,
+      false,
+      CCList[0].SSNIGHTSTRWTIME,
+      CCList[0].SSNIGHTENDWTIME,
+      CCList[0].SSLTIMEGUBUN1,
+      CCList[0].SSLTIMEGUBUN2,
+      CCList[0].SSLTIMEGUBUN3,
+      CCList[0].SSLTIMEGUBUN4,
+      CCList[0].SSLTIMEGUBUN5,
+      CCList[0].SSHOLIWEEK,
+      CCList[0].SSHOLIPAYYN,
+      CDDate,
+      DateGubun,
+      CDDayWeek,
+      CDGubun,
+      SSWTimeStr,
+      SSWTimeEnd,
+      CDWStrTime,
+      CDWEndTime,
+      SSLTimeStr1,
+      SSLTimeEnd1,
+      SSLTimeStr2,
+      SSLTimeEnd2,
+      SSLTimeStr3,
+      SSLTimeEnd3,
+      SSLTimeStr4,
+      SSLTimeEnd4,
+      SSLTimeStr5,
+      SSLTimeEnd5,
+      HTime,
+      CDHTime,
+      TotWorkTime,
+      CDSStrTime,
+      CDSEndTime,
+      CDWTimeNormal,
+      CDWTimeHoli,
+      CDWTimeOver,
+      CDWTimeNight,
+      CDWTimeNightOver,
+      CDHTimeBase,
+      CDHTimeOver,
+      CDHTimeNight,
+      CDHTimeNightOver,
+      CDTkTime, //특근 인덱스
+      CDNoComeCNT,
+      CDLateTime,
+      CDEarlyOutTime,
+      false,
+      ValList
+    );
+    VCList[Row].ChangeGubun = GongLib.RealGrid_ValueChange(
+      VCList,
+      Row,
+      VCList[Row].ChangeGubun
+    );
+    setDetailList(VCList);
+    ClearJuhueByOut(VCList);
   };
 
   //현재달 달력 셋팅
@@ -1258,94 +1349,6 @@ const ComeCheckDetail = props => {
     SetInOutDate();
     SetMuhueOverTime();
   };
-  //근무구분중 결근이 있으면 해당 주의 주휴를 제거하는 함수
-  // const ClearJuhueByOut = grid => {
-  //   var isDoubleOut; //한주에 결근이 2번이상인지 검사하는 플래그
-  //   var isOtherMonthFind; //이전달 마지막주를 검색해야하는 경우인지 확인하는 플래그
-  //   var moment = require("moment");
-
-  //   for (let i = 0; i < grid.length; i++) {
-  //     isDoubleOut = false;
-  //     if (grid[i].CDGubun === "3") {
-  //       isOtherMonthFind = true;
-  //       grid[i].CDWTimeHoli = 0;
-  //       for (let j = i; (j = 0); j--) {
-  //         if (
-  //           String(Math.trunc(moment(grid[i].CDDate).day() + 1)) ===
-  //           CCList[0].SSHOLIWEEK
-  //         ) {
-  //           isOtherMonthFind = false;
-  //           break;
-  //         }
-  //         if (i === j) continue;
-  //         if (grid[j].CDWTimeHoli < 0) {
-  //           grid[i].CDWTimeHoli === 0;
-  //           isDoubleOut = true;
-  //           break;
-  //         } else {
-  //           grid[i].CDWTimeHoli = grid[i].CDWTimeHoli - grid[j].CDWTimeHoli;
-  //         }
-  //       }
-  //       //이전달에 마지막주를 검색함
-  //       if (isOtherMonthFind && !isDoubleOut) {
-  //         for (let j = DetailList_Bef.length; (j = 0); j--) {
-  //           if (
-  //             String(Math.trunc(moment(grid[j].CDDate).day() + 1)) ===
-  //             CCList[0].SSHOLIWEEK
-  //           ) {
-  //             isOtherMonthFind = false;
-  //             break;
-  //           }
-  //           if (DetailList_Bef[j].CDGubun === "3") {
-  //             grid[i].CDWTimeHoli = 0;
-  //             isDoubleOut = true;
-  //             break;
-  //           } else {
-  //             grid[i].CDWTimeHoli =
-  //               grid[i].CDWTimeHoli - DetailList_Bef[j].CDWTimeHoli;
-  //           }
-  //         }
-  //       }
-  //       isOtherMonthFind = true;
-  //       if (!isDoubleOut) {
-  //         for (let j = i; grid.length; j++) {
-  //           if (
-  //             String(Math.trunc(moment(grid[j].CDDate).day() + 1)) ===
-  //             CCList[0].SSHOLIWEEK
-  //           ) {
-  //             isOtherMonthFind = false;
-  //             break;
-  //           }
-  //           if (i === j) continue;
-  //           if (grid[j].CDWTimeHoli < 0) {
-  //             grid[i].CDWTimeHoli = 0;
-  //             isDoubleOut = true;
-  //             break;
-  //           } else {
-  //             grid[i].CDWTimeHoli = grid[i].CDWTimeHoli - grid[j].CDWTimeHoli;
-  //           }
-  //         }
-  //       }
-  //       // 다음달에 첫주의 주휴를 소정근로 시간으로 계산하여 감산함.
-  //       if (isOtherMonthFind && !isDoubleOut) {
-  //         for (let j = DetailList_Aft.length; (j = 0); j--) {
-  //           if (
-  //             String(Math.trunc(moment(DetailList_Aft[j].CDDate).day() + 1)) ===
-  //             CCList[0].SSHOLIWEEK
-  //           )
-  //             break;
-  //           if (DetailList_Aft[j].CDWTimeHoli === "3") {
-  //             grid[i].CDWTimeHoli = 0;
-  //             break;
-  //           } else {
-  //             grid[i].CDWTimeHoli =
-  //               grid[i].CDWTimeHoli - DetailList_Aft[j].CDWTimeHoli;
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // };
 
   return CCList ? (
     <div>
@@ -1354,11 +1357,13 @@ const ComeCheckDetail = props => {
         onHide={handleClose}
         aria-labelledby="contained-modal-title-vcenter"
         dialogClassName="ModalContainer"
+        backdrop="static" // 배경클릭시 모달 닫힘 끄기
+        keyboard={false} // ESC 버튼  모달 닫힘 끄기
         // centered
         // modal-dialog
         // modal-lg
       >
-        <Modal.Header closeButton>
+        <Modal.Header>
           <Modal.Title id="contained-modal-title-vcenter">
             상세근태
             <div
@@ -1451,6 +1456,7 @@ const ComeCheckDetail = props => {
                   columns={Grid_ComeCheckDetailCol}
                   rows={DetailList}
                   getCellValue={getCellValue}
+                  ChangeValue={CDListValueChanged}
                 />
               </div>
 

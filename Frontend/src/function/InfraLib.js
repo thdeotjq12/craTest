@@ -183,4 +183,117 @@ Func.TimeTermMinuteStr = (befTime, aftTime) => {
   }
   return 0;
 };
+//FormatFloat('형식',숫자)와 유사.
+Func.StringSet = (DataString, Character, CNT) => {
+  if (DataString.length + 1 <= CNT) {
+    for (let i = DataString.length + 1; i < CNT; i++) {
+      DataString = Character + DataString;
+    }
+  }
+  return DataString;
+};
+Func.FloatSet = (DataFloat, Character, CNT) => {
+  var ReData;
+
+  ReData = parseFloat(DataFloat);
+  if (ReData.length + 1 <= CNT) {
+    for (let i = ReData.length + 1; i < CNT; i++) {
+      ReData = Character + ReData;
+    }
+  }
+  return ReData;
+};
+//시간을를 시간분을 입력받으면 완성된 HH:MM으로 완성해서 리턴
+Func.CompleteTimeString30 = StrDate => {
+  var Minute;
+  var Result;
+  console.log("CompleteTimeString30", StrDate.length, StrDate);
+  if (StrDate.length === 0) {
+    Result = "";
+  } else if (StrDate.length === 1) {
+    Result = "0" + StrDate + ":00";
+  } else if (StrDate.length === 2) {
+    if (StrDate.indexOf(".") === -1 && StrDate.indexOf(":") === -1) {
+      Result = StrDate + ":00";
+    } else if (StrDate.indexOf(".") === 1) {
+      Minute = Math.trunc(parseFloat("0" + StrDate) * 60);
+      Result =
+        Func.FloatSet(Math.trunc(Minute / 60), "0", 2) +
+        ":" +
+        Func.FloatSet(Math.trunc(Minute % 60), "0", 2);
+    } else if (StrDate.indexOf(".") === 2) {
+      Minute = Math.trunc(parseFloat(StrDate + "0") * 60);
+      Result =
+        Func.FloatSet(Math.trunc(Minute / 60), "0", 2) +
+        ":" +
+        Func.FloatSet(Math.trunc(Minute % 60), "0", 2);
+    } else if (StrDate.indexOf(":") === 1) {
+      Result = "00:0" + StrDate.substr(1, 1);
+    } else if (StrDate.indexOf(":") === 2) {
+      Result = "0" + StrDate + "00";
+    }
+  } else if (StrDate.length === 3) {
+    if (StrDate.indexOf(".") === -1 && StrDate.indexOf(":") === -1) {
+      Result =
+        Func.StringSet(StrDate.substr(0, 1), "0", 2) +
+        ":" +
+        Func.StringSet(StrDate.substr(1, 2), "0", 2);
+    } else if (StrDate.indexOf(".") === -1) {
+      Result = Func.StringSet(StrDate.substr(0, 1), "0", 2) + ":" + "30";
+    } else {
+      Minute = Math.trunc(parseFloat(StrDate) * 60);
+      Result =
+        Func.FloatSet(Math.trunc(Minute / 60), "0", 2) +
+        ":" +
+        Func.FloatSet(Math.trunc(Minute % 60), "0", 2);
+    }
+  } else if (StrDate.length === 4) {
+    console.log("Result Date 0-0", Result, StrDate.indexOf(":"));
+    if (StrDate.indexOf(".") === -1 && StrDate.indexOf(":") === -1) {
+      Result = StrDate.substr(0, 2) + ":" + StrDate.substr(2, 2);
+      console.log("Result Date 0", Result);
+    } else if (StrDate.indexOf(".") > 0) {
+      Minute = Math.trunc(parseFloat(StrDate) * 60);
+      Result =
+        Func.FloatSet(Math.trunc(Minute / 60), "0", 2) +
+        ":" +
+        Func.FloatSet(Math.trunc(Minute % 60), "0", 2);
+      console.log("Result Date 1", Result);
+    } else if (StrDate.indexOf(":") > 0) {
+      console.log("Result Date 2-1", Result);
+      if (StrDate.indexOf(":") === 2) {
+        Result =
+          Func.StringSet(StrDate.substr(0, StrDate.indexOf(":") - 1), "0", 2) +
+          ":" +
+          Func.StringSet(
+            StrDate.substr(
+              StrDate.indexOf(":") + 1,
+              StrDate.length - StrDate.indexOf(":")
+            ),
+            "0",
+            2
+          );
+        console.log("Result Date 2-2", Result);
+      } else {
+        Result =
+          Func.StringSet(StrDate.substr(0, StrDate.indexOf(":") - 1), "0", 2) +
+          ":" +
+          StrDate.substr(StrDate.indexOf(":"), 1) +
+          "0";
+        console.log("Result Date 3", Result);
+      }
+    }
+  } else if (StrDate.length === 5) {
+    if (StrDate.indexOf(".") > 0) {
+      Minute = Math.trunc(parseFloat(StrDate) * 60);
+      Result =
+        Func.FloatSet(Math.trunc(Minute / 60), "0", 2) +
+        Func.FloatSet(Math.trunc(Minute % 60), "0", 2);
+    } else {
+      Result = StrDate.substr(0, 2) + ":" + StrDate.substr(3, 2);
+    }
+  }
+  console.log("Result Date", Result);
+  return Result;
+};
 export default Func;

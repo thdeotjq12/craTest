@@ -323,6 +323,7 @@ Func.SetCellEditExit = (
 ) => {
   var moment = require("moment");
   var MuhueWeek;
+  console.log("SetCellEditExit 실행됨");
   //연장가산요일 선택
   //1일 2월 3화 4수 5목 6금 7토
   if ((SWHoliWeek = "1")) MuhueWeek = "7";
@@ -2503,6 +2504,12 @@ Func.MuhueOverTimeCheck = (
   }
 
   return CDList;
+};
+//그리드의 값이 변경될때 변경구분을 'U'로 변경해주는 함수
+Func.RealGrid_ValueChange = (Grid, Row, IndexChangeGubun) => {
+  if (Grid.length === 0) return;
+  if (IndexChangeGubun === "") return "U";
+  return "";
 };
 
 export default Func;

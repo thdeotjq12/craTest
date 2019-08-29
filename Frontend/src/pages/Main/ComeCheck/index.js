@@ -75,28 +75,28 @@ const ComeCheck = props => {
     ValList && ValList[1].WPCCEDITABLEDATE
   ); //근태수정가능일
   // 모달 - 그리드 테스트용  ------------------------
-  const onGridRowsUpdated = ({ fromRow, toRow, updated }) => {
-    const Update_rows = rows.slice();
+  // const onGridRowsUpdated = ({ fromRow, toRow, updated }) => {
+  //   const Update_rows = rows.slice();
 
-    for (let i = fromRow; i <= toRow; i++) {
-      rows[i] = { ...rows[i], ...updated };
-    }
-    setMT(ModalTest ? false : true);
-    console.log("updated", updated);
-    return { Update_rows };
-  };
-  const [ModalTest, setMT] = useState(false);
-  const openButton = document.getElementById("open");
-  const modal = document.querySelector(".modal");
-  const openModal = () => {
-    modal.classList.remove("hidden");
-  };
-  const closeModal = () => {
-    modal.classList.add("hidden");
-  };
-  if (openButton) {
-    openButton.addEventListener("click", openModal);
-  }
+  //   for (let i = fromRow; i <= toRow; i++) {
+  //     rows[i] = { ...rows[i], ...updated };
+  //   }
+  //   setMT(ModalTest ? false : true);
+  //   console.log("updated", updated);
+  //   return { Update_rows };
+  // };
+  // const [ModalTest, setMT] = useState(false);
+  // const openButton = document.getElementById("open");
+  // const modal = document.querySelector(".modal");
+  // const openModal = () => {
+  //   modal.classList.remove("hidden");
+  // };
+  // const closeModal = () => {
+  //   modal.classList.add("hidden");
+  // };
+  // if (openButton) {
+  //   openButton.addEventListener("click", openModal);
+  // }
   // ------------------------------------------------
   // 상세근태 모달
   const [Modals, setModals] = useState(false); // 근로정보 모달 상태
@@ -438,13 +438,8 @@ const ComeCheck = props => {
             </tr>
           </tbody>
         </table>
-        <Grid_ComeCheck
-          columns={Grid_ComeChecCol}
-          rows={CCList && CCList}
-          getCellValue={getCellValue}
-        />
       </div>
-      <div className="modal hidden">
+      {/* <div className="modal hidden">
         <div className="modal_overlay" />
         <div className="modal_content">
           <h1>im a modal</h1>
@@ -462,7 +457,7 @@ const ComeCheck = props => {
           />
           <button onClick={() => closeModal()}>close</button>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

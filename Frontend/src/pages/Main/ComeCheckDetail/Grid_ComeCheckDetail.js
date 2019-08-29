@@ -28,14 +28,17 @@ const Grid_ComeCheckDetail = props => {
       // moment(rows[GetRowIdx.rowIdx].SHENDDATE).format("YYYY-MM-DD")
     ]);
   };
+  const ChangeValue = (Updated_List, Column, Row) => {
+    props.ChangeValue(Updated_List, Column, Row);
+  };
   // 수정된 사업 배열 리턴해주기
   const Saup_Save = () => {
     // console.log("사업 업데이트 실행댐", rows);
-    // for (let i = 0; i < rows.length; i++) {
-    //   if (rows[i].SHCODE === "") {
-    //     rows[i].N = "N";
-    //   }
-    // }
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].SHCODE === "") {
+        rows[i].N = "N";
+      }
+    }
     // props.getCellValue({
     //   SDSHCODE: rows[NowRow].SDSHCODE,
     //   SHCODE: rows[NowRow].SHCODE
@@ -66,11 +69,21 @@ const Grid_ComeCheckDetail = props => {
 
   const onGridRowsUpdated = ({ fromRow, toRow, updated }) => {
     const Update_rows = rows.slice();
-
+    var Keys = Object.keys(updated); // 컬럼명 구하기  Keys[0] (객체의 키값 가져오기)
+    var values = Object.values(updated);
+    var Test = {};
     for (let i = fromRow; i <= toRow; i++) {
+      // if (values[0].length > 5) {
+      //   Test =   { Keys[0] : values[0].substr(0, 5)} ;
+      //   console.log(" Maximum 5", values, updated);
+      // }
       rows[i] = { ...rows[i], ...updated };
+
+      ChangeValue(rows, Keys[0], i);
     }
+
     Saup_Save();
+
     console.log("updated", updated);
     return { Update_rows };
   };
@@ -90,10 +103,10 @@ const Grid_ComeCheckDetail = props => {
         columns={columns.length > 0 ? columns : null}
         rowGetter={i => reRows[i]} //(필수) 일반 키 / 값 쌍 객체를 반환해야하는 각 렌더링 된 행에 대해 호출되는 함수
         rowsCount={reRows.length} // (필수) 렌더링 될 행의 수
-        // onCellSelected={getCellActions}
+        onCellSelected={getCellActions}
         // rowRenderer
         enableCellSelect={true}
-        // onRowDoubleClick={Saup_Save}
+        onRowDoubleClick={Saup_Save}
         onGridRowsUpdated={onGridRowsUpdated}
         minWidth={1100}
       />
