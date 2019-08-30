@@ -25,7 +25,7 @@ Func.infraRoundUp = (number, disit) => {
 //(내가만든 함수) HH:mm 형식의 값을 int 로 계산해서 리턴
 Func.HourToInt = iHour => {
   var Result = "";
-
+  if (!iHour) return;
   Result =
     Number(iHour.substr(0, 2)) + (parseFloat(iHour.substr(3, 2)) * 0.1) / 10; // 분은 소수점으로 계산
   return Result;

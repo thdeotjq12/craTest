@@ -128,8 +128,8 @@ const ComeCheck = props => {
   const ChangeYear = () => {
     var SaupHead = document.getElementById("SaupHead");
     var SaupDetail = document.getElementById("SaupDetail");
-    GongLib.GongLib.SetSaupHead(SaupHead, Year, "전체");
-    GongLib.GongLib.SetSaupDetail(SaupDetail, Year, SaupHead.value, "전체");
+    GongLib.SetSaupHead(SaupHead, Year, "전체");
+    GongLib.SetSaupDetail(SaupDetail, Year, SaupHead.value, "전체");
   };
 
   // 참여사업 변경 -> 세부사업 리스트 조회
