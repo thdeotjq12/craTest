@@ -5,24 +5,42 @@ var Func = {};
 Func.infraRoundUp = (number, disit) => {
   var disit10;
   disit10 = 1;
-  console.log("Number0", number, disit);
+
   for (let i = 1; i < Math.abs(disit); i++) {
     disit10 = disit10 * 10;
   }
   if (disit >= 0) number = number * disit10;
   else number = number / disit10;
-  console.log("Number1", number);
+
   if (disit === 0) number = Math.trunc(number * 10) / 10;
-  console.log("Number2", number);
+
   number = Math.ceil(Math.trunc(number * 10) / 10);
-  console.log("Number3", number);
+
   disit10 = Math.trunc(disit10);
   if (disit >= 0) number = number / disit10;
   else number = number * disit10;
-  console.log("Number4", number);
+
   return number;
 };
+//(내가만든 함수) HH:mm 형식의 값을 int 로 계산해서 리턴
+Func.HourToInt = iHour => {
+  var Result = "";
 
+  Result =
+    Number(iHour.substr(0, 2)) + (parseFloat(iHour.substr(3, 2)) * 0.1) / 10; // 분은 소수점으로 계산
+  return Result;
+};
+//정수로 시간과 분을 넘겨주면 24시간으로 표현된 시간을 문자열로 리턴
+Func.IntToTimeStr = (iHour, iMinute) => {
+  var Result = "";
+  if (String(iMinute).length === 1) {
+    Result = String(iHour) + ":" + String(iMinute) + "0";
+  } else {
+    Result = String(iHour) + ":" + String(iMinute);
+  }
+
+  return Result;
+};
 //문자열형 시간을 넘겨주면 incValue만큼 분이 가산되어 문자열로 리턴
 Func.IncMinuteStr = (iTime, incValue) => {
   var iHour;
@@ -32,7 +50,7 @@ Func.IncMinuteStr = (iTime, incValue) => {
   if (
     iTime === "" ||
     iTime.Length < 5 ||
-    iTime.substr(2, 1) !== ":"
+    String(iTime).substr(2, 1) !== ":"
     // ||  (StrToIntDef(iTime.substr(1,2),-9999999999) === -9999999999)
     // ||  (StrToIntDef(iTime.substr(4,2),-9999999999) === -9999999999)
   ) {
@@ -41,12 +59,13 @@ Func.IncMinuteStr = (iTime, incValue) => {
   }
   iHour = iTime.substr(0, 2);
   iMinute = iTime.substr(3, 2);
-  SumMinute = iHour * 60 + iMinute + incValue;
+  SumMinute = Number(iHour) * 60 + Number(iMinute) + incValue;
 
   if (SumMinute < 0) {
     SumMinute = 24 * 60 + SumMinute;
   }
-  Result = Math.trunc(SumMinute / 60) + (SumMinute % 60); // mod 함수
+  Result = Func.IntToTimeStr(Math.trunc(SumMinute / 60), SumMinute % 60); // mod 함수
+  console.log(" IncMinuteStr ", Result);
   return Result;
 };
 //Base시간을 기준으로 Obj시간이 겹치는 부분에대한 시간값(분)을 계산
@@ -157,17 +176,17 @@ Func.CalcTimeTermFloat = (StrTime, EndTime) => {
 Func.TimeTermMinuteStr = (befTime, aftTime) => {
   var befMinute;
   var aftMinute;
-
+  console.log("Parms", aftTime, befTime);
   if (befTime && aftTime) {
     if (
       befTime === "" ||
       aftTime === "" ||
       befTime.length < 5 ||
-      befTime.substr(2, 1) !== ":" ||
+      String(befTime).substr(2, 1) !== ":" ||
       // Number(befTime.substr(0, 2) - 9999999999) === -9999999999 ||
       // Number(befTime.substr(3, 2) - 9999999999) === -9999999999 ||
       aftTime.length < 5 ||
-      aftTime.substr(2, 1) !== ":"
+      String(aftTime).substr(2, 1) !== ":"
       // Number(aftTime.substr(0, 2) - 9999999999) === -9999999999 ||
       // Number(aftTime.substr(3, 2) - 9999999999) === -9999999999
     )
@@ -177,8 +196,9 @@ Func.TimeTermMinuteStr = (befTime, aftTime) => {
       Number(befTime.substr(0, 2)) * 60 + Number(befTime.substr(3, 2));
     aftMinute =
       Number(aftTime.substr(0, 2)) * 60 + Number(aftTime.substr(3, 2));
+    console.log("TimeTermMinuteStr - ", aftMinute, befMinute);
     if (befMinute >= aftMinute) aftMinute = aftMinute + 60 * 24; //만약 이전 시간이 이후시간보다 더 크면 24:00을 지난 것이므로 24시간*60분을 가산한다.
-
+    console.log("TimeTermMinuteStr : ", aftMinute - befMinute);
     return aftMinute - befMinute;
   }
   return 0;

@@ -1,6 +1,10 @@
 var ValBaseDigit = 2;
 var ValOverDigit = 2;
 var ValWTimeLimitOfDay = 8;
+var ValWPMobileCCTimeUpIn = 15; //출근보정(적용단위), 모바일근태시간올림(분단위) : 모바일에서 체크된 근태를 불러올때 올림할 단위.
+var ValWPMobileRateTimeIn = 5;
+var ValWPMobileCCTimeUpOut = 15;
+var ValWPMobileRateTimeOut = 5;
 var PValue = {
   ValVersionText: (ValVersionText = "181018.01"),
   ValWTimeHoliRate: (ValWTimeHoliRate = 0.2),
@@ -11,7 +15,11 @@ var PValue = {
   ValPWCheckLevel: (ValPWCheckLevel = 5),
   ValBaseDigit: ValBaseDigit,
   ValOverDigit: ValOverDigit,
-  ValWTimeLimitOfDay: ValWTimeLimitOfDay //일일 기본 근로 시간
+  ValWTimeLimitOfDay: ValWTimeLimitOfDay, //일일 기본 근로 시간
+  ValWPMobileCCTimeUpIn: ValWPMobileCCTimeUpIn,
+  ValWPMobileRateTimeIn: ValWPMobileRateTimeIn,
+  ValWPMobileCCTimeUpOut: ValWPMobileCCTimeUpOut,
+  ValWPMobileRateTimeOut: ValWPMobileRateTimeOut
 };
 
 var ValVersionText = "181018.01";

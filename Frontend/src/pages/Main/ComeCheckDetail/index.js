@@ -371,8 +371,6 @@ const ComeCheckDetail = props => {
     // });
 
     if (!CCDetailLoading) {
-      console.log(" # ComeCheckDateList[i] parm", parm);
-
       axios
         .post("http://localhost:5000/ComeCheckDetail/SetComeCheckDate", parm)
         .then(res => {
@@ -385,7 +383,6 @@ const ComeCheckDetail = props => {
             for (let i = 0; i < ComeCheckDateList.length; i++) {
               if (ComeCheckList[i].CDDate === ComeCheckDateList[i].CDDATE) {
                 // ComeCheckList = ComeCheckDateList[i].CHCODE;
-                console.log("#### #### #### ####", ComeCheckList[i].CDDate);
 
                 ComeCheckList[i].CDWEndTime = ComeCheckDateList[i].CDWENDTIME;
                 ComeCheckList[i].CDSStrTime = ComeCheckDateList[i].CDSSTRTIME;
@@ -413,7 +410,7 @@ const ComeCheckDetail = props => {
                   ComeCheckDateList[i].CDEARLYOUTTIME;
                 ComeCheckList[i].CDMemo = ComeCheckDateList[i].CDMEMO;
                 ComeCheckList[i].ChangeGubun = ""; //DB에서 불러온 근태이므로 변경구분을 N에서 공백으로 변경해 준다.
-                console.log("TTTTTTTTFFFFFFFFF 1", ComeCheckList);
+
                 // break;
               }
             }
