@@ -156,35 +156,14 @@ const ComeCheckDetail = props => {
   //빈 배열을 useEffect의 두 번째 인수로 전달하면 마운트 및 마운트 해제시에만 실행되므로 무한 루프가 중지됩니다.
   //useEffect 는 리액트 컴포넌트가 렌더링 될 때마다 특정 작업을 수행하도록 설정
   useEffect(() => {
-    SetCalendar(true);
+    CCList.length !== 0 && SetCalendar(true);
     // SetCalenderGrid(DetailList, NowDate, LastDate);
     console.log("ComeCheckDetail USEEFEECT 실행됨");
-    var TestDate = "09:00";
-    var TestDate2 = "17:00";
-    var TESSTT = "    123   ";
-    if (getTime("09:00") > getTime("17:00")) {
-      console.log("?????????????????");
-    } else {
-      console.log(
-        "!!!!!!!!!!!!!!!!!!!!!",
-        getTime(Date(NowDate)),
-        moment(TestDate) < moment(TestDate2),
-        moment(TestDate).format("HH:MM") > moment(TestDate2).format("HH:MM"),
-        new Date(LastDate).getTime(),
-        getTime(new Date()),
-        moment(TestDate, "HH:mm").diff(moment(TestDate2, "HH:mm"), "hours"),
-        moment(TestDate, "HH:mm").valueOf() >
-          moment(TestDate2, "HH:mm").valueOf(),
-        moment(TestDate, "HH:mm").valueOf() <
-          moment(TestDate2, "HH:mm").valueOf(),
-        TESSTT.trim()
-        // moment.duration(TestDate.diff(TestDate2)).hours()
-      );
-    }
 
+    console.log(" GH : ", moment(NowDate) < moment(LastDate));
     console.log("NowDate", NowDate, "LastDate", LastDate);
     console.log("Detail_CCList", CCList);
-  }, [DetailList]); //[DetailList, DetailList_Aft, DetailList_Bef]
+  }, [DetailList, CCList]); //[DetailList, DetailList_Aft, DetailList_Bef]
   const getCellValue = value => {};
 
   const Close = handleCloser => {
@@ -348,6 +327,33 @@ const ComeCheckDetail = props => {
       ClearJuhueByOut(AllComeOkList);
     }
   };
+  // 저장버튼 클릭
+  const btnSaveClick = () => {
+    var parm = {
+      Mode: Mode,
+      CDSTCode: CCList[0].SSMSTCODE,
+      CDSHCode: CCList[0].SDSHCODE,
+      CDSDCode: CCList[0].SDCODE,
+      StrDate: DetailList[0].CDDate,
+      EndDate: DetailList[DetailList.length - 1].CDDate,
+      CDList: DetailList,
+      CCList: CCList,
+      CCYearMonth: NowDate
+    };
+    console.log("Parms", parm);
+    axios
+      .post("http://localhost:5000/ComeCheckDetail/btnSaveClick", parm)
+      .then(res => {
+        console.log(res);
+        if (res.data === "NoData") {
+        } else {
+          console.log(" 저장 성공    :", res.data);
+        }
+      })
+      .catch(err => {
+        console.log("btnSaveClick 에러", err);
+      });
+  };
 
   //이번달 달력에 일자별 근태를 조회하는 함수
   function ShowComeCheckDate(grid, CalCount) {
@@ -358,7 +364,7 @@ const ComeCheckDetail = props => {
     var parm = {
       StrDate: grid[0].CDDate,
       EndDate: grid[grid.length - 1].CDDate,
-      STCode: CCList[0].SSMSTCODE,
+      STCODE: CCList[0].SSMSTCODE,
       SHCode: CCList[0].SDSHCODE,
       SDCode: CCList[0].SDCODE
     };
@@ -756,7 +762,7 @@ const ComeCheckDetail = props => {
     var HEndDate;
     var Hujik = DetailList;
     var parm = {
-      STCode: CCList[0].STCODE,
+      STCODE: CCList[0].STCODE,
       StrDate: NowDate,
       EndDate: LastDate
     };
@@ -1169,7 +1175,7 @@ const ComeCheckDetail = props => {
   // 1. 이 함수를 Show이벤트에서 호출하여 휴일 목록을 만들고 휴일에 해당하는 날짜가
   // 2. 정상 근무인경우 WTimes.Holidays.CHCCGubun를 해당일에 근무 구분으로 변경한다.
   const SetHolidays = (StrDate, EndDate, SWGubun) => {
-    // WTimes.WTimes.STCode
+    // WTimes.WTimes.STCODE
     var parm = {
       StrDate: NowDate,
       EndDate: LastDate,
@@ -1417,6 +1423,7 @@ const ComeCheckDetail = props => {
                       style={{
                         float: "right"
                       }}
+                      onClick={() => btnSaveClick()}
                     >
                       저장
                     </button>

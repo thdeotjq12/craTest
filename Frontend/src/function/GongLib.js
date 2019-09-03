@@ -1711,6 +1711,7 @@ const CalcWTimes = (
   };
   //시작시간으로 부터 종료시간까지의 연장, 야간연장시간을 가산
   const CalcOverTimes = (StrTime, EndTime, i) => {
+    console.log("CalcOverTimes 실행됨", StrTime, EndTime);
     if (InfraLib.HourToInt(StrTime) < InfraLib.HourToInt(NightStr)) {
       if (InfraLib.HourToInt(EndTime) <= InfraLib.HourToInt(NightStr)) {
         //근로시작시간이 야간근로시작시간 전인 경우
@@ -1722,7 +1723,7 @@ const CalcWTimes = (
         //근로종료시간이 야간근로시작 전인 경우
         OverTime = OverTime + InfraLib.TimeTermMinuteStr(StrTime, NightStr);
         ONTime = ONTime + InfraLib.TimeTermMinuteStr(NightStr, EndTime);
-        console.log("2. CalOver", StrTime, NightStr, OverTime);
+        console.log("2. CalOver", StrTime, NightStr, EndTime, OverTime);
       } else if (InfraLib.HourToInt(EndTime) > InfraLib.HourToInt(NightEnd)) {
         //근로종료시간이 야간 근로종료 전인 경우
         OverTime = OverTime + InfraLib.TimeTermMinuteStr(StrTime, NightStr);
@@ -1754,7 +1755,7 @@ const CalcWTimes = (
     if (InfraLib.HourToInt(StrTime) > InfraLib.HourToInt(EndTime))
       EndTime = InfraLib.IncMinuteStr(EndTime, 24 * 60);
     if (InfraLib.HourToInt(EndTime) < InfraLib.HourToInt(NightStr)) {
-      StrTime = InfraLib.IncMinuteStr(EndTime, 24 * 60);
+      StrTime = InfraLib.IncMinuteStr(StrTime, 24 * 60);
       EndTime = InfraLib.IncMinuteStr(EndTime, 24 * 60);
     }
     //근로시작시간이 야간근로시간 이전에 시작된 경우
@@ -1765,16 +1766,20 @@ const CalcWTimes = (
         InfraLib.HourToInt(EndTime) <= InfraLib.HourToInt(NightEnd)
       ) {
         NightTime = NightTime + InfraLib.TimeTermMinuteStr(NightStr, EndTime);
+        console.log("---NightTime1", NightTime);
       } else if (InfraLib.HourToInt(EndTime) > InfraLib.HourToInt(NightEnd)) {
         NightTime = NightTime + InfraLib.TimeTermMinuteStr(NightStr, NightEnd);
+        console.log("---NightTime2", NightTime);
       }
     } else if (InfraLib.HourToInt(StrTime) < InfraLib.HourToInt(NightEnd)) {
       //근로시작시간이 야간근로시간 안쪽인 경우
       if (InfraLib.HourToInt(EndTime) <= InfraLib.HourToInt(NightEnd)) {
         //근로종료시간도 야간근로시간 안쪽인 경우
         NightTime = NightTime + InfraLib.TimeTermMinuteStr(StrTime, EndTime);
+        console.log("---NightTime3", NightTime);
       } else {
         NightTime = NightTime + InfraLib.TimeTermMinuteStr(StrTime, NightEnd);
+        console.log("---NightTime4", NightTime);
       }
     }
   };
@@ -2468,6 +2473,18 @@ Func.RealGrid_ValueChange = (Grid, Row, IndexChangeGubun) => {
   if (Grid.length === 0) return;
   if (IndexChangeGubun === "") return "U";
   return "";
+};
+
+Func.EndOfMonth = TDate => {
+  var Result =
+    moment(TDate).format("YYYY") +
+    "-" +
+    moment(TDate).format("MM") +
+    "-" +
+    moment(TDate)
+      .endOf("month")
+      .format("DD");
+  return Result;
 };
 
 export default Func;

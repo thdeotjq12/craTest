@@ -165,7 +165,7 @@ const ComeCheck = props => {
   // 근태집계를 조회하는 함수
   const ShowCCList_admin = () => {
     console.log("ShowCCList_admin 함수 실행됨");
-    setCCList("");
+    // setCCList("");
     var SaupDetail = document.getElementById("SaupDetail");
     var SHKeyWord = document.getElementById("SaupHead").value;
     var SDKeyWord = document.getElementById("SaupDetail").value;
@@ -176,7 +176,7 @@ const ComeCheck = props => {
       SaupDetail.options[SaupDetail.selectedIndex].value
     );
 
-    console.log("TTTTTTTTTTTTTT", Codes);
+    console.log("TTTTTTTTTTTTTT", Codes, Year, Month);
     var parm = {
       Year: Year,
       Month: Month,
@@ -185,14 +185,13 @@ const ComeCheck = props => {
       SHKeyWord: SHKeyWord,
       SDKeyWord: SDKeyWord
     };
-
+    console.log("Parms", parm);
     axios
       .post("http://localhost:5000/ComeCheck/ShowCCList_admin", parm)
       .then(res => {
         console.log(res);
         if (res.data === "NoData") {
         } else {
-          console.log("ParmS     :", parm);
           console.log("SHOWCCLIST_ADMIN    :", res.data);
           setCCList(res.data.SaupDetailList);
         }
@@ -235,7 +234,7 @@ const ComeCheck = props => {
   return (
     <div className="MainDivContainer">
       <div>
-        {CCList && (
+        {CCList.length !== 0 && (
           <ComeCheckDetail
             handleClose={handleClose}
             Modals={Modals}

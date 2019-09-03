@@ -176,8 +176,8 @@ Func.CalcTimeTermFloat = (StrTime, EndTime) => {
 Func.TimeTermMinuteStr = (befTime, aftTime) => {
   var befMinute;
   var aftMinute;
-  console.log("Parms", aftTime, befTime);
   if (befTime && aftTime) {
+    console.log("TimeTermMinuteStr Parms", befTime, aftTime);
     if (
       befTime === "" ||
       aftTime === "" ||
