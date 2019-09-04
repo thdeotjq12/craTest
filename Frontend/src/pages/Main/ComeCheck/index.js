@@ -67,6 +67,7 @@ const ComeCheck = props => {
   const { User_Data } = useSelector(state => state.Loginpage);
   const { ValList } = useSelector(state => state.ValList);
   const [CCList, setCCList] = useState("");
+  const [SelectRow, setRow] = useState(0); //현재 선택된 로우의 넘버
   const [Year, setYear] = useState(today.getFullYear());
   const [Month, setMonth] = useState(
     (today.getMonth() + 1 < 10 ? "0" : "") + (today.getMonth() + 1)
@@ -103,8 +104,21 @@ const ComeCheck = props => {
   useEffect(() => {
     console.log("VALIST", ValList);
     console.log("Year :", Year, "Month :", Month);
-  }, [CCList]);
-  const getCellValue = value => {};
+  }, [CCList, SelectRow]);
+  const getCellValue = value => {
+    setRow(value[0]);
+    // setCCList(CCList[SelectRow]);
+    console.log("T1", CCList);
+    setCCList(CCList[value[0]]);
+    console.log(
+      "T2",
+      CCList,
+      CCList[SelectRow],
+      CCList[0].SHNAMESHORT,
+      CCList.SHNAMESHORT
+    );
+    console.log("SELNUM", SelectRow);
+  };
 
   // 담당자 모달 열기/닫기
   const handleClose = () => {
@@ -241,6 +255,7 @@ const ComeCheck = props => {
             CCList={CCList}
             Year={Year}
             Month={Month}
+            SelectRow={SelectRow}
           />
         )}
 

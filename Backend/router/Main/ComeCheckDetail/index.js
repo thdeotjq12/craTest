@@ -65,24 +65,27 @@ const SaveClick1 = async (CDSTCode, CDSHCode, CDSDCode, CDDate) => {
   var parm = [CDSTCode, CDSHCode, CDSDCode, CDDate];
   var Result;
   console.log("       5        ");
-  await con.query(sql, parm, (err, rows, fields) => {
-    if (!err) {
-      Result = {
-        ...Result,
-        COMECHECKTOT: rows
-      };
-      Result &&
-        console.log(
-          "       5 RE       ",
-          Result.COMECHECKTOT[0].CNT,
-          Result.CNT
-        );
-      return Result.COMECHECKTOT[0].CNT;
-    } else {
-      console.log("Query ERR : ", err);
-      res.send("NoData");
-    }
-  });
+  Result = await globalValue.PromiseQuery(con, sql, parm);
+  console.log("       Result        ", Result[0].CNT);
+  return Result[0].CNT;
+  // await con.query(sql, parm, (err, rows, fields) => {
+  //   if (!err) {
+  //     Result = {
+  //       ...Result,
+  //       COMECHECKTOT: rows
+  //     };
+  //     Result &&
+  //       console.log(
+  //         "       SaveClick1       ",
+  //         Result.COMECHECKTOT[0].CNT,
+  //         Result.CNT
+  //       );
+  //     return Result.COMECHECKTOT[0].CNT;
+  //   } else {
+  //     console.log("Query ERR : ", err);
+  //     res.send("NoData");
+  //   }
+  // });
 };
 router.post("/SetHolidays", async (req, res) => {
   // console.log("SetHolidays");
@@ -241,25 +244,26 @@ router.post("/btnSaveClick", async (req, res) => {
   var CCList = req.body.CCList;
   var CCYearMonth = req.body.CCYearMonth;
   con.connect();
-
-  sql = ` DELETE FROM COMECHECKDATE  
+  if (Mode === "만근") {
+    sql = ` DELETE FROM COMECHECKDATE  
            WHERE CDSTCODE = ?
              AND CDSHCODE = ?
              AND CDSDCODE = ?
              AND CDDATE  >= ?
              AND CDDATE  <= ?
             `;
-  parm = [CDSTCode, CDSHCode, CDSDCode, StrDate, EndDate];
+    parm = [CDSTCode, CDSHCode, CDSDCode, StrDate, EndDate];
 
-  await con.query(sql, parm, (err, rows, fields) => {
-    if (!err) {
-      SuccessFalg = true;
-    } else {
-      console.log("Query ERR : ", err);
-      res.send("NoData");
-    }
-  });
-  console.log("       1        ");
+    await con.query(sql, parm, (err, rows, fields) => {
+      if (!err) {
+        SuccessFalg = true;
+      } else {
+        console.log("Query ERR : ", err);
+        res.send("NoData");
+      }
+    });
+    console.log("       1        ");
+  }
   //일자별 근태 저장
   let i = 0;
   while (i < CDList.length) {
@@ -637,10 +641,11 @@ router.post("/btnSaveClick", async (req, res) => {
   // });
   console.log("       6        ");
   Result = await SaveClick1(CDSTCode, CDSHCode, CDSDCode, CDList[0].CDDate);
+  setTimeout(() => {}, 1000);
   Result && console.log("Result : ", Result);
   if (Result) {
-    if (Result.CNT === 0) {
-      sql = ` INSERT INTO COMECHECKTOT(CTSTCODE   , CTSHCODE     , CTSDCODE        , CTYEARMONTH, CTSUSUPYN   , CTHUEYN         , CTWDATECNT    
+    if (Result === 0) {
+      sql = ` INSERT INTO COMECHECKTOT(CTSTCODE , CTSHCODE     , CTSDCODE        , CTYEARMONTH, CTSUSUPYN   , CTHUEYN         , CTWDATECNT    
                                    , CTWTIMECNT , CTWTIMENORMAL, CTWTIMEHOLI     , CTWTIMEOVER, CTWTIMENIGHT, CTWTIMENIGHTOVER, CTHTIMEBASE    
                                    , CTHTIMEOVER, CTHTIMENIGHT , CTHTIMENIGHTOVER, CTTKTIME   , CTNOCOMECNT , CTLATETIME      , CTEARLYOUTTIME)
             VALUES(?  , ?  ,  ?  , ?  , ?  , ?  , ?     
@@ -727,8 +732,9 @@ router.post("/btnSaveClick", async (req, res) => {
         res.send("NoData");
       }
     });
+    console.log("       7        ");
   }
-  console.log("       7        ");
+  console.log("       8        ");
   con.end();
 });
 module.exports = router;

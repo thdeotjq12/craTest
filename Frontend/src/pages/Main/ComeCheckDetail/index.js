@@ -77,7 +77,7 @@ const Grid_ComeCheckDetailCol = [
 ];
 
 const ComeCheckDetail = props => {
-  const { handleClose, Modals, CCList, Year, Month } = props;
+  const { handleClose, Modals, CCList, Year, Month, SelectRow } = props;
   const {
     CCDetailLoading,
     CCDetail_AFTLoading,
@@ -189,8 +189,8 @@ const ComeCheckDetail = props => {
     for (let i = 0; i < AllComeOkList.length; i++) {
       AllComeOkList[i].CDHTime = 0;
     }
-    setDetailList(AllComeOkList);
-    SetCalendar(false); //달력을 셋팅하는 함수
+    // setDetailList(AllComeOkList);
+    // SetCalendar(false); //달력을 셋팅하는 함수
 
     for (let i = 0; i < AllComeOkList.length; i++) {
       if (
@@ -198,19 +198,20 @@ const ComeCheckDetail = props => {
           moment(NowDate).format("YYYY") &&
         moment(CCList[0].SSMSTRDATE).format("MM") ===
           moment(NowDate).format("MM") &&
-        moment(CCList[0].SSMSTRDATE).day() >
-          moment(AllComeOkList[i].CDDate).day()
+        moment(CCList[0].SSMSTRDATE).format("DD") >
+          moment(AllComeOkList[i].CDDate).format("DD")
       ) {
         //이번달이 사업 시작일이 있는 경우. 사업 시작일 이전이면 근무 구분 없음 처리
         AllComeOkList[i].CDGubun = "";
       }
+
       if (
         moment(CCList[0].SSMENDDATE).format("YYYY") ===
           moment(NowDate).format("YYYY") &&
         moment(CCList[0].SSMENDDATE).format("MM") ===
           moment(NowDate).format("MM") &&
-        moment(CCList[0].SSMENDDATE).day() <
-          moment(AllComeOkList[i].CDDate).day()
+        moment(CCList[0].SSMENDDATE).format("DD") <
+          moment(AllComeOkList[i].CDDate).format("DD")
       ) {
         //이번달이 사업 종료일이 있는 경우. 사업 종료일 이후면 근무 구분 없음 처리
         AllComeOkList[i].CDGubun = "";
@@ -265,67 +266,74 @@ const ComeCheckDetail = props => {
         AllComeOkList[i].TotOriWorkTime = 0;
       }
       AllComeOkList[i].ChangeGubun = "N";
-      console.log("TEST", AllComeOkList, ValList);
-      ValList &&
-        setDetailList(
-          GongLib.SetCellEditExit(
-            AllComeOkList,
-            null,
-            null,
-            i,
-            CCList[0].SSWTIMEOFDAYLIMIT,
-            false,
-            CCList[0].SSNIGHTSTRWTIME,
-            CCList[0].SSNIGHTENDWTIME,
-            CCList[0].SSLTIMEGUBUN1,
-            CCList[0].SSLTIMEGUBUN2,
-            CCList[0].SSLTIMEGUBUN3,
-            CCList[0].SSLTIMEGUBUN4,
-            CCList[0].SSLTIMEGUBUN5,
-            CCList[0].SSHOLIWEEK,
-            CCList[0].SSHOLIPAYYN,
-            CDDate,
-            DateGubun,
-            CDDayWeek,
-            CDGubun,
-            SSWTimeStr,
-            SSWTimeEnd,
-            CDWStrTime,
-            CDWEndTime,
-            SSLTimeStr1,
-            SSLTimeEnd1,
-            SSLTimeStr2,
-            SSLTimeEnd2,
-            SSLTimeStr3,
-            SSLTimeEnd3,
-            SSLTimeStr4,
-            SSLTimeEnd4,
-            SSLTimeStr5,
-            SSLTimeEnd5,
-            HTime,
-            CDHTime,
-            TotWorkTime,
-            CDSStrTime,
-            CDSEndTime,
-            CDWTimeNormal,
-            CDWTimeHoli,
-            CDWTimeOver,
-            CDWTimeNight,
-            CDWTimeNightOver,
-            CDHTimeBase,
-            CDHTimeOver,
-            CDHTimeNight,
-            CDHTimeNightOver,
-            CDTkTime, //특근 인덱스
-            CDNoComeCNT,
-            CDLateTime,
-            CDEarlyOutTime,
-            false,
-            ValList
-          )
-        );
+      console.log("TKGKIFF", AllComeOkList, ValList);
+      AllComeOkList = GongLib.SetCellEditExit(
+        AllComeOkList,
+        null,
+        null,
+        i,
+        CCList[0].SSWTIMEOFDAYLIMIT,
+        false,
+        CCList[0].SSNIGHTSTRWTIME,
+        CCList[0].SSNIGHTENDWTIME,
+        CCList[0].SSLTIMEGUBUN1,
+        CCList[0].SSLTIMEGUBUN2,
+        CCList[0].SSLTIMEGUBUN3,
+        CCList[0].SSLTIMEGUBUN4,
+        CCList[0].SSLTIMEGUBUN5,
+        CCList[0].SSHOLIWEEK,
+        CCList[0].SSHOLIPAYYN,
+        CDDate,
+        DateGubun,
+        CDDayWeek,
+        CDGubun,
+        SSWTimeStr,
+        SSWTimeEnd,
+        CDWStrTime,
+        CDWEndTime,
+        SSLTimeStr1,
+        SSLTimeEnd1,
+        SSLTimeStr2,
+        SSLTimeEnd2,
+        SSLTimeStr3,
+        SSLTimeEnd3,
+        SSLTimeStr4,
+        SSLTimeEnd4,
+        SSLTimeStr5,
+        SSLTimeEnd5,
+        HTime,
+        CDHTime,
+        TotWorkTime,
+        CDSStrTime,
+        CDSEndTime,
+        CDWTimeNormal,
+        CDWTimeHoli,
+        CDWTimeOver,
+        CDWTimeNight,
+        CDWTimeNightOver,
+        CDHTimeBase,
+        CDHTimeOver,
+        CDHTimeNight,
+        CDHTimeNightOver,
+        CDTkTime, //특근 인덱스
+        CDNoComeCNT,
+        CDLateTime,
+        CDEarlyOutTime,
+        false,
+        ValList
+      );
+      if (AllComeOkList[i].CDGubun === "6")
+        AllComeOkList[i].CDGubun = "유급휴일";
+      if (AllComeOkList[i].CDGubun === "5")
+        AllComeOkList[i].CDGubun = "무급휴일";
+      if (AllComeOkList[i].CDGubun === "0")
+        AllComeOkList[i].CDGubun = "정상근무";
+      if (AllComeOkList[i].DateGubun === "1")
+        AllComeOkList[i].DateGubun = "주휴";
       ClearJuhueByOut(AllComeOkList);
     }
+    setDetailList(AllComeOkList);
+    console.log("JJJJJJJJ", DetailList);
   };
   // 저장버튼 클릭
   const btnSaveClick = () => {
@@ -364,7 +372,7 @@ const ComeCheckDetail = props => {
     var parm = {
       StrDate: grid[0].CDDate,
       EndDate: grid[grid.length - 1].CDDate,
-      STCODE: CCList[0].SSMSTCODE,
+      STCode: CCList[0].SSMSTCODE,
       SHCode: CCList[0].SDSHCODE,
       SDCode: CCList[0].SDCODE
     };
@@ -372,6 +380,7 @@ const ComeCheckDetail = props => {
     var ComeCheckDateList = {};
     var ComeCheckList;
     grid && (ComeCheckList = grid);
+    console.log(" HHHHHHHHH", ComeCheckList);
     // dispatch({
     //   type: ComeCheckDetail_REQUEST // true
     // });
@@ -385,13 +394,17 @@ const ComeCheckDetail = props => {
           } else {
             // if (!ComeCheckList && CCDetailLoading) return;
             ComeCheckDateList = res.data.ComeCheckDateList;
-            console.log(" ###  ComeCheckDateList", ComeCheckDateList);
+            console.log(
+              " ###  ComeCheckDateList",
+              res.data.ComeCheckDateList,
+              parm
+            );
             for (let i = 0; i < ComeCheckDateList.length; i++) {
               if (ComeCheckList[i].CDDate === ComeCheckDateList[i].CDDATE) {
                 // ComeCheckList = ComeCheckDateList[i].CHCODE;
 
                 ComeCheckList[i].CDWEndTime = ComeCheckDateList[i].CDWENDTIME;
-                ComeCheckList[i].CDSStrTime = ComeCheckDateList[i].CDSSTRTIME;
+                ComeCheckList[i].CDWStrTime = ComeCheckDateList[i].CDWSTRTIME;
                 ComeCheckList[i].CDSEndTime = ComeCheckDateList[i].CDSENDTIME;
                 ComeCheckList[i].CDGubun = ComeCheckDateList[i].CDGUBUN;
                 ComeCheckList[i].CDHTime = ComeCheckDateList[i].CDHTIME;
@@ -651,84 +664,84 @@ const ComeCheckDetail = props => {
   };
 
   //현재달 달력 셋팅
-  function SetCalendarNow(ShowDB) {
-    setFN(false);
-    console.log("★★ Now 실행됨");
-    var WeekDayIndex = moment(NowDate).day() + 1;
-    //시작일부터 말일까지 grid에 달력을 셋팅하는 함수
-    SetCalenderGrid(DetailList, NowDate, LastDate);
-    //이번달 달력에 일자별 근태를 조회하는 함수
-    ShowComeCheckDate(DetailList);
+  // function SetCalendarNow(ShowDB) {
+  //   setFN(false);
+  //   console.log("★★ Now 실행됨");
+  //   var WeekDayIndex = moment(NowDate).day() + 1;
+  //   //시작일부터 말일까지 grid에 달력을 셋팅하는 함수
+  //   SetCalenderGrid(DetailList, NowDate, LastDate);
+  //   //이번달 달력에 일자별 근태를 조회하는 함수
+  //   ShowComeCheckDate(DetailList);
 
-    return;
-    // return new Promise(function(resolve) {
-    //   setTimeout(async () => {
-    //     await ShowComeCheckDate(DetailList);
-    //   }, 3000);
-    // });
-  }
+  //   return;
+  //   // return new Promise(function(resolve) {
+  //   //   setTimeout(async () => {
+  //   //     await ShowComeCheckDate(DetailList);
+  //   //   }, 3000);
+  //   // });
+  // }
 
   //다음달 달력셋팅
-  function SetCalendarAft() {
-    setFB(false);
-    console.log("★★ AFT 실행됨");
-    var moment = require("moment");
-    var iSSHoliWeek; //주휴요일
-    var nowDate;
-    var LastDate;
-    if (DetailList.length === 0) return;
+  // function SetCalendarAft() {
+  //   setFB(false);
+  //   console.log("★★ AFT 실행됨");
+  //   var moment = require("moment");
+  //   var iSSHoliWeek; //주휴요일
+  //   var nowDate;
+  //   var LastDate;
+  //   if (DetailList.length === 0) return;
 
-    iSSHoliWeek = CCList[0].SSHOLIWEEK;
-    if (
-      moment(DetailList[DetailList.length - 1].CDDate).day() + 1 ===
-      iSSHoliWeek
-    )
-      return;
-    nowDate = moment(DetailList[DetailList.length - 1].CDDate, "YYYY-MM-DD")
-      .add("days", 1)
-      .format("YYYY-MM-DD"); //- iSSHoliWeek * -1, "days");
-    LastDate = moment(nowDate, "YYYY-MM-DD")
-      .add("days", 7 - moment(nowDate).day())
-      .format("YYYY-MM-DD"); //- iSSHoliWeek * -1, "days");
-    console.log("AFT nowDate ", nowDate, "AFT LastDate ", LastDate);
-    SetCalenderGrid(DetailList_Aft, nowDate, LastDate);
-    DetailList_Aft && ShowComeCheckDate(DetailList_Aft);
-    return;
-    // return new Promise(function(resolve) {
-    //   setTimeout(() => {
-    //     ShowComeCheckDate(DetailList_Aft);
-    //   }, 3000);
-    // });
-  }
+  //   iSSHoliWeek = CCList[0].SSHOLIWEEK;
+  //   if (
+  //     moment(DetailList[DetailList.length - 1].CDDate).day() + 1 ===
+  //     iSSHoliWeek
+  //   )
+  //     return;
+  //   nowDate = moment(DetailList[DetailList.length - 1].CDDate, "YYYY-MM-DD")
+  //     .add("days", 1)
+  //     .format("YYYY-MM-DD"); //- iSSHoliWeek * -1, "days");
+  //   LastDate = moment(nowDate, "YYYY-MM-DD")
+  //     .add("days", 7 - moment(nowDate).day())
+  //     .format("YYYY-MM-DD"); //- iSSHoliWeek * -1, "days");
+  //   console.log("AFT nowDate ", nowDate, "AFT LastDate ", LastDate);
+  //   SetCalenderGrid(DetailList_Aft, nowDate, LastDate);
+  //   DetailList_Aft && ShowComeCheckDate(DetailList_Aft);
+  //   return;
+  //   // return new Promise(function(resolve) {
+  //   //   setTimeout(() => {
+  //   //     ShowComeCheckDate(DetailList_Aft);
+  //   //   }, 3000);
+  //   // });
+  // }
 
   //이전달 달력 셋팅
-  function SetCalendarBef() {
-    setFA(false);
-    console.log("★★ Bef 실행됨");
-    var moment = require("moment");
-    var iSSHoliWeek; //주휴요일
-    var nowDate;
-    var LastDate;
-    if (DetailList.length === 0) return;
+  // function SetCalendarBef() {
+  //   setFA(false);
+  //   console.log("★★ Bef 실행됨");
+  //   var moment = require("moment");
+  //   var iSSHoliWeek; //주휴요일
+  //   var nowDate;
+  //   var LastDate;
+  //   if (DetailList.length === 0) return;
 
-    iSSHoliWeek = CCList[0].SSHOLIWEEK;
-    if (moment(DetailList[0].CDDate).day() + 1 === iSSHoliWeek) return;
-    nowDate = moment(NowDate, "YYYY-MM-DD")
-      .add("days", (moment(NowDate).day() + 1 - iSSHoliWeek) * -1)
-      .format("YYYY-MM-DD"); //- iSSHoliWeek * -1, "days");
-    LastDate = moment(nowDate)
-      .endOf("month")
-      .format("YYYY-MM-DD");
-    console.log("Bef NowDate", nowDate, "Bef LastDat ", LastDate);
-    SetCalenderGrid(DetailList_Bef, nowDate, LastDate);
-    DetailList_Bef && ShowComeCheckDate(DetailList_Bef);
-    return;
-    // return new Promise(function(resolve) {
-    //   setTimeout(() => {
-    //     DetailList_Bef && ShowComeCheckDate(DetailList_Bef);
-    //   }, 3000);
-    // });
-  }
+  //   iSSHoliWeek = CCList[0].SSHOLIWEEK;
+  //   if (moment(DetailList[0].CDDate).day() + 1 === iSSHoliWeek) return;
+  //   nowDate = moment(NowDate, "YYYY-MM-DD")
+  //     .add("days", (moment(NowDate).day() + 1 - iSSHoliWeek) * -1)
+  //     .format("YYYY-MM-DD"); //- iSSHoliWeek * -1, "days");
+  //   LastDate = moment(nowDate)
+  //     .endOf("month")
+  //     .format("YYYY-MM-DD");
+  //   console.log("Bef NowDate", nowDate, "Bef LastDat ", LastDate);
+  //   SetCalenderGrid(DetailList_Bef, nowDate, LastDate);
+  //   DetailList_Bef && ShowComeCheckDate(DetailList_Bef);
+  //   return;
+  //   // return new Promise(function(resolve) {
+  //   //   setTimeout(() => {
+  //   //     DetailList_Bef && ShowComeCheckDate(DetailList_Bef);
+  //   //   }, 3000);
+  //   // });
+  // }
   //달력을 셋팅하는 함수
 
   function SetCalendar(ShowDB) {
@@ -1387,7 +1400,12 @@ const ComeCheckDetail = props => {
                     <td id="TdInput">
                       <input
                         className="InputContainer"
-                        value={CCList && CCList[0].SHNAMESHORT}
+                        value={
+                          CCList && [
+                            CCList[SelectRow].SHNAMESHORT,
+                            console.log("FF", SelectRow)
+                          ]
+                        }
                       />
                     </td>
                     <td className="ColGubun">사원명</td>
@@ -1403,7 +1421,6 @@ const ComeCheckDetail = props => {
                       style={{
                         float: "right"
                       }}
-                      onClick={() => [SetCalendarBef(), SetCalendarAft()]}
                     >
                       엑셀
                     </button>

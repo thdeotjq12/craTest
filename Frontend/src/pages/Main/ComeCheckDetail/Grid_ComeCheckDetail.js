@@ -15,8 +15,9 @@ const Grid_ComeCheckDetail = props => {
   useEffect(() => {
     console.log("Grid_ComeCheckDetail - useEffect 실행됨", rows);
     // 여기서 dispatch > 리퀘스트 로 물어보고 dispatch > suc or fail(err) 분기
-    RowFix();
+
     setrows(rows);
+    RowFix();
   }, [rows]);
   const getCellActions = GetRowIdx => {
     // 델파이 SelectSaupHeadList 함수 구현
@@ -49,6 +50,7 @@ const Grid_ComeCheckDetail = props => {
   // sdname  세부사업명 shname 추진 사업명
   const RowFix = () => {
     console.log("RowFix 실행됨");
+
     for (let i = 0; i < rows.length; i++) {
       if (rows[i].CDDayWeek === "1") rows[i].CDDayWeek = "일요일";
       if (rows[i].CDDayWeek === "2") rows[i].CDDayWeek = "월요일";
@@ -59,11 +61,13 @@ const Grid_ComeCheckDetail = props => {
       if (rows[i].CDDayWeek === "7") rows[i].CDDayWeek = "토요일";
       if (rows[i].DateGubun === "0") rows[i].DateGubun = "주간";
       if (rows[i].DateGubun === "1") rows[i].DateGubun = "주휴";
+      if (rows[i].DateGubun === 1) rows[i].DateGubun = "주휴";
       if (rows[i].DateGubun === "2") rows[i].DateGubun = "무휴";
       if (rows[i].CDGubun === "6") rows[i].CDGubun = "유급휴일";
       if (rows[i].CDGubun === "5") rows[i].CDGubun = "무급휴일";
       if (rows[i].CDGubun === "0") rows[i].CDGubun = "정상근무";
     }
+    setrows(rows);
     console.log("RowFix 종료됨");
   };
 
@@ -83,7 +87,6 @@ const Grid_ComeCheckDetail = props => {
     }
 
     Saup_Save();
-
     console.log("updated", updated);
     return { Update_rows };
   };

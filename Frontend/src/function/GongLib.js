@@ -577,7 +577,7 @@ Func.SetCellEditExit = (
       ) /
         60 -
       CNList[Row].HTime; //총근로시간
-    console.log(" ^^^ Test", CNList);
+    console.log(" SetCellEditExit Result", CNList);
     return CNList;
   }
 };
